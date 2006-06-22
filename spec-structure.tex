@@ -6,7 +6,9 @@
 \subsection{Scope}\input{intro-scope}
 \subsection{Document structure}\input{intro-docstruct}
 
-%\section{Overview of Dirac video coding (Informative)}
+\part{Dirac concepts}
+
+\section{Overview of Dirac video coding (Informative)}
 %\subsection{A general introduction to video compression for beginners}\input{begin-videocoding}
 %\subsection{Outline of the compressino methods used in Dirac}\input{begin-compmethods}
 %\subsection{Prediction using motion compensation}\input{begin-mc}
@@ -16,31 +18,15 @@
 %\subsubsection{Accuracy}\input{begin-mc-accuracy}
 %\subsubsection{Intra frames}\input{begin-mc-intra}
 %\subsection{Wavelet tranforms}\input{begin-dwt}
-%%\subsubsection{Wavelet analysis}\input{begin-dwt-fwd}
+%\subsubsection{Wavelet analysis}\input{begin-dwt-fwd}
 %\subsubsection{Parent-child relationships}\input{begin-dwt-parentchild}
 %\subsection{Entropy coding}\input{begin-ec}
 %\subsubsection{Entropy coding of wavelets}\input{begin-ec-dwt}
 %\subsubsection{Entropy coding of motion vectors}\input{begin-ec-mc}
 %\subsection{Bytestream}\input{begin-bs}
 
-%\clearpage
-%\section{The conventions used in the specification}\input{conv-intro}
-%\subsection{Pictorial representation}\input{conv-parse-diagrams}
-%\subsection{Pseudocode}\input{conv-pseudocode}
-%\subsection{The syntax of the pseudocode}\input{conv-pseudocode-syntax}
-%\subsection{Reading data}\input{conv-bs-reading}
-%\subsection{Byte alignment}\input{conv-bs-bytealign}
-%\subsection{Default parameters}\input{conv-bs-defaults}
-%\subsection{Numbering of parse diagrams}\input{conv-parse-diagnums}
-
-%\clearpage
-%\section{Semantics (Meaning of terms)}\input{semantics-intro}
-%\subsection{Static and synchronisation parameters}\input{semantics-auh}
-%\subsection{Motion vector parameters}\input{semantics-mv}
-%\subsection{Wavelet parameters}\input{semantics-dwt}
-
-%\clearpage
-%\section{Logical constructs used in Dirac}\input{logicalstruct-intro}
+\clearpage
+\section{Logical constructs used in Dirac}\input{logicalstruct-intro}
 %\subsection{Sequence}\input{logicalstruct-sequence}
 %\subsection{Parse unit}\input{logicalstruct-parseunit}
 %\subsection{Access unit}\input{logicalstruct-accessunit}
@@ -56,6 +42,61 @@
 %\subsection{Arithmetic coding}\input{logicalstruct-arithcoding}
 
 \clearpage
+\section{The conventions used in the specification}\input{conv-intro}
+%\subsection{Pictorial representation}\input{conv-parse-diagrams}
+%\subsection{Pseudocode}\input{conv-pseudocode}
+%\subsection{The syntax of the pseudocode}\input{conv-pseudocode-syntax}
+%\subsection{Reading data}\input{conv-bs-reading}
+%\subsection{Byte alignment}\input{conv-bs-bytealign}
+%\subsection{Default parameters}\input{conv-bs-defaults}
+%\subsection{Numbering of parse diagrams}\input{conv-parse-diagnums}
+
+\clearpage
+\section{Semantics (Meaning of terms)}\input{semantics-intro}
+%\subsection{Static and synchronisation parameters}\input{semantics-auh}
+%\subsection{Motion vector parameters}\input{semantics-mv}
+%\subsection{Wavelet parameters}\input{semantics-dwt}
+
+\part{Stream access}
+
+\section{Data encodings}\input{dataenc}
+\subsection{Fixed-length code formats}
+\subsubsection{Bool}\input{dataenc-bool}
+\subsubsection{n-bit literal}\input{dataenc-nbitlit}
+\subsubsection{n-byte literal}\input{dataenc-nbytelit}
+\subsection{Variable-length code formats}\input{dataenc-vlc}
+\subsubsection{Unsigned unary uu(n)}\input{dataenc-vlc-uu}
+\subsubsection{Signed unary su(n)}\input{dataenc-vlc-su}
+\subsubsection{Unsigned truncated unary ut(n)}\input{dataenc-vlc-ut}
+\subsubsection{Unsigned exp-Golomb uegol(n)}\input{dataenc-vlc-uegol}
+\subsubsection{Signed exp-Golomb segol(n)}\input{dataenc-vlc-segol}
+
+\clearpage
+\section{Arithmetic decoding}\input{arith}
+\subsection{Arithmetic decoding engine}\input{arith-engine}
+\subsection{Data input}\input{arith-datainput}
+\subsection{Initialisation}\input{arith-init}
+\subsection{Contexts}\input{arith-contexts}
+\subsection{Decoder functions}\input{arith-decoder}
+\subsubsection{Unsigned unary arithmetic decoding}\input{arith-decoder-uua}
+\subsubsection{Signed unary arithmetic decoding}\input{arith-decoder-sua}
+\subsubsection{Truncated unary arithmetic decoding}\input{arith-decoder-tua}
+\subsubsection{Binary arithmetic decoding}\input{arith-decoder-ba}
+\subsection{Implementation}\input{arith-decoder-impl}
+
+\part{Stream parsing and interpretation}
+
+\clearpage
+\section{Bytestream specification}\input{bs-intro}
+\subsection{Syntactic specification}\input{bs-syntax}
+\subsection{Semantic specification}\input{bs-semantics}
+
+\clearpage
+
+\part{Decoding operations}
+
+\section{Picture decoding process}
+
 \section{preparing decoded data for idwt}
 \subsection{Subband Coefficient Data decoding}\input{prep-idwt}
 \subsection{Decoded subband data conventions}\input{prep-idwt-conventions}
@@ -85,6 +126,7 @@
 \subsection{Decoding of DC values}\input{prep-mc-decode-dc}
 \subsection{Motion vector data context initialisation}\input{prep-mc-ctxt-init}
 
+
 \clearpage
 \section{Inverse discrete wavelet transform}\input{idwt}
 \subsection{IWT synthesis operation}\input{idwt-synthesis}
@@ -108,36 +150,11 @@
 \subsection{Notes on precision}\input{mc-precision}
 \subsection{Example implementation}\input{mc-impl}
 
-\clearpage
-\section{Arithmetic decoding}\input{arith}
-\subsection{Arithmetic decoding engine}\input{arith-engine}
-\subsection{Data input}\input{arith-datainput}
-\subsection{Initialisation}\input{arith-init}
-\subsection{Contexts}\input{arith-contexts}
-\subsection{Decoder functions}\input{arith-decoder}
-\subsubsection{Unsigned unary arithmetic decoding}\input{arith-decoder-uua}
-\subsubsection{Signed unary arithmetic decoding}\input{arith-decoder-sua}
-\subsubsection{Truncated unary arithmetic decoding}\input{arith-decoder-tua}
-\subsubsection{Binary arithmetic decoding}\input{arith-decoder-ba}
-\subsection{Implementation}\input{arith-decoder-impl}
 
-\clearpage
-\section{Data encodings}\input{dataenc}
-\subsection{Fixed-length code formats}
-\subsubsection{Bool}\input{dataenc-bool}
-\subsubsection{n-bit literal}\input{dataenc-nbitlit}
-\subsubsection{n-byte literal}\input{dataenc-nbytelit}
-\subsection{Variable-length code formats}\input{dataenc-vlc}
-\subsubsection{Unsigned unary uu(n)}\input{dataenc-vlc-uu}
-\subsubsection{Signed unary su(n)}\input{dataenc-vlc-su}
-\subsubsection{Unsigned truncated unary ut(n)}\input{dataenc-vlc-ut}
-\subsubsection{Unsigned exp-Golomb uegol(n)}\input{dataenc-vlc-uegol}
-\subsubsection{Signed exp-Golomb segol(n)}\input{dataenc-vlc-segol}
 
-%\clearpage
-%\section{Bytestream specification}\input{bs-intro}
-%\subsection{Syntactic specification}\input{bs-syntax}
-%\subsection{Semantic specification}\input{bs-semantics}
+
+
+
 
 
 

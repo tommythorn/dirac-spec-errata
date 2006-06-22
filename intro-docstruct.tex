@@ -1,30 +1,55 @@
+This document specifies the Dirac decoder and stream structure in terms of
+a layered model:
 
-This document seeks to provide a wide range of information about Dirac.
+\begin{enumerate}
+    \item Stream data access
+    \item Parsing and interpretation of the Dirac stream
+    \item Picture decoding operations
+\end{itemize}
 
-XXX This document needs reordering!
+Stream data access consists of the operations used to extract data values
+(of boolean and integer type) from a raw Dirac bitstream. These include
+data that has been encoded "literally" (i.e. according to conventional bit-wise
+representations), variable-length codes, and data entropy coded using arithmetic
+encoding.Stream data access methods are used both by parsing and decoding operations.
 
-Section \ref{outline} provides an overview of the algorithms used. This
-is intended to give an outline of video compression techniques, and
-describes Dirac as a simple evolution of the art, enabled by technology
-advances.
+Parsing and interpretation defines the structure of Dirac streams, and defines
+intermediate decoder data structures in which extracted data is stored, which 
+encapsulate \em{both} meta-data used to control picture decoding processes (for 
+example, motion compensation block sizes and overlaps, picture dimensions and
+so forth) \em{and} the blocks of (arithmetically coded) data used as input to 
+these processes.
 
-Section \ref{conventions} gives an introduction to the conventions used
-in the rest of the document. Sometimes we need to be clear about the
-meanings of our words.
+Picture decoding operations produce decoded pictures from these populated
+data structures by applying specified functions to them. 
 
-Section \ref{bytestream} gives a description of the Bytestream
+It is unusual in a specification to separate these layers quite so distinctly, 
+and our purpose in doing so is to provide much greater clarity. For implementors,
+the decoupling of syntax ordering from semantics will (we hope) avoid imposing
+implicit design decisions merely through the style of the specification. Many
+other users of the specification will not be interested in the precise format
+of syntax elements but in how the underlying algorithm works - or vice-versa.
+It should be possible to construct a Dirac parsing engine, for example for
+frame skipping in video playback applications, extremely simply and without
+requiring comprehension of the entire specification.
 
-Section \ref{arith-coding} explains how to unpack the
-arithmetically-coded data.
-XXX Why is this here???
+It is worth observing, nevertheless, that this partition of functionality has 
+some difficulties. In particular, the arithmetic decoding of wavelet subbands and 
+motion vectors could perhaps have been assigned to layer 2, since arithmetic
+decoding is defined as a basic data access method. However, these processes
+do many other complicated things to manage contexts, perform predictions
+and we have considered them to be firmly in the semantic layer.
 
-Sections \ref{idwt-1} and \ref{idwt-2} give details about how to derive
-the wavelet coefficients.
+This layered structure is reflected in the structure of the specification,
+which is divided into four parts. The first part introduces Dirac concepts,
+both informatively, in terms of describing Dirac video coding processes, and
+normatively, in terms of defining terms, concepts and conventions used 
+throughout the specification.
 
-Sections \ref{mc-1} and \ref{mc-2} give details about how to use the
-motion vectors together with the restored wavelet coefficients to give
-the restored video sequence.
+The second part defines stream data access functions for data types. Part III
+deals with accessing, parsing the Dirac bitstream and populating data
+structures.
 
-Finally, the appendices contain tables of standard settings, guidance on
-the options available in the coder and other useful data.
+Part IV defines decoder operations and picture output.
 
+In addition to these parts, appendices deal with standard settings, ... TBC
