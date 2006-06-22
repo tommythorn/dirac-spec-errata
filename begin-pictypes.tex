@@ -1,0 +1,24 @@
+Three types of picture are defined.
+
+Intra pictures are coded without reference to other pictures in the
+sequence. These pictures form a useful point to start the decoding
+process. They also have uses if low-delay coding is required - a
+sequence of Intra pictures has mimimum delay, at the expense of
+potentially greater bandwidth requirements. There is a third use for
+Intra pictures: when the sequence is highly dynamic, prediction using
+motion compensation may be impractical. In such instances, a coder may
+choose to default to a sequence of Intra frames.
+
+Inter pictures are coded with reference to other pictures in the
+sequence, and are split into two types:
+\begin{itemize}
+	\item references for other pictures
+	\item not references for other pictures
+\end{itemize}
+
+Within the receiver, we have to arrange that all the references for
+pictures are available at the right time. This means that pictures are
+often delivered in a different sequence from the display sequence, to
+ensure that the buffer memory in the receiver has the necessary
+information to decode pictures when it is needed.
+

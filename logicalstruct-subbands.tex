@@ -1,0 +1,19 @@
+Using the subband numbering in figure~\ref{fig:dwt}, subbands are
+transmitted from 10 downto 1, ie from the lowest frequency to the
+highest frequency.  Since the wavelet transform and its inverse are
+lossless, coding gains are made by quantizing the subbands for
+transmission.
+
+Further coding gains may be made by exploting the correlation in
+frequency components, whereby each pixel in a subband is predicted from
+some of its neighbours.  Correlation accross different frequency bands
+is also exploited.
+
+An extension avaliable to encoders is to use multiple quantizers per
+subband.  This is achieved by subdividing a subband into a number of
+codeblocks, each having its own quantizer.  As an aside, this means that
+we can identify parts of the picture which require most accurate coding
+(for example we often take most notice of errors in the region of a
+person's eyes when looking at images of faces) and enhance the coding
+accuracy in this area. This process is sometimes referred to as region
+of interest coding.

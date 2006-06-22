@@ -1,0 +1,120 @@
+The entropy coding used by Dirac in wavelet subband coefficient coding
+is based on three stages: binarisation, context modelling and adaptive
+arithmetic coding.
+
+Figure: Entropy coding block diagram
+
+The purpose of the first stage is to provide a bitstream with easily
+analysable statistics that can be encoded using arithmetic coding which
+can adapt to those statistics, reflecting any local statistical
+features.
+
+Binarisation is the process of transforming the multi-valued coefficient
+symbols into bits. The resulting bitstream can then be arithmetic coded.
+
+Transform coefficients tend to have a roughly Laplacian distribution,
+which decays exponentially with magnitude. This suits so-called unary
+binarization. Unary codes are simple variable-length codes in which
+every non-negative number $N$ is mapped to $N$ zeros followed by a 1:
+
+
+\begin{verbatim}
+U(0)    =   1
+U(1)    =   0   1
+U(2)    =   0   0   1
+U(3)    =   0   0   0   1
+U(4)    =   0   0   0   0   1
+U(5)    =   0   0   0   0   0   1
+U(6)    =   0   0   0   0   0   0   1
+Bins:       1   2   3   4   5   6   7
+\end{verbatim}
+
+For Laplacian distributed values, the probability of $N$ occurring is
+$2-(|N|+1)$, so the probability of a zero or a 1 occurring in any unary
+bin is constant. So for an ideal only one context would be needed for
+all the bins, leading to a very compact and reliable description of the
+statistics. In practice, the coefficients do deviate from the Laplacian
+ideal and so the lower bins are modelled separately and the larger bins
+lumped into one context.
+
+The process is best explained by example. Suppose one wished to encode
+the sequence:
+
+\begin{verbatim}
+-3 0 1 0 -1
+\end{verbatim}
+
+When binarized, the sequence to be encoded is:
+
+\begin{verbatim}
+0 0 0 1 | 0 | 1 | 0 1 | 1 | 1 | 0 1 | 0
+\end{verbatim}
+
+The first 4 bits encode the magnitude, 3. The first bit is encoded using
+the statistics for Bin1, the second using those for Bin 2 and so on.
+When a 1 is detected, the magnitude is decoded and a sign bit is
+expected. This is encoded using the sign context statistics; here it is
+0 to signify a negative sign. The next bit must be a magnitude bit and
+is encoded using the Bin 1 contexts; since it is 1 the value is 0 and
+there is no need for a subsequent sign bit. And so on.
+
+The context modelling in Dirac is based on the principle that whether a
+coefficient is small (or zero, in particular) or not is well-predicted
+by its neighbours and its parents. Therefore the codec conditions the
+probabilities used by the arithmetic coder for coding bins 1 and 2 on
+the size of the neighbouring coefficients and the parent coefficient.
+
+The reason for this approach is that, whereas the wavelet transform
+largely removes correlation between a coefficient and its neighbours,
+they may not be statistically independent even if they are uncorrelated.
+The main reason for this is that small and especially zero coefficients
+in wavelet subbands tend to clump together, located at points
+corresponding to smooth areas in the image, and as discussed elsewhere,
+are grouped together across subbands in the parent-child relationship.
+
+Conceptually, an arithmetic coder can be thought of a progressive way of
+producing variable-length codes for entire sequences of symbols based on
+the probabilities of their constituent symbols.
+
+For example, if we know the probability of 0 and 1 in a binary sequence,
+we also know the probability of the sequence itself occurring. So if
+
+$P(0)=0.2, $
+
+$P(1)=0.8$
+
+then
+
+$P(11101111111011110101)=(0.2)*3*(0.8)*17=1.8 * 10^{-4}$ (assuming
+independent occurrences).
+
+Information theory then says that optimal entropy coding of this
+sequence requires $log_2 (\frac{1}{p})=12.4$ bits. Arithmetic coding
+produces a code word very close to this optimal length, and
+implementations can do so progressively, outputting bits when possible
+as more arrive.
+
+All arithmetic coding requires are estimates of the probabilities of
+symbols as they occur, and this is where context modelling fits in.
+Since arithmetic coding can, in effect, assign a fractional number of
+bits to a symbol, it is very efficient for coding symbols with
+probabilities very close to 1, without the additional complication of
+run-length coding. The aim of context modelling within Dirac is to use
+information about the symbol stream to be encoded to produce accurate
+probabilities as close to 1 as possible.
+
+Dirac computes these estimates for each context simply by counting their
+occurrences. In order for the decoder to be in the same state as the
+encoder, these statistics cannot be updated until after a binary symbol
+has been encoded. This means that the contexts must be initialised with
+a count for both 0 and 1, which is used for encoding the first symbol in
+that context.
+
+An additional source of redundancy lies in the local nature of the
+statistics. If the contexts are not refreshed periodically then later
+data has less influence in shaping the statistics than earlier data,
+resulting in bias, and local statistics are not exploited. Dirac adopts
+a simple way of refreshing the contexts by halving the the counts of 0
+and 1 for that context at regular intervals. The effect is to maintain
+the probabilities to a reasonable level of accuracy, but to keep the
+influence of all coefficients roughly constant.

@@ -1,0 +1,84 @@
+
+The inverse quantisation process for reconstructing subband coefficients
+requires quantisation factors and offsets derived from an index
+quant\_index as specified in table \ref{}.
+
+These values may be calulcated as:
+
+\begin{displaymath}
+    \texttt{quant\_factor}= round(2^{\frac{\texttt{quant\_index}}{4}})
+\end{displaymath}
+
+\begin{displaymath}
+    \texttt{offset}       = round(\texttt{quant\_factor} * 0.375)
+\end{displaymath}
+    
+
+\begin{figure}[h!]
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        quant\_index & quant\_factor & offset \\\hline
+        0            & 1             & 0      \\\hline
+        1            & 1             & 0      \\\hline
+        2            & 1             & 0      \\\hline
+        3            & 2             & 1      \\\hline
+        4            & 2             & 1      \\\hline
+        5            & 2             & 1      \\\hline
+        6            & 3             & 1      \\\hline
+        7            & 3             & 1      \\\hline
+        8            & 4             & 2      \\\hline
+        9            & 5             & 2      \\\hline
+        10           & 6             & 2      \\\hline
+        11           & 7             & 3      \\\hline
+        12           & 8             & 3      \\\hline
+        13           & 10            & 4      \\\hline
+        14           & 11            & 4      \\\hline
+        15           & 13            & 5      \\\hline
+        16           & 16            & 6      \\\hline
+        17           & 19            & 7      \\\hline
+        18           & 23            & 9      \\\hline
+        19           & 27            & 10     \\\hline
+        20           & 32            & 12     \\\hline
+        21           & 38            & 14     \\\hline
+        22           & 45            & 17     \\\hline
+        23           & 54            & 20     \\\hline
+        24           & 64            & 24     \\\hline
+        25           & 76            & 29     \\\hline
+        26           & 91            & 34     \\\hline
+        27           & 108           & 41     \\\hline
+        28           & 128           & 48     \\\hline
+        29           & 152           & 57     \\\hline
+        30           & 181           & 68     \\\hline
+        31           & 215           & 81     \\\hline
+        32           & 256           & 96     \\\hline
+        33           & 304           & 114    \\\hline
+        34           & 362           & 136    \\\hline
+        35           & 431           & 162    \\\hline
+        36           & 512           & 192    \\\hline
+        37           & 609           & 228    \\\hline
+        38           & 724           & 272    \\\hline
+        39           & 861           & 323    \\\hline
+        40           & 1024          & 384    \\\hline
+        41           & 1218          & 457    \\\hline
+        42           & 1448          & 543    \\\hline
+        43           & 1722          & 646    \\\hline
+        44           & 2048          & 768    \\\hline
+        45           & 2435          & 913    \\\hline
+        46           & 2896          & 1086   \\\hline
+        47           & 3444          & 1292   \\\hline
+        48           & 4096          & 1536   \\\hline
+        49           & 4871          & 1827   \\\hline
+        50           & 5793          & 2172   \\\hline
+        51           & 6899          & 2583   \\\hline
+        52           & 8192          & 3072   \\\hline
+        53           & 9742          & 3653   \\\hline
+        54           & 11585         & 4344   \\\hline
+        55           & 13777         & 5166   \\\hline
+        56           & 16384         & 6144   \\\hline
+        57           & 19484         & 7307   \\\hline
+        58           & 23170         & 8689   \\\hline
+        59           & 27554         & 10333  \\\hline
+        60           & 32768         & 12288  \\\hline
+    \end{tabular}
+\end{figure}

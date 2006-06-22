@@ -1,0 +1,23 @@
+
+For purposes of overlapped block motion compensation, it is necessary to
+weight each block by a weighting matrix of size $(\xblen,\yblen)$ using:
+
+\providecommand{\abs}[1]{\left\lvert#1\right\rvert}
+\begin{equation*}
+\begin{split}
+\omega_{i,j} &= \text{clip}\Bigl(\left( \xblen - 2\abs{j-\tfrac{\xblen-1}{2}} \right), 0, 2(\xblen-\xbsep)\Bigr) \\
+        &\quad* \text{clip}\Bigl(\left( \yblen - 2\abs{i-\tfrac{\yblen-1}{2}} \right), 0, 2(\yblen-\ybsep)\Bigr)
+\end{split}
+\end{equation*}
+
+NB: len - sep must be a power of 2.
+
+In section ($i=0$), the profile of the matrix is:
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figs/obmc-profile}
+\caption{Profile of overlapped-block motion compensation matrix}
+\label{fig:blockcoverage}
+\end{figure}
+

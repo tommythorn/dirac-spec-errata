@@ -1,0 +1,25 @@
+The bytestream of Dirac is the complete, compressed video stream, ready
+for file storage or transmission.
+
+The features are
+
+\begin{itemize}
+    \item A parse structure which gives ready access to the video, even
+    in mid file. This identifies all the static features of the stream.
+    Intelligent systems can use the redundancy in this structure to
+    recover from errors in the stream.
+
+    \item Blocks of data comprising the arithmetically-coded motion
+    vector information
+
+    \item Blocks of data comprising the arithmetically-coded wavelet
+    coefficients
+\end{itemize}
+
+Because of the arithmetic coding, it is difficult to provide a simple
+specification which gives meaningful details of the bytestream without
+some reference to either the early coding processes, or the later
+decoding process. The simple description of the bytestream would only
+refer to compressed motion vectors, and compressed wavelet coefficients.
+We have therefore had to provide extra information to explain how to
+unpack this data, and how to use the resulting structured data.

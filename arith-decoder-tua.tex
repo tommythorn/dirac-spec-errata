@@ -1,0 +1,59 @@
+\begin{comment}
+This section specifies the operation of the unsigned truncated unary
+arithmetic decoding function ut\_arith\_decode() in terms of binary
+arithmetic coding operations.
+
+Pseudo-code for ut\_arith\_decode() is as follows, for values known to be
+in the range :
+
+\begin{verbatim}
+VALUE=0
+
+while ( !binary\_arith\_decode( choose\_context() ) && VALUE<N )
+
+    VALUE++
+\end{verbatim}
+
+choose\_context() is a function that produces a context with which the
+binary bit shall be decoded. The value it returns can depend on any
+values known to the decoder at the time it is called, especially
+including the binarisation bin (the bin number is equal to VALUE+1
+according to the conventions of Appendix ).
+
+\end{comment}
+
+%src tim 0.9.1.48
+
+reads and returns an unsigned integer encoded in the bytestream as an
+arithmetic coded truncated unary binarisation. ``context\_list'' is a list
+of contexts for each bin. If the number of contexts in the list is less
+than the bin number then the content of the bin is assumed to be 1 (i.e.
+the conditional probability of that bin, the context, is exactly 1).
+
+Read Truncated Arithmetic Coded Unsigned Integer
+\begin{verbatim}
+read_uua(context_list):
+
+    value = 0
+    context_index = 0 #Bin Number (numbered from zero)
+    max_index = len(context_list) - 1
+    # Read first bit
+    context = context_list[context_index]
+    if ( read_ba(context) ):
+        more = False
+    else:
+        value += 1
+        more = True
+    context_list[context_index] = context
+    # Read remaining bits
+    while ( (context_index < max_index) and more ):
+        context_index += 1
+        context = context_list[context_index]
+        if ( read_ba(context) ):
+            more = False
+        else:
+            value += 1
+            more = True
+        context_list[context_index] = context
+    return value
+\end{verbatim}

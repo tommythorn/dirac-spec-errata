@@ -1,0 +1,137 @@
+     Daubechies (9,7) lifting filters
+
+This section specifies the lifting filters that must be used if
+WAVELET\_FILTER\_INDEX=0.
+
+There are four lifting filters lift1, lift2, lift3, and lift4. Their
+filtering operations are given in .
+
+
+Filter
+
+Parity
+
+Filter equation
+
+lift1
+
+Even
+
+C[2n] -= ( 1817 * ( C[2n-1] + C[2n+1] ) )>>12
+
+lift2
+
+Odd
+
+C[2n+1] -= ( 3616 * ( C[2n] + C[2n+2] ) )>>12
+
+lift3
+
+Even
+
+C[2n] += ( 217 * ( C[2n-1] + C[2n+1] ) )>>12
+
+lift4
+
+Odd
+
+C[2n+1] += ( 6497 * ( C[2n] + C[2n+2] ) )>>12
+
+
+Table   Lifting filters for WAVELET\_FILTER\_INDEX=0
+
+
+
+    Approximate Daubechies (9,7) lifting filters
+
+This section specifies the lifting filters that must be used if
+WAVELET\_FILTER\_INDEX=1.
+
+There are two lifting filters lift1 and lift2. Their filtering
+operations are given in .
+
+
+Filter
+
+Parity
+
+Filter equation
+
+lift1
+
+Even
+
+C[2n] -=  ( C[2n-1] + C[2n+1] )>>2
+
+lift2
+
+Odd
+
+C[2n+1] += ( 9*( C[2n] + C[2n+2] ) - ( C[2n-2]+C[2n+4] ) )>>4
+
+
+Table   Lifting filters for WAVELET\_FILTER\_INDEX=1
+
+
+    (5,3) lifting filters
+
+This section specifies the lifting filters that must be used if
+WAVELET\_FILTER\_INDEX=2.
+
+There are two lifting filters lift1 and lift2. Their filtering
+operations are given in .
+
+
+Filter
+
+Parity
+
+Filter equation
+
+lift1
+
+Even
+
+C[2n] -=  ( C[2n-1] + C[2n+1] )>>2
+
+lift2
+
+Odd
+
+C[2n+1] += ( C[2n] + C[2n+2]  )>>1
+
+
+Table   Lifting filters for WAVELET\_FILTER\_INDEX=2
+
+
+    (13,5) lifting filters
+
+This section specifies the lifting filters that must be used if
+WAVELET\_FILTER\_INDEX=3.
+
+There are two lifting filters lift1 and lift2. Their filtering
+operations are given in .
+
+
+Filter
+
+Parity
+
+Filter equation
+
+lift1
+
+Even
+
+C[2n] -= ( 9*( C[2n-1] + C[2n+1] ) - ( C[2n-3]+C[2n+3] ) )>>4
+
+lift2
+
+Odd
+
+C[2n+1] += ( 9*( C[2n] + C[2n+2] ) - ( C[2n-2]+C[2n+4] ) )>>5
+
+
+Table   Lifting filters for WAVELET\_FILTER\_INDEX=3
+
+

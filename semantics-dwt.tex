@@ -1,0 +1,164 @@
+
+\textbf{Coefficient Context}
+
+The wavelet coefficients are decoded using a probability model derived
+from previously decoded coefficients. The probability model determines
+the arithmetic decoding contexts that are used. So, before the quantised
+coefficient can be read, it is first necessary to select the right
+context to use, based on previously decoded coefficients. This is done
+by using the Coefficient Context
+
+After the quantised coefficient has been read the contexts, must be
+updated to reflect the new probabilities.
+
+\textbf{Codeblock Mode}
+
+A flag which indicates the functionality of the quantisers.
+
+XXX Needs better description.
+
+\textbf{Chroma Height}
+
+The height of the chrominance blocks input to the wavelet transform.
+
+\textbf{Chroma Transform Data}
+
+The Chroma Transform Data is the data after applying the wavelet
+transform to the residual.
+
+XXX is it before or after arithmetic coding?
+
+\textbf{Chroma Width}
+
+The width of the chrominance blocks input to the wavelet transform.
+
+\textbf{Horizontal Codeblocks}
+
+The number of Codeblocks across the width of the image. This allows us
+to calculate the width of the Codeblocks in pixels.
+
+\textbf{Luma Height}
+
+The height of the luminance blocks input to the wavelet transform.
+
+\textbf{Luma Transform Data}
+
+The Luma Transform Data is the data after applying the wavelet transform
+to the residual.
+
+XXX is it before or after arithmetic coding?
+
+\textbf{Luma Width}
+
+The width of the luminance blocks input to the wavelet transform.
+
+\textbf{Quantiser Codeblock}
+
+XX Is this the definition of the codeblocks subject to the spatial
+partition??????
+
+\textbf{Spatial Partition}
+
+The Spatial Partition enables us to chose whether to use separate
+quantisers for each code block in a subband or a single quantiser to be
+used for the whole subband.
+
+These different spatial partition modes can be used to support
+region-of-interest coding.
+
+
+
+\textbf{Subband}
+
+The subband names, LL, LH, HL, HH, correspond to the frequencies in the
+subband.
+
+Wavelet analysis results in a filtered and subsampled version of the
+picture. When the picture is subject to wavelet analysis in two
+directions this results in the four so-called subbands termed Low-Low
+(LL), Low-High (LH), High-Low(HL) and High-High (HH). The first
+descriptor refers to horizontal frequencies, the second to vertical
+frequencies. L represents low frequencies and H represents high
+frequencies. The order of these letters (horizontal, vertical) is
+consistent with names used in the literature.
+
+However this is the opposite order from with the array indices used in
+this document.  XX Do we need to say the so what factor.
+
+When several levels of wavelet are used, the LL band (only) is
+iteratively decomposed. As a consequence, there are Low-High (LH),
+High-Low(HL) and High-High subbands for each iteration, plus an extra
+subband for the outstanding Low-Low information. This latter is
+effectively a low frequency, sub-sampled version of the original.
+
+In the processing, Subband is the metadata describing the transformed
+data, which component it is, i.e. which level and which band.
+
+\textbf{Transform Data}
+
+Transform Data is the data after applying the wavelet transform to the
+residual.
+
+XXX is it before or after arithmetic coding?
+
+\textbf{Transform Depth}
+
+Same as Wavelet Depth: the total number of wavelet levels.
+
+XX Do not understand why there are two names for it.
+
+\textbf{Transform Parameters}
+
+The transform parameters are the framework used for delivering the
+Transform Data. The Transform Parameters describe the Wavelet Filter,
+the Wavelet Depth and the Spatial Partition.
+
+See also Wavelet Filter, Wavelet Depth and Spatial Partition
+
+\textbf{Vertical Codeblocks}
+
+The number of codeblocks across the height of the image. This allows us
+to calculate the height of the Codeblocks in pixels.
+
+\textbf{Wavelet Coefficients}
+
+The Wavelet Coefficients are decoded using a probability model derived
+from previously decoded coefficients. The probability model determines
+the contexts that are use. Different sets of contexts are used for the
+XXX"follow" bits, but a single context is used for all the XXX"data".
+
+The magnitude and the sign of the coefficient are modelled separately.
+
+In coding the magnitude, different sets of contexts are used for the
+"follow" bits, but a single context is used for all the "data". The
+probability distribution of coefficient magnitude is modelled as
+depending on whether the parent coefficient was zero or non zero. The
+probability distribution is also assumed to depend on the sum of
+(previously decoded) neighbouring coefficients. Because the probability
+distribution is usually peaked around zero it is only the context that
+models the probability of zero/non-zero coefficient that changes with
+the neighbourhood sum.
+
+The probability distribution of the sign of the coefficient is assumed
+to depend on an appropriate neighbouring coefficient.
+
+\textbf{Wavelet Depth }
+
+Wavelet Depth is the total number of wavelet levels. Usually this is
+four, i.e. we do 4 splits both horizontally and vertically.
+
+\textbf{Wavelet Filter}
+
+XXX [filter pairs??] The definition of the filter used in the wavelet
+analysis (and this, as a consequence, defines the filter used in the
+synthesis process too).
+
+\textbf{Wavelet index}
+
+The Wavelet index is a parameter which allows us to identify which of
+the wavelet filters we are using for the lifting filters.
+
+\textbf{Zero Residual}
+
+XXX Zero Residual is a flag which signals that there is no Residual to
+decode.

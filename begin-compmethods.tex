@@ -1,0 +1,30 @@
+The Dirac video codec uses three main techniques to compress the signal:
+
+\begin{itemize}
+    \item Prediction using motion compensation to remove temporal redundancy
+    \item Wavelet transformation and quantisation to remove spatial redundancy
+    \item Arithmetic coding of the resulting data to maximise efficiency
+\end{itemize}
+
+
+Initially, similarities between frames (temporal redundancy) are
+exploited to predict one frame from another. The process is aided by
+motion vectors - metadata detailing where a particular pixel in the
+predicted frame might have been in the reference frame. It is a bit
+wasteful to assign a motion vector to each pixel, so pixels are
+aggregated in blocks. In Dirac, blocks are overlapping. This reduces
+some of the artefacts found at the boundaries of blocks in some earlier
+systems. The motion is calculated to sub pixel accuracy.
+
+Once the prediction has been made, it is compared with the actual image
+to be transmitted.  The resulting difference (error) is potentially
+greater in range than the original signal. To reduce it the difference
+signal is then transformed using the discrete wavelet transform. This
+process, for the majority of video sequences, produces coefficients
+which are largely zero or near zero, and most of the non-zero
+coefficients are concentrated near at the lower frequency end of the
+range. The properties of the eye allow us to coarsely quantise the high
+frequency coefficients.
+
+Both the motion vectors and the quantised coefficients are then further
+compressed using arithmetic coding.

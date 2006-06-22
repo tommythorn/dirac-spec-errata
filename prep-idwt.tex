@@ -1,0 +1,21 @@
+This Section specifies the process for decoding Subband Coefficient Data
+elements of the bitstream. This process is invoked in decoding Subband
+Data elements.
+
+Inputs to this process are: IS\_INTRA, SUBBAND\_NUM, NUM\_SUBBANDS,
+SPATIAL\_PARTITION, PARTITION\_INDEX, MULTI\_QUANT, SUBBAND\_WIDTH,
+SUBBAND\_HEIGHT; previously decoded subband data arrays within the same
+Transform Data element.
+
+Outputs of this process are: A two-dimensional array SUBBAND[][] of
+decoded subband coefficients.
+
+ The Subband Coefficient Data unit is only present is ZERO\_SUBBAND\_FLAG is
+FALSE. It is byte-aligned and occupies a whole number of bytes, padded
+with zero bits as necessary. It consists of a byte-aligned block of raw
+arithmetically-coded bytes of length SUBBAND\_LENGTH.
+
+Subband decoding conventions are specified in Section  and the overall
+subband decoding process is specified in Section .
+
+

@@ -1,0 +1,27 @@
+
+Global Variables used for arithmetic decoding
+\begin{verbatim}
+bytes_left      #integer
+bits_left       #integer
+bit_buffer      #integer
+low             #integer
+high            #integer
+code            #integer
+\end{verbatim}
+
+\begin{informative}
+The use of global variables for implementation code is
+considered poor programming practice. It should be remembered that this
+document is a specification and not implementation code. Global
+variables are used in this specification for two reasons. Firstly they
+avoid the need to pass the arithmetic coding state to each function that
+reads arithmetic coded data, thereby (we hope) clarifying the specification.
+Secondly a specific implementation is likely to associate these
+variables with some sort of output stream object. For example in a
+software implementation written in C++ these variables may be associated
+with an output stream in which output is implemented using custom stream
+manipulators. Data output is highly implementation specific. The use of
+global variables is a way of specifying output in a generic way. Their
+use should not be taken to indicate that they should (or should not) be
+used in any specific implementation.
+\end{informative}

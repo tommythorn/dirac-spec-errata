@@ -1,0 +1,19 @@
+Put simply, wavelet analysis splits a signal into a low and a high
+frequency component, and then subsamples the two partial streams by a
+factor of two.
+
+The two filters used to split the signal are called the analysis
+filters. It is not possible to use just any pair of half-band filters to
+do this. There is an extensive mathematical theory of wavelet filter
+banks. Appropriately chosen filters allow us to undo the aliasing
+introduced by the critical sampling in the down conversion process and
+perfectly reconstruct the signal.
+
+Iterative use of a wavelet process allows us to decompose the
+low-frequency component into successively lower components.
+
+For pictures, we apply wavelet filters in both the horizontal and
+vertical directions. This results in four so-called subbands, termed
+Low-Low (LL), Low-High (LH) High-Low (HL), and High-High (HH). The LL
+band can be iteratively decomposed to create a wavelet transformation of
+many levels.

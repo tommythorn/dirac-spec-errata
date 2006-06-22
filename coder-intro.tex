@@ -1,0 +1,32 @@
+It is not our intention to be prescriptive about how coders should or
+should not be organised. Any coder which produces a compliant bytestream
+may have a place in someone's work. This Appendix is provided to show
+that there are quite a lot of things to consider.
+
+First of all, it is worth noting the competing factors of quality, bit
+rate, complexity and delay.
+
+High quality usually requires a high bit rate. To maintain a consistent
+quality may require the bit rate to be variable. This leads to a
+potential need for a fair amount of buffer storage in a system which
+provides a fixed bit rate.
+
+Any system which provides a lot of compression (i.e. a low bit rate)
+requires full use of all the tools. When we explore the capacity used by
+each element, we find that the Intra frames tend to require most
+capacity. Access Units with many Inter frames and few Intra frames will
+therefore seem to be a desirable solution - except for the fact that
+this will potentially increase the necessary buffer size and lengthen
+the time between access points.
+
+Of the data provided in each frame, the data used for motion vectors and
+prediction is roughly the same as the quantity of data used for the
+wavelet coefficients. The trade off between the two can be enhanced by
+careful rate distortion optimisation.
+
+In some low-complexity implementations, it is possible to simplify the
+motion vectors, or even omit them.
+
+For low delay systems, a sequence of Intra frames gives the best
+performance.
+

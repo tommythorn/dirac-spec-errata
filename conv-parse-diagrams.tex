@@ -1,0 +1,26 @@
+Hierarchical bitstream elements are defined in terms of their component
+data elements, which are presented as block parse diagrams.  A
+blockparse diagram of the form
+
+XX Include diagram here
+
+specifies that Data Element 1 is always followed in the bitstream by
+Data Element 2.
+
+A blockparse diagram of the form
+
+XX Include diagram here
+
+specifies that one or more data elements of type Data Element 2 always
+follow Data Element 1. The Data Element 2 elements may be different,
+i.e. may be differently instantiated according to their own
+specification.
+
+A blockparse diagram of the form
+
+XX Include diagram here
+
+specifies that Data Element 2 conditionally follows Data Element 1.
+Whether or not it does will depend on previously derived decoder
+variable values (not necessarily always contained in Data Element 1).
+

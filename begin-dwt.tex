@@ -1,0 +1,16 @@
+The consequence of processing the Intra frames by removing the DC
+values, and the Inter frames by removing the predicted values gives us a
+difference signal. This difference signal is hopefully largely zero, but
+can have some large peaks, of either polarity. The signal usually has a
+large amount of low-frequency energy, but with occasional elements of
+high frequency as the prediction process gets it wrong.
+
+Conventional theory says that we can manipulate this signal in the
+frequency domain to reduce the amount of information we need to
+transmit. The properties of the eye are such that many of the higher
+frequency components are less sensitive to coarse quantisation.
+
+We can use wavelet transforms in Dirac. The wavelet transform
+decorrelates the data in a roughly frequency-sensitive way, and
+preserves the fine details of images better than the ubiquitous Discrete
+Cosine Transform.

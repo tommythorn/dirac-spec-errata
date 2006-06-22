@@ -1,0 +1,40 @@
+Luma and chroma values EY, ECb, ECr should be used to derive ER, EG, EB
+values by the following equations.
+
+
+
+This follows by inverting the equations 
+
+
+
+In the case of YCgCo coding, ER, EG, EB should be directly computed from
+the integer Y, Cg and Co values by the following recipe, whereby integer
+RGB IR, IG, IB values are decoded by
+
+Y-=LUMA\_OFFSET
+
+Cg-=CHROMA\_OFFSET
+
+Co-=CHROMA\_OFFSET
+
+TEMP=Y-(Cg>>1)
+
+IG=TEMP+Cg
+
+IB=TEMP-(Co>>1)
+
+IR=IB+Co
+
+These may be scaled down by dividing by (255<<ACC\_BITS) and clipped to
+[0,1] to give ER, EG, EB. If the inverse transform has been correctly
+applied prior to coding and lossless coding employed, then clipping will
+be unnecessary.
+
+Note that this matrix implies that the chroma range is twice as large as
+the RGB range (and the luma range), since the chroma components involve
+subtraction. Although logically knowing the signal range and scaling
+signals is prior to performing matrixing, the matrix parameters are
+coded first in the Display Parameters in order to allow the signal
+ranges to be correctly determined in this case.
+
+

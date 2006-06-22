@@ -1,0 +1,16 @@
+\begin{comment}
+The arithmetic decoding process accesses data in a contiguous block of
+length LENGTH bytes in the bitstream (LENGTH=MV\_DATA\_LENGTH or
+SUBBAND\_DATA\_LENGTH depending on whether motion data or subband
+coefficient data is being decoded).
+
+A function input\_bit() is defined such that: if less than LENGTH full
+bytes of data have been input into the arithmetic decoding process,
+input\_bit() shall return the next bit in bitstream order according to
+the conventions of Section ; otherwise 0 shall be returned.
+
+\begin{informative}
+When decoding some implementations may require more than LENGTH bytes of
+data input in order to stabilise and decode the last values.
+\end{informative}
+\end{comment}

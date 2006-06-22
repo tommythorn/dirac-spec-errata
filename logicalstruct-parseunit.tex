@@ -1,0 +1,18 @@
+
+Seekable constructs within the bitstream are called parse units.  Parse
+units start with a synchronisation word, type identifier and pointers to
+the start of the next/previous parse unit.
+
+Synchronisation words allow for easy stream synchronisation.
+
+There is no deliberate attempt to prevent the arithmetic coding of data
+in the bytestream from containing accidental repetitions of the
+synchronisation word. A decoder should check that the next/previous
+pointers in the parse unit point to a valid synchronisation word,
+especially on start up.
+
+There are only two types of seekable construct within the bitstream:
+Access Unit Headers and Frames.
+
+No synchronisation words are used within a video frame to regain
+synchronisation.

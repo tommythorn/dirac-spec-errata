@@ -1,0 +1,25 @@
+In wavelet analysis, each subband represents a filtered and subsampled
+version of the picture. Because all the subbands are derived from a
+single source image, there is likely to be some form of relationship
+between the images in the different subbands.
+
+The coefficients of each subband relate to specific areas in the image.
+We find that there is often a correlation between these specific areas
+in the different subbands.
+
+The subsampling structure means that a coefficient in the lowest level
+corresponds to  2 by 2 block of coefficients in the next level, and so
+on up the levels. In the jargon, the low-level component is referred to
+as the parent and the higher-level component is referred to as the
+child.
+
+When coding picture features (edges on objects especially), significant
+coefficients are found distributed across subbands, in position related
+by the parent-child structure.
+
+A coefficient of a child is more likely to be significant if its parent
+is also significant. Children with zero or small parents seem to have
+different statistics from children with large parents or ancestors.
+
+These features allow us to entropy code the wavelet coefficients after
+they have been quantised.

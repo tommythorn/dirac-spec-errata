@@ -1,0 +1,8 @@
+The encoder is required to ensure that all calculations are performed by
+a decoder within the bounds set by the current level in force.
+
+Typical values for $\psi$ and $\mu$ in the global motion calculations
+may be quite large.  Typically the perspective exponent ($\psi$) may be
+of the order $2\lg(\picWidth) + \lambda$ bits; the zoom-rotation-shear
+exponent ($\mu$) would similary be of the order $\lg(\picHeight) +
+\lambda$ bits.

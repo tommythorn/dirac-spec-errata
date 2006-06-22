@@ -1,0 +1,28 @@
+This section defines what the Bytestream. As the Bytestream contains a
+lot of metadata which is in arithmetically-coded format, there is a vast
+volume of data which cannot be instantly be assigned to particular data
+structures. This data will require processing (as described in Sections
+XXXXXX) before the Bytestream can be fully decoded.
+
+A Stream is a concatenation of Sequences, which are Video Sequences
+that have constant Source Parameters (eg, picture size, aspect ratio,
+etc).
+
+The parameters specified in the Access Unit Header reamain the same
+throughout a Sequence.  That is, the parameters in later Access Unit
+Headers simply repeat those in earlier headers and are provided to
+provide entry points to start decoding the byte stream.
+
+Presentation order picture numbers within a sequence must be contiguous.
+
+If the parameters need to change the only way to do this is to signal
+the end of sequence and start a new sequence.
+
+The process of editing two sequences together would introduce
+discontiguous presentation order picture numbers.  This is accommodated
+by introducing End of Sequence parse codes before a cut so that the
+decoder would restart after a cut.
+\annotate{shas}{May need to explain that the stream is presented as a
+series of bytes. When being read in a bitwise fashion, bytes are
+presented with the most significant bit first/last?}
+

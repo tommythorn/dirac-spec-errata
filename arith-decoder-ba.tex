@@ -1,0 +1,85 @@
+\begin{comment}
+%from 0.9.1
+
+This function is fundamental to all the arithmetic decoding functions.
+It consists of three stages:
+
+1.  Determine the binary output value VALUE as per Section 
+
+2.  Modify the decoder state as per Section 
+
+3.  Update the context statistics by invoking update( CONTEXT , VALUE )
+as per Section 
+\end{comment}
+
+
+%src: tim-0.9.1.48
+
+reads a single arithmetic coded bit from the bytestream and returns a
+Boolean value.
+
+Read Binary Arithmetic Coded Bit
+\begin{verbatim}
+read_ba(context):
+    while (((high&0x8000)==0x0) and ((low&0x8000)==0x0)):
+        shift_bit_in()
+    while ( ((high&0x4000)==0x0) and
+           ((low&0x4000)==0x4000) ):
+        code ^= 0x4000
+        high ^= 0x4000
+        low ^= 0x4000
+        shift_bit_in()
+    weight = context[0] + context[1]
+    scaler = (0x10000+weight//2)//weight   #lookup table
+
+    probability0 = context[0]*scaler
+    count = code-low+1
+    range = high-low+1
+    range_x_prob = (range * probability0)>>16
+    if ( count > range_x_prob ):
+        value = True
+        low = low + range_x_prob
+        context[1] += 1
+    else
+        value = False
+        high = low + range_x_prob - 1
+        context[0] += 1
+    if ( (context[0] + context[1]) > 255 ):
+        #Halve counts in the context
+        context[0] >> 1
+        context[0] += 1
+        context[1] >> 1
+        context[1] += 1
+    return value
+\end{verbatim}
+
+Shift Bit In
+\begin{verbatim}
+shift_bit_in():
+
+    high << 1
+    high &= 0xFFFF
+    high += 1
+    low << 1
+    low &= 0xFFFF
+    code << 1
+    code &= 0xFFFF
+    code += read_bit()
+\end{verbatim}
+
+Read Next Coded Bit
+\begin{verbatim}
+read_bit():
+# Function returns a value 0 or 1, not a Boolean
+    if ( bits_left == 0 ):
+        if ( bytes_left == 0 ):
+            bit_buffer = 0
+        else:
+            bit_buffer = next_byte()
+            bytes_left -= 1
+        bits_left = 8
+    value == bit_buffer & 0x1
+    bit_buffer >>= 1
+    bit_count -= 1
+    return value
+\end{verbatim}

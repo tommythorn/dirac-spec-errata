@@ -1,0 +1,41 @@
+Unsigned exp-Golomb data is decoded to produce unsigned integer values.
+The format consists of two parts. A prefix part, consisting of n zeroes
+followed by a one, indicates how many further bits to read. A suffix
+part, consisting of n bits, is then used to determine the value. The
+decoding procedure for extracting a value VALUE is mathematically
+equivalent to:
+
+\begin{verbatim}
+COUNT= 0
+while( !read\_bits(1) ) {
+    COUNT++
+}
+VALUE = (1<<COUNT) -1 + read\_bits( COUNT )
+\end{verbatim}
+
+where the value returned by read\_bits( COUNT ) is interpeted as a binary
+representation of an unsigned integer with most-significant bit first.
+The bit sequences corresponding to some values are shown in  .
+
+\begin{figure}[h]
+\begin{tabular}{c|c}
+Bit sequence & Decoded value \\
+\hline\\
+1       &  0\\
+010     &  1\\
+011     &  2\\
+00100   &  3\\
+00101   &  4\\
+00110   &  5\\
+00111   &  6\\
+0001000 &  7\\
+0001001 &  8\\
+0001010 &  9\\
+0001011 & 10
+\end{tabular}
+
+\caption{Example conversions from uegol-coded values to binary}
+\end{figure}
+
+
+

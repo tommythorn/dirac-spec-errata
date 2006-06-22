@@ -1,0 +1,79 @@
+The video parameters can be set to match any chosen parameters.
+Signalling this is an overhead. To minimise the need for signalling,
+many of the more common formats can be signalled using a Video Format
+Index. This sets a range of default parameters, as listed in Tables XXa
+and XXb. These default parameters can be modified by appropriate
+signalling.
+
+The LumaWidth, LumaHeight, ChromaFormat and VideoDepth are all Sequence
+Parameters and are required for decoding the image. The remainder of the
+parameters are Source Parameters, and are required for accurate display
+of the decoded pictures, although not for decoding itself.
+
+Table XXXa Default video parameters
+
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+ &Custom &SIF&QCIF&SIF&CIF&4SIF&4CIF \\
+ \hline
+Index&	0&	1&	2&	3&	4	&5	&6  \\
+\hline
+LumaWidth&640&176&176&352&352&704&704\\
+LumaHeight&480&120&144&240&288&480&576\\
+ChromaFormat&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0\\
+VideoDepth&8&8&8&8&8&8&8\\
+Interlaced&False&False&False&False&False&False&False\\
+TopFieldFirst&True&True&True&True&True&True&True\\
+SequentialFields&False&False&False&False&False&False&False\\
+FrameRate&30/1&15000/1001&25/2&15000/1001&25/2&15000/1001&25/2\\
+PixelAspectratio&1:1&10:11&12:11&10:11&12:11&10:11&12:11\\
+CleanWidth&0&0&0&0&0&0&0\\
+CleanHeight&0&0&0&0&0&0&0\\
+LeftOffset&0&0&0&0&0&0&0\\
+TopOffset&0&0&0&0&0&0&0\\
+LumaOffset&0&0&0&0&0&0&0\\
+LumaExcursion&255&255&255&255&255&255&255\\
+ChromaOffset&128&128&128&128&128&128&128\\
+ChromaExcursion&254&254&254&254&254&254&254\\
+ColourSpecification&0&1&2&1&2&1&2\\
+Primaries&ITU 709&SMPTE C&EBU 3213&SMPTE C&EBU 3213&SMPTE C&EBU 3213\\
+$K_{R}$&0.2126&0.299&0.299&0.299&0.299&0.299&0.299\\
+$K_{B}$&0.0722&0.144&0.144&0.144&0.144&0.144&0.144\\
+TransferFunction&TV&TV&TV&TV&TV&TV&TV\\
+\hline
+\end{tabular}
+
+Table XXXb Default video parameters
+
+
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+&SD480&SD576&HD720&HD1080&2KCinema&4KCinema\\
+\hline
+Index&7&8&9&10&11&12\\
+\hline
+LumaWidth&720&720&1280&1920&2048&4086\\
+LumaHeight&480&576&720&1080&1556&3112\\
+ChromaFormat&4:2:0&4:2:0&4:2:0&4:2:0&4:4:4&4:2:4\\
+VideoDepth&8&8&8&8&16&16\\
+Interlaced&False&False&False&False&False&False\\
+TopFieldFirst&False&True&True&True&True&True\\
+SequentialFields&False&False&False&False&False&False\\
+FrameRate&24000/
+1001&25/1&24/1&24/1&24/1&24/1\\
+PixelAspectratio&10:11&12:11&1:1&1:1&1:1&1:1\\
+CleanWidth&704&704&0&0&0&0\\
+CleanHeight&0&0&0&0&0&0\\
+LeftOffset&8&8&0&0&0&0\\
+TopOffset&0&0&0&0&0&0\\
+LumaOffset&16&16&16&16&0&0\\
+LumaExcursion&235&235&235&235&65535&65535\\
+ChromaOffset&128&128&128&128&32768&32768\\
+ChromaExcursion&244&244&244&244&65534&65534\\
+ColourSpecification&1&2&0&0&3&3\\
+Primaries&SMPTE C&EBU 3213&ITU 709&ITU 709&Not defined&Not defined\\
+$K_{R}$&0.299&0.299&0.2126&0.2126&0.25&0.25\\
+$K_{B}$&0.144&0.144&0.0722&0.0722&0.25&0.25\\
+TransferFunction&TV&TV&TV&TV&Linear&Linear\\
+\hline
+\end{tabular}

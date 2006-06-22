@@ -1,0 +1,16 @@
+At the beginning of the decoding of any data unit, the arithmetic
+decoding state is initialised as follows:
+
+Initialise Arithmetic Decoding Engine
+\begin{verbatim}
+initialise_arithmetic_decoding(block_data_length):
+    #Arithmetic decoding is specified
+        using global variables
+    bytes_left = block_data_length
+    #Arithmetic coded data is byte aligned
+        so set zero "bits_left"
+    bits_left = 0
+    low = 0x0000
+    high = 0x0000
+    code = 0x0000
+\end{verbatim}

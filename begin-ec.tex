@@ -1,0 +1,21 @@
+Transmission of the raw motion vectors and wavelet coefficients is
+inefficient. There are still many redundancies in the data, and the form
+of the data is itself suboptimum.
+
+Coding of the motion vectors is especially important for codecs with a
+high level of motion accuracy (quarter or eighth pixel say). Motion
+vector coding and decoding is quite complicated, since significant gains
+in efficiency can be made by choosing a good prediction and entropy
+coding structure.
+
+The processes of removing the redundancies is probably one of the most
+complicated part of the codec. Similar processes are used for coding the
+motion vectors and the wavelet coefficients. In various ways they use a
+combination of
+
+\begin{itemize}
+	\item prediction,
+	\item binarisation,
+	\item context modelling and
+	\item adaptive arithmetic coding.
+\end{itemize}

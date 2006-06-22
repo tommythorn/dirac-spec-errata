@@ -1,0 +1,40 @@
+PRED\_MODE consists of two bits of information (for reference 1 and
+reference 2) and is decoded differentially with respect to predictions
+applying to each bit.
+
+Two contexts are used: PRED\_MODE\_BIT1\_CTX and PRED\_MODE\_BIT2\_CTX. 
+
+The decoding process is:
+
+PRED\_MODE=binary\_arith\_decode(PRED\_MODE\_BIT1\_CTX)
+
+PRED\_MODE|= (binary\_arith\_decode(PRED\_MODE\_BIT2\_CTX)<<1)
+
+PRED\_MODE\^= block\_mode\_pred()
+
+PRED\_MODE prediction
+
+PRED\_MODE is predicted by predicting the first and second bit
+independently as the mode of the corresponding bits of prediction modes
+for prediction units in the prediction aperture.
+
+I.e. for prediction units not at the top or left side of the frame:
+
+block\_mode\_pred()\&1=mode( PRED\_MODEL\&1, PRED\_MODET\&1, PRED\_MODETL\&1 )
+
+block\_mode\_pred()\&2=mode( PRED\_MODEL\&2, PRED\_MODET\&2, PRED\_MODETL\&2 )
+
+For prediction units on the left side of the frame other than the
+top-left prediction unit in the frame:
+
+block\_mode\_pred()=PRED\_MODET
+
+For prediction units on the top side of the frame other than the
+top-left prediction unit in the frame:
+
+block\_mode\_pred()=PRED\_MODEL
+
+For the top-left prediction unit:
+
+block\_mode\_pred()=INTRA[NB: this is inconsistent with current software]
+

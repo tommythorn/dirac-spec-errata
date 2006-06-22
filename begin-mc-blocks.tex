@@ -1,0 +1,27 @@
+In theory, we could define a motion vector for every pixel in the image.
+This would be extremely data intensive and of no practical value.
+
+Instead, pixels are grouped into small regions or blocks, with a single
+motion vector assigned to each block. Ideally these blocks are large -
+thus minimising the amount of information we have to transmit. However,
+the larger the block, the greater the chance that we have more than one
+object or region, and so a single motion vector might be inappropriate.
+
+Although there are several standard block sizes identified within the
+specification, you can choose your own, and that could be as large as
+the original picture. This would not be unreasonable for a picture which
+is a static scene, with the camera being panned across it - although
+there are other ways of identifying this in Dirac.
+
+One of the hard tasks the coder has is to identify which is the optimum
+size of block, and the best compromise for the motion vector in the
+block.
+
+When we have created the prediction, we then calculate the error. The
+error is often greatest at the block boundaries, as this is where the
+motion vector is often least accurate.
+
+To overcome this, Dirac overlaps blocks. Each pixel in the overlap
+regions uses a weighted prediction, incorporating information from all
+the blocks it may lie in. This smooths the error signal, and making the
+following wavelet transformation much more effective.

@@ -1,0 +1,81 @@
+This section specifies the process for decoding the Block Motion data
+unit. This process is invoked for Inter frames when decoding the Frame
+Prediction data unit. The Block Motion data unit is byte aligned and
+occupies a whole number of bytes, padded with zero bits as necessary.
+Its size in bytes must be equal to BLOCK\_DATA\_LENGTH.
+
+Inputs to this process are: global motion field GLOBAL[][][];
+GLOBAL\_MOTION\_FLAG, X\_NUM\_MB, Y\_NUM\_MB, X\_NUM\_BLOCKS, Y\_NUM\_BLOCKS,
+NUM\_REFS, 
+
+Outputs from this process are: a value of MB\_SPLIT and MB\_COMMON for
+each MB; a value of PRED\_MODE for each prediction unit in each MB; a
+motion vector MV1 for each prediction unit with PRED\_MODE equal to
+REF1ONLY or REF1AND2; a motion vector MV2 for each prediction unit with
+PRED\_MODE equal to REF2ONLY or REF1AND2.
+
+The Block Motion data unit is a single block of arithmetically coded
+binary data. This section specifies the decoding operations to be used
+in conjunction with the arithmetic decoding engine specified in Section
+with the contexts and initialisation defined in Section .
+
+Block motion data is used in predicting Inter frames using either global
+or block motion or both. When block motion is used it encodes the motion
+vectors to be used. When two reference frames are used it encodes motion
+vectors for both references. With two references it also encodes which
+reference, or both references, are to be used and which blocks are to be
+coded Intra (i.e. without using motion compensated prediction). The
+Block Motion data also encodes any other information that is needed to
+perform motion compensated prediction, such as macroblock  splitting.
+
+Motion vector data is organised into macroblock s, which are 4x4 arrays
+of blocks. The motion data is decoded by decoding the data in each MB,
+scanning in raster order from the top-left corner. 
+
+Numbering
+
+For the purposes of this specification, macroblocks  are numbered by x-
+and y- coordinates in raster order, from the top-left MB. Blocks are
+also numbered from by x- and y-coordinates in raster order from the
+top-left block. The indices of blocks within a macroblock with
+coordinates (x,y) therefore run from (4x,4y) (top-left) through to
+(4x+3,4y+3) (bottom right). 
+
+Overall decoding process
+
+The decoding process iterates across all macroblocks, first decoding the
+macroblock data and then decoding the prediction unit data pertaining to
+each macroblock. The macroblock data constrains how much block data
+there is and how it is interpreted. The decoder maintains a value
+MB\_COUNT which is used to reset statistics periodically.
+
+In pseudocode the decoding process is:
+
+MB\_COUNT=0
+
+for (y=0;  y<Y\_NUM\_MB;  y++)
+
+{
+
+    for (x=0;  x<X\_NUM\_MB;  x++)
+
+    {
+
+          decode\_MB\_data (x,y)
+
+          decode\_MB\_block\_data(x,y)
+
+          MB\_COUNT++
+
+          if (MB\_COUNT>32)
+
+              halve\_all\_counts()
+
+    }
+
+}
+
+The arithmetic decoding engine function halve\_all\_counts() is specified
+in Section .
+
+

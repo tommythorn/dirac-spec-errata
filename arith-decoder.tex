@@ -1,0 +1,36 @@
+
+%src: 0.9
+
+The arithmetic decoding engine is a multi-context, adaptive binary
+arithmetic decoder, performing binary renormalisation and producing
+binary outputs. For each bit decoded, the semantics of the relevant
+decoder function determine a statistical context (probability model) to
+be used for the internal rescaling functions. Assuming this context, the
+raw arithmetic decoding function is written
+
+\begin{comment}
+binary\_arith\_decode()
+
+Its operation is defined in Section .
+
+Signed and unsigned integer outputs can be derived by the use of
+binarisation schemes which turn a symbol into a string of bits. There
+are two basic binarisations employed for arithmetic coding: unary and
+truncated unary binarisation. These are defined in Appendix , giving
+rise to four decoder functions 
+
+Unsigned unary arithmetic decoding: uu\_arith\_decode()
+
+Signed unary arithmetic decoding:   su\_arith\_decode()
+
+Unsigned truncated unary arithmetic decoding:   ut\_arith\_decode()
+
+In addition a decoding process may invoke halve\_all\_counts() to reset
+context statistics.
+
+\begin{informative}
+There is no signed truncated unary arithmetic decoding function in
+Dirac, since truncated unary values have been derived from modulo
+arithmetic and have no sign.
+\end{informative}
+\end{comment}

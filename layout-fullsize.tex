@@ -1,0 +1,65 @@
+\documentclass[a4paper,9pt]{extarticle}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{verbatim}
+\usepackage{framed}
+\usepackage{color}
+\usepackage{fancyhdr}
+\usepackage{layout}
+
+\DeclareFontShape{OT1}{cmtt}{bx}{n}{<->cmbtt10}{}
+
+\setlength\voffset{-0.5in}
+\addtolength\textheight{1.5in}
+\setlength\oddsidemargin{0in}
+\setlength\marginparwidth{1.25in}
+\setlength\textwidth{\paperwidth}
+\addtolength\textwidth{-1.25in}
+\addtolength\textwidth{-\oddsidemargin}
+\addtolength\textwidth{-\marginparsep}
+\addtolength\textwidth{-\marginparwidth}
+
+\linespread{1.2}
+\setlength\parskip{6pt}
+\setlength\parindent{0pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[EL,OR]{\bfseries\thepage}
+\fancyhead[ER]{\bfseries\leftmark}
+\fancyhead[OL]{\bfseries\rightmark}
+\fancyfoot[EC,OC]{\input{.version-date}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+\addtolength{\headheight}{0.5pt}
+\addtolength{\textheight}{-0.5pt}
+\fancypagestyle{plain}{% no headers on plain pages
+    \fancyhead{}%
+    \renewcommand{\headrulewidth}{0pt}%
+}
+
+%\bibliographystyle{IEEEtran}
+%\renewcommand\bibname{References}
+
+\DeclareMathOperator{\clip}{clip}
+
+\definecolor{shadecolour}{gray}{0.90}
+\newenvironment{informative}[0]%
+{\def\FrameCommand{\colorbox{shadecolour}}%
+ \MakeFramed {\setlength\hsize{0.8\textwidth}}{\bf Informative:}}%
+{\endMakeFramed}
+
+\definecolor{commentcolour}{rgb}{1,0,0}
+\begin{document}
+\newcommand{\annotate}[2]{\marginpar{\color{commentcolour} #2 {\bf --- #1}}}
+
+%\layout
+
+\tableofcontents
+\clearpage
+\input{spec-structure}
+
+\end{document}

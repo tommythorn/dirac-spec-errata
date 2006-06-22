@@ -1,0 +1,144 @@
+This section specifies the decode\_MB\_data(x,y) process.
+
+Inputs to this process are: none. 
+
+Outputs of this process are: a value of MB\_USING\_GLOBAL, MB\_SPLIT and
+MB\_COMMON for the macroblock at position (x,y).
+
+MB data is only present if GLOBAL\_ONLY\_FLAG is FALSE.
+
+The structure of the macroblock data is shown in .
+
+
+Name
+
+Type
+
+Signed
+
+Size (bits)
+
+Value restrictions
+
+if (!GLOBAL\_ONLY\_FLAG)
+
+{
+
+    if (GLOBAL\_MOTION\_FLAG)
+
+    {
+
+        MB\_USING\_GLOBAL
+
+Bool
+
+-
+
+1
+
+-
+
+    }
+
+    if (!MB\_USING\_GLOBAL)
+
+    {
+
+        MB\_SPLIT
+
+Integer
+
+No
+
+2
+
+0,1,2
+    }
+
+    if ( MB\_SPLIT!=0 )
+    {
+        MB\_COMMON
+
+Bool
+
+-
+
+1
+
+-
+
+    }
+
+}
+
+
+Figure      Macroblock Structure
+
+The decoding process for a macroblock at coordinates (x,y) is as
+follows, in pseudocode
+
+if (!GLOBAL\_ONLY\_FLAG)
+
+{
+
+    MB\_SPLIT=2
+
+    MB\_COMMON=TRUE
+
+}
+
+else
+
+{
+
+     if (GLOBAL\_MOTION\_FLAG)
+
+         decode\_mb\_using\_global(x,y)
+
+     else
+
+         MB\_USING\_GLOBAL=FALSE
+
+
+
+     if (!MB\_USING\_GLOBAL)
+
+         decode\_mb\_split(x,y)
+
+     else
+
+         MB\_SPLIT=2
+
+
+
+     if (MB\_SPLIT!=0)
+
+         decode\_mb\_common(x,y)
+
+     else
+
+         MB\_COMMON=TRUE
+
+}
+
+The subsidiary decoding functions decode\_mb\_using\_global(),
+decode\_mb\_split(), decode\_mb\_common() are specified in subsequent
+sections. 
+
+The MB\_SPLIT parameter determines to what level the macroblock shall be
+split i.e. how many Prediction Units it contains and what size they are.
+If MB\_SPLIT=2, then the macroblock is split into a 4x4 array of
+macroblock s. If MB\_SPLIT=1, then the macroblock is split into a 4x4
+array of sub-macroblocks. If MB\_SPLIT=0, then the macroblock is not
+split. For each prediction unit in the MB, motion vectors and possibly
+prediction modes will be extracted from the bitstream, so MB\_SPLIT
+determines how many values must be extracted for the MB.
+
+The MB\_COMMON parameter determines whether a common prediction mode is
+to be decoded for the whole macroblock contained within the bitstream,
+or whether different prediction modes are to be decoded for each
+prediction unit. If MB\_SPLIT=0, MB\_COMMON is not necessary, since in
+this case there is only one prediction unit and the two cases are
+identical. 
+
+

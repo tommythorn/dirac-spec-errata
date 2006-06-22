@@ -1,0 +1,23 @@
+The predicted picture is divided into a regular overlapping blocks that
+cover at least the entire picture area as shown in
+figure~\ref{fig:blockcoverage}.  Each block (figure~\ref{fig:}) has a
+width and height, $\xblen$ and $\yblen$ respectively.  A value of
+$\xbsep$ and
+$\ybsep$ repsectively define the horizontal and vertical distances between
+blocks.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figs/block-coverage}
+\caption{Block coverage of the predicted picture}
+\label{fig:blockcoverage}
+\end{figure}
+
+Blocks will overspill the left and top edges by ($\xblen - \xbsep$) and
+($\yblen - \ybsep$) pixels.  The overspill on the right hand and bottom edges
+will be at least the amount on the left and top edges; in order to
+maintain the overlapping property of Overlapped-block motion
+compensation and satisfy bytestream requirements, the bottom and right
+edge overspill may be multiple blocks.  Any predictions for pixels
+outside the picture $(0 \leq x < \picWidth, 0 \leq y < \picHeight)$
+are discarded.

@@ -1,0 +1,137 @@
+This is a simple guide to video coding. You can miss this subsection out
+if you already know the basics.
+
+Video signals are made up of a succession of still pictures, displayed
+one after the other. Each picture is made up from a series of elementary
+units called pixels, arranged in a raster of lines.
+
+The raw total capacity required for the transmission of moving pictures
+is the product of the number of pixels per picture, pictures per second,
+colours in use and the quantising accuracy adopted. In nearly every
+field of application, the resultant raw bandwidth required exceeds that
+available by more than an order of magnitude.  If we keep the same size
+pictures, then the only variable we have with the simple system is to
+change the quantisation accuracy and lowering the accuracy rapidly leads
+to poor quality pictures.
+
+The solution which has been used from before 1970 is to make a
+prediction of the value of each pixel using information that should be
+available in the decoder. In general, if the prediction is good, then
+the difference between reality and the prediction is small. The entropy
+of the difference signal is low, and so we need less capacity to deliver
+it. One simple solution was to recognise that the quantisation accuracy
+required for the difference signal could be coarser than that required
+for the original picture, and so fewer bits are needed to deliver the
+difference signal than for the original.
+
+This has formed the basis for many of the early video compression
+systems.  The elements that have changed over the years have been
+
+\begin{itemize}
+    \item the algorithms used for making the prediction, and
+    \item the formats used for delivering the difference signal
+    efficiently to the receiver.
+\end{itemize}
+
+Many of the changes have been enabled by the availability of better
+electronic circuitry. Real-time operation puts an upper limit on the
+time available for processing.  We can only use more sophisticated
+algorithms if we can carry out the calculations in the time available.
+Fortunately, the improvement in the speed of hardware has almost matched
+the development of algorithms.
+
+Early algorithms made use of simple predictions predicting one pixel
+from others nearby in the picture, or (spatial prediction in the
+jargon).
+
+Predictions were helped when field-stores became affordable (and smaller
+than a small garden shed) and it became possible to use information from
+the previous field (temporal prediction in the jargon). This process
+works well when the picture is still, but is less effective when the
+pictures depict a lot of movement.
+
+This led to a whole raft of developments, seeking to identify motion in
+the picture. Knowing how parts of the scene are moving (motion
+estimation in the jargon) allowed much more accurate prediction than had
+been possible hitherto. These developments led eventually to mature
+products such as the MPEG 2 compression system.
+
+Having created a good prediction, it is inevitable that it will not be
+perfect. The error signal is the signal we wish to convey to the
+decoder.  In any system, the raw error signal is at least as
+bandwidth-hungry as the original. In most cases it is slightly more
+hungry.
+
+However, the error signal has some physical properties which help us to
+reduce its bandwidth. In information theory terms, the error signal is
+rarely totally random, real pictures have properties which distinguish
+them from random noise.  We can therefore use some of these properties
+to reduce the bit-rate further.
+
+The spectrum of the error signal is usually heavily biased towards the
+low frequency end. This is a direct consequence of the prediction
+process usually being reasonably good. It also turns out that the eye is
+less sensitive to small inaccuracies in the high frequency components of
+the error signal.
+
+Taken together, these observations provide the potential for coarser
+quantisation or omission of some of the components of the error signal.
+
+There are several methods available if we wish to translate the temporal
+signal we started with into the frequency domain. Although many coding
+systems use Discrete Cosine Transforms, we preferred to use the Discrete
+Wavelet Transform. This approach divides the signal into higher and
+lower frequency sub-bands. By quantising the different sub bands
+appropriately, we achieve significant reduction in bandwidth.
+
+Finally, when all the information for this system is packed together,
+there is still a structure it is not statistically random. Information
+theory says that we can use entropy coding to further increase the
+randomness, and thereby reduce the bandwidth.  One of the more powerful
+of these is arithmetic coding the system adopted in Dirac.  So we have
+now outlined some of the key elements of a modern coder.
+
+
+Fig XX. An outline of a typical modern video coder.
+
+It is worth a quick look at the simple representation of the encoder in
+Fig. XX as it leads us to understand the receiver topology.
+
+The input signal $V_{in}$ is compared with the prediction $P$ to produce
+an error signal $e$.  This is then compressed and passed (with the
+various elements of compression metadata) to the arithmetic coder for
+transmission.
+
+The prediction is created from a local version of the signal for a very
+good reason.  This is the signal that the decoder is able to recreate
+with the information available to it. The signal delivered to the
+receiver  $e_{TQ}$ allows the receiver to recreate a close copy of the
+prediction error $e$. If we compare the two signals,
+
+\begin{align*}
+  V_{in} &= P + e \\
+  V_{local}	&= P + e'
+\end{align*}
+
+As the difference between the two error signals $e$ and $e'$ is the
+distortion introduced by the compression algorithm, the local signal is
+a close approximation to the input signal. Looking carefully at Fig. XX,
+we can see that we can create a decoder using a subset of the encoder.
+This is shown in Fig. XXX.
+
+It is quite clear that the main elements of the receiver are duplicated
+in the encoder.  The encoder has to maintain a local decoder within it,
+in part so that the result of the compression can be monitored at the
+time of compression, but mainly because compressed pictures must be used
+as reference frames for subsequent motion compensation else the encoder
+and the decoder will not remain in synchronism.
+
+The motion vectors are delivered from the encoder as metadata. This
+avoids the need to analyse motion vectors in the receiver, and allows
+the encoder considerable flexibility in the choice of appropriate motion
+vectors.  We will now move on to consider the application of this
+technology to Dirac.
+
+
+Fig. YY An outline of the decoder
+

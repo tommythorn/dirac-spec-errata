@@ -1,0 +1,19 @@
+
+This section defines the process iwt\_synthesis() invoked by iwt().
+
+This is an iterative procedure operating on four subbands at each
+iteration stage to produce a new subband. In pseudocode the procedure
+is:
+
+\begin{verbatim}
+LL=SUBBAND[NUM\_SUBBANDS]
+for (n=0 , k=NUM\_SUBBANDS-1; n<TRANSFORM\_DEPTH ; ++n , k-=3)
+{
+    LL=vh\_synthesis( LL , SUBBAND[k-2] ,  SUBBAND[k-1] , SUBBAND[k] )
+}
+\end{verbatim}
+
+The decoded component data values will comprise the subband coefficients
+LL[][], which are identified with the two-dimensional array DATA[][].
+
+

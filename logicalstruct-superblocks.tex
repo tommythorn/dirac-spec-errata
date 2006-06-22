@@ -1,0 +1,53 @@
+
+To allow a more efficient representation of blocks and Motion Vectors,
+and to allow further explotation of the spatial redundancy in motion
+vectors and additionally allow a tradeoff between Motion Vector accuracy
+to bytestream symbols required, blocks are transmitted in a 4 by 4
+arrangement called a Superblock (figure~\ref{fig:superblock-pu-16of1x1}).
+
+\begin{figure}
+    \centering
+    \subfigure[16 perdiction units, each a single block]{
+        \label{fig:superblock-pu-16of1x1}
+        \includegraphics[width=0.25\textwidth]{figs/superblock-16pu}
+    }
+    \hspace{0.5in}
+    \subfigure[4 prediction units, each covering 2x2 blocks]{
+        \label{fig:superblock-pu-4of2x2}
+        \includegraphics[width=0.25\textwidth]{figs/superblock-4pu}
+    }
+    \hspace{0.5in}
+    \subfigure[1 prediction unit, covering 4x4 blocks]{
+        \label{fig:superblock-pu-1of4x4}
+        \includegraphics[width=0.25\textwidth]{figs/superblock-1pu}
+    }
+    \caption{Illustration of grouping blocks into prediction units
+    (numbered) and their relationship to superblocks}
+    \label{fig:superblock-pu}
+\end{figure}
+
+Blocks can be merged inside the superblock into arrangements of 4 of 2 by 2
+blocks, or 1 of 4 by 4 blocks (figures~\ref{fig:superblock-pu-4of2x2} and
+\ref{fig:superblock-pu-1of4x4} respectively).  In each
+case, only one motion vector is transmitted per merged set of blocks
+(also known as a prediction unit).
+
+Each prediction unit has a prediction mode associated with it, which may
+be one of:
+\begin{itemize}
+    \item Intra -- for blocks with no Motion Vector associated with
+        them.
+    \item Ref1Only -- the Motion Vector applies to the first reference frame
+        only.
+    \item Ref2Only -- the Motion Vector applies to the second reference
+        frame only.
+    \item Ref1and2 -- two Motion Vectors are sent, each using one
+        reference frame.
+\end{itemize}
+
+Global motion compensation is opted in/out of at the Superblock level.
+If opted in, all prediction units within the super block will be
+globally motion compensated, unless they signal that a particular
+prediction unit should be intra coded instead.
+
+

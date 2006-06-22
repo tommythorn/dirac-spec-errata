@@ -1,0 +1,353 @@
+
+Dirac uses motion-adaptive prediction to reduce the bit rate of a
+sequence. The prediction parameters define the prediction tools up to
+the point that the error signal or residual is calculated.
+
+\textbf{Block Parameters Index}
+
+Block Parameters Index defines the default settings for the sizes and
+separation of the blocks used in the prediction of pictures. The
+parameters defined are the Chroma Block Width, Chroma Block Height,
+Horizontal Chroma Block Separation, Vertical Chroma Block Separation,
+Luma Block Width, Luma Block Height, Horizontal Luma Block Separation,
+Vertical Luma Block Separation.
+
+\textbf{Common Mode}
+
+Common Mode indicates that the same values of Motion Vector and
+Prediction Mode are being used within a Superblock.
+
+\textbf{Chroma Block Width}
+
+The width of a chrominance prediction block in pixels.
+
+\textbf{Chroma Block Height}
+
+The height of a chrominance prediction block in pixels.
+
+\textbf{Chroma DC Residual}
+
+In Intra Frames, this is the residual of the predicted mean level of
+each Block.
+
+See also DC Value
+
+\textbf{DC Value}
+
+When coding an Intra Reference Picture or an Intra Non-reference
+Picture, the picture is not predicted, but simply wavelet transformed.
+Whereas the mean value of predicted images is usually zero, the mean
+value of intra picture is not. To avoid the block artefacts that this
+would produce, the mean level of the Blocks is removed from the signal
+before the wavelet transform process. This mean level is used as the
+prediction.
+
+Instead of transmitting the absolute value of the mean level for each
+Block, the DC Value is predicted by reference to other Blocks in the
+Superblock, and the difference signalled. The same process is applied to
+luminance and the two chrominance signals.
+
+See also Luma DC Residual, Chroma DC Residual.
+
+\textbf{Global Motion}
+
+The Global Motion Flag indicates the presence of global motion data. If
+TRUE, the Global Motion Only Flag indicates whether only global motion
+data is present.
+
+Global Motion is a technique which works well when the whole, or at
+least a large proportion, of the image is being subjected to the same
+transformation. Dirac uses an eight-parameter model that allows for pan,
+zoom, rotation, shear and change of perspective.
+
+\textbf{Horizontal Chroma Block Separation}
+
+The separation of chrominance prediction blocks horizontally.
+
+\textbf{Horizontal Luma Block Separation}
+
+The separation of luminance prediction blocks horizontally.
+
+\textbf{Horizontal Perspective}
+
+Metadata which describes the Motion Vector element caused by changes in
+perspective.
+
+See also Appendix XXX [Global Motion Compensation]
+
+\textbf{Horizontal Offset Residual}
+
+When the Motion Vector has been calculated in the encoder, it comprises
+an indication of the  horizontal and a vertical offsets of the reference
+pixel from the pixel to be calculated. This is transmitted as a
+difference from a value that is predicted using information from
+surrounding Blocks - i.e. as a residual (or difference) from the
+predicted value.
+
+\textbf{Horizontal Perspective}
+
+XX I am not sure what physical features this conveys.
+
+\textbf{Inter Reference Picture}
+
+A picture which is coded by prediction with reference to other pictures,
+and which itself is used as a reference for prediction when coding other
+pictures.
+
+There are two different types of Inter Reference Pictures. One uses only
+one other picture as a reference. The other type can use two other
+pictures as references.
+
+\textbf{Inter Non Reference Picture}
+
+A picture which is coded by prediction with reference to other pictures,
+but which itself is not used as a reference for prediction when coding
+other pictures.
+
+There are two different types of Inter Non Reference Pictures. One uses
+only one other picture as a reference. The other type can use two other
+pictures as references.
+
+\textbf{Intra Non Reference Picture}
+
+A picture which is coded without prediction with reference to other
+pictures, and which itself is not used as a reference for prediction
+when coding other pictures.
+
+\textbf{Intra Reference Picture}
+
+A picture which is coded without prediction with reference to other
+pictures, but which itself is used as a reference for prediction when
+coding other pictures.
+
+\textbf{Luma Block Width}
+
+The width of a luminance prediction block in pixels.
+
+\textbf{Luma Block Height}
+
+The height of a luminance prediction block in pixels.
+
+\textbf{Luma DC Residual}
+
+In Intra Frames, this is the residual of the predicted mean level of
+each Block.
+
+See also DC Value
+
+\textbf{Motion Vector}
+
+A Motion Vector is an indication of which pixels in the reference frame
+can be used as predictors for a particular pixel in the predicted frame.
+It is the offset of the predicted pixel from the reference pixel (and is
+conveyed, either as a global field, or on a block by block basis).
+
+The observant will notice that this vector is a spatial vector, being a
+spatial offset. Only by weighting by the temporal separation between the
+reference and predicted fields, with due note of the sign, can a true
+indication of motion be deduced. We would have called it prediction
+vector, but there is a weight of existing custom and practice against us
+- so Motion Vector it remains.
+
+Two types of Motion Vector information are used: global and block motion
+vectors. Global motion is intended to describe the motion of the
+background, using a parametric model. The block motion vectors are
+intended to describe the more varied motion of the foreground. The two
+type of motion information are used together to define the overall
+motion vectors.
+
+
+
+XX Could introduce elements here about Motion Vector Prediction process
+from TD 0.9
+
+\textbf{Motion Vector Precision}
+
+Motion Vector Precision is what it says on the tin. It is an important
+factor in achieving efficient video compression. If the Motion Vector
+Precision is too low the motion-compensated prediction residuals will be
+larger than necessary and require more bits to be coded. However if the
+Motion Vector Precision is too high the motion vectors themselves will
+require a disproportionately large number of bits to be coded.
+
+Empirically, motion vector precisions of ½ or ¼ of a pixel have been
+found to work well. However the optimum motion vector precision depends
+on many factors, such as the nature of the sequence to be coded and the
+desired compression quality. Dirac defaults to ½ pixel motion vector
+precision but provides the flexibility to use a non-default value of
+precision.
+
+XX In the range ?????
+
+\textbf{Pan Tilt}
+
+A measure of the degree of horizontal movement of the whole image (Pan)
+and vertical movement of the whole image (Tilt). This is used as part of
+the information provided for Global Motion Compensation.
+
+See also Appendix XXX [Global Motion Compensation]
+
+\textbf{Perspective}
+
+A measure of the change in perspective of the image. This is used as
+part of the information provided for Global Motion Compensation.
+
+See also Appendix XXX [Global Motion Compensation]
+
+\textbf{Perspective Exponent}
+
+A multiplier which allows us to use integers in place of floating point
+in the delivery of the Perspective metadata.
+
+\textbf{Picture Prediction Parameters}
+
+Dirac predicts Inter frames from one or two reference frames using
+motion compensation. Frame prediction parameters and data are not
+included for Intra frames, which are indicated by the Start Code in the
+Parse Information.
+
+Dirac's motion model is overlapping block motion compensation. The block
+sizes can be adapted to match the requirements of the Sequence. The
+spatial displacement of each block, from the corresponding position in a
+reference frame, is coded in the bitstream. These displacements are
+known as motion vectors. Motion vectors are the displacement that should
+be applied to the reference frame to predict the current frame. The name
+motion vector is, therefore, a misnomer because they are actually
+prediction displacement vectors. Nevertheless the term motion vector is
+used for consistency with industry practice
+
+Two types of motion vector information are used: global and block motion
+vectors. Global motion is intended to describe the motion of the
+background, using a parametric model. The block motion vectors are
+intended to describe the more varied motion of the foreground. The two
+types of motion information are used together to define the overall
+motion vectors.
+
+Global Motion parameters are included, or not, depending on the value of
+the Prediction Mode flags. One or two sets of Global Motion parameters
+are included in the Frame Prediction, one for each reference frame.
+
+When predicting an image from two different pictures, we are able to
+weight the contributions. This aids, amongst other predictions, the
+ability of Dirac to handle cross-fades between images and fades to black
+or white.
+
+\textbf{Prediction Mode}
+
+Prediction Mode is a pair of bits, each of which indicates whether one
+of the references is used to form a motion compensated prediction of the
+picture. If a Prediction Mode bit is asserted (True) then the
+corresponding reference picture is used in the prediction. An intra
+prediction block is indicated when both bits are not asserted (False).
+
+\textbf{Prediction Unit}
+
+The Prediction Unit is the process which identifies whether Blocks
+within a Superblock can use Common Modes - using the same Motion Vectors
+and Prediction Modes - or whether different Motion Vectors and
+Prediction Modes are appropriate.
+
+\textbf{Picture Weights}
+
+When using more than one reference image for prediction, the default is
+to weight the two equally relevant. At times of cuts or fades in the
+sequence, it may be that the default setting is invalid, so there is an
+option to set the weighting pragmatically.
+
+\textbf{Reference Picture Number}
+
+Dirac predicts Inter frames from one or two reference frames using
+motion compensation. The Reference Picture Numbers are the offset(s) of
+the one or two Reference Pictures from the Picture Number of the picture
+being decoded.
+
+\textbf{Retired Picture List}
+
+In Dirac, reference frames need to be retained for a while to act as
+references for succeeding frames. Non-reference frames are always
+discarded when the current output frame number exceeds their frame
+number.
+
+The Dirac decoder contains a small buffer of previously decoded frames.
+
+An important aspect of the way the decoder works is how it manages which
+frames to retain in its frame buffer and which frames it discards.
+
+The encoder may explicitly specify frames that are no longer required in
+the buffer.  To support this method of frame management each frame may
+contain a list of frames that should be discarded from the buffer.
+
+If no frames are specified to be retired then Dirac discards the oldest
+frame first, but only as necessary. That is, when space is needed in the
+frame buffer the frame with the lowest frame number is discarded. It is
+up to the encoder to ensure that this default process does not discard
+frames that are needed by the decoder. This default discard procedure is
+only invoked when the frame buffer size would otherwise exceed that
+specified by the decoder level and no signalling is present to indicate
+which frames should be discarded.
+
+It is the responsibility of the encoder to ensure that the correct
+frames are retained in the buffer. The decoder may assume that the
+reference frames it requires will be available in the buffer.
+
+\textbf{Split Mode}
+
+Split Mode indicates that different values of Motion Vector and
+Prediction Mode are being used within a Superblock.
+
+\textbf{Superblock}
+
+In many instances, the Motion Vectors of adjoining blocks are similar.
+Dirac therefore aggregates Blocks into Superblocks to enable Prediction
+Modes and Motion Vectors to be transmitted more efficiently.
+
+The metadata describing the Prediction Modes and Motion Vectors can be
+the same (Common Mode) or different (Split Mode).
+
+Superblocks are four Blocks wide and four Blocks high. They are arranged
+such that the overlapped part of the Blocks at the edge of the image
+falls outside the image. There is always an integer number of
+Superblocks, so extra Blocks (with no source content) have to be added
+to ensure complete population of the space.
+
+See also Common Mode, Split Mode, Prediction Mode Residual 1, Prediction
+Mode Residual 2, DC Value, Motion Data, Luma DC Residual, Chroma DC
+Residual
+
+\textbf{Vertical Chroma Block Separation}
+
+The separation of chrominance prediction blocks vertically.
+
+\textbf{Vertical Luma Block Separation}
+
+The separation of luminance prediction blocks vertically.
+
+\textbf{Horizontal Offset Residual}
+
+When the Motion Vector has been calculated in the encoder, it comprises
+an indication of the  horizontal and a vertical offsets of the reference
+pixel from the pixel to be calculated. This is transmitted as a
+difference from a value that is predicted using information from
+surrounding Blocks - i.e. as a residual (or difference) from the
+predicted value.
+
+\textbf{Vertical Perspective}
+
+Metadata which describes the Motion Vector element caused by changes in
+perspective.
+
+See also Appendix XXX [Global Motion Compensation]
+
+\textbf{Zoom Rotate Sheer}
+
+A measure of the amount of zoom, rotation and sheer in the image. This
+is used as part of the information provided for Global Motion
+Compensation. The parameters in the bytestream are presented as a
+combination of these parameters in a matrix representation.
+
+See also Appendix XXX [Global Motion Compensation]
+
+\textbf{Zoom Rotation and Sheer Exponent}
+
+A multiplier which allows us to use integers in place of floating point
+in the delivery of the Zoom Rotate Sheer metadata.

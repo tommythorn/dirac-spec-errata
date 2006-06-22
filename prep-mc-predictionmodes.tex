@@ -1,0 +1,30 @@
+Four prediction modes shall be supported by the decoder:
+
+INTRA
+
+REF1ONLY
+
+REF2ONLY
+
+REF1AND2.
+
+These correspond to using DC prediction, using a motion compensated
+prediction from Reference 1 only, using a motion compensated prediction
+from Reference 2 and using a motion compensated prediction composed from
+data from both Reference 1 and Reference 2.
+
+The prediction modes shall be identified with two-bit words as follows: 
+
+INTRA=b00
+
+REF1ONLY=b01
+
+REF2ONLY=b10
+
+REF1AND2=b11
+
+In this way, Reference 1 is used for prediction if and only if
+(PRED\_MODE\&b01) and  Reference 2 is used for prediction if and only if
+(PRED\_MODE\&b10).  
+
+

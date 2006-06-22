@@ -1,0 +1,50 @@
+This section describes the operation of the decode\_coeff(x,y) process
+for a coefficient in position (x,y), within a code block in position
+(i,j).
+
+A value magnitude is decoded by the recipe
+
+SUBBAND[y][x]=uu\_arith\_decode()
+
+The magnitude is then scaled by:
+
+SUBBAND[y][x] *= QF[j][i]
+
+If SUBBAND[y][x] is not zero, an offset is added:
+
+SUBBAND[y][x] += OFFSET[j][i]
+
+If SUBBAND[y][x]>0, then a sign value is decoded
+
+SIGN=binary\_arith\_decode()
+
+and if SIGN is FALSE
+
+SUBBAND[y][x] = -SUBBAND[y][x]
+
+If the frame is an INTRA frame and the subband is the DC band, then the
+coefficient is modified by a prediction:
+
+SUBBAND[y][x] += intra\_dc\_prediction(x,y)
+
+The operation of intra\_dc\_prediction() is defined in Section . 
+
+The derivation of contexts for use in magnitude and sign decoding is
+defined in Sections  and .
+
+After the coefficient has been decoded, then the count of coefficients
+is updated:
+
+COUNT++
+
+if (COUNT>== RESET\_COUNT\_RESET)
+
+{
+
+    COUNT=0
+
+    halve\_all\_counts()
+
+}
+
+

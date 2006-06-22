@@ -1,0 +1,58 @@
+
+Given a single block \verb|b|, there are three different methods for
+predicting the contents of the block; depending upon the block's
+prediction mode \verb|b.prediction_mode|:
+
+\begin{equation*}
+\text{block\_predict}(r,\B,x,y) =
+  \begin{cases}
+    \text{intra\_predict}(\B) & \text{when }\Bpredmode = \predIntra,\\
+    \text{inter\_predict}(r,\B,x,y) & \text{when }\Bpredmode = \predInter \text{ and } r \in \Brefsinuse,\\
+    \text{global\_predict}(r,x,y) & \text{when }\Bpredmode = \predGlobal \text{ and } r \in \Brefsinuse,\\
+    0 & \text{otherwise}
+  \end{cases}
+\end{equation*}
+
+\subsubsection{Intra blocks}
+Intra coded blocks contain a dc residue.\annotate{df}{something about selecting
+which dc component (chroma)}
+
+\begin{equation*}
+\text{intra\_predict}(\B) = \Bdc
+\end{equation*}
+
+\subsubsection{Inter blocks}
+Inter coded blocks contain one or two vectors $\Bv_r$
+
+\providecommand{\vv}[0]{\bigl[\begin{smallmatrix}u\\v\end{smallmatrix}\bigr]}
+\providecommand{\V}[0]{\bigl[\begin{smallmatrix}x\\y\end{smallmatrix}\bigr]}
+\begin{equation*}
+\text{inter\_predict}(r,\B,x,y) =
+  \left\bracevert\begin{aligned}
+    &\text{let } \vv = 2^\lambda\V + \Bv_r \text{ in}\\
+    &\URef_{r,\clip(u, 0, \picWidth-1), \clip(v, 0, \picHeight-1)}
+    \end{aligned}\right.
+\end{equation*}
+\annotate{df}{discuss clipping}
+
+\subsubsection{Global blocks}
+Blocks signalled to use the global motion parameters. Global motion
+compensation is performed on the basis of a dense motion field generated
+using a parameterised model of motion.  A dense motion field is one in
+which there may be a different motion vector for each pixel in the
+predicted picture.
+
+Dirac uses an eight parameter model that allows for pan, zoom, rotation,
+shear and change of perspective.
+
+
+\begin{equation*}
+\text{global\_predict}(r,x,y) =
+  \left\bracevert\begin{aligned}
+    &\text{let } \vv = \Bigl[(2^\lambda\gmA_r\V + 2^\mu\gmB_r)(2^\psi - \gmC_r^\text{T}\V) + 2^{\mu\psi-1} \Bigr] \gg (\mu\psi) \text{ in}\\
+    &\URef_{r, \clip(u, 0, \picWidth-1), \clip(v, 0, \picHeight-1)}
+    \end{aligned}\right.
+\end{equation*}
+
+A more optimal method of calculating the global motion field is shown in
+section~\ref{mc:}.  Any method must be compliant with the above.

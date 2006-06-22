@@ -1,0 +1,54 @@
+This section specifies the aperture used for predicting motion vector
+data, namely those previously decoded motion vector data elements (if
+any) which may be used for prediction.
+
+All motion vector data is differentially decoded. The differential
+element is performed by forming a prediction from previously decoded
+values. Various methods of prediction are used for predicting different
+elements of motion vector data for differential, however in each case
+the data elements used to form the prediction are defined in the same
+way.  Data elements which may be available for prediction are termed the
+nominal prediction aperture. 
+
+Not all values in the nominal prediction aperture may exist, and so will
+not be used to form any prediction. 
+
+MB data prediction aperture
+
+The nominal prediction aperture for macroblock data is defined to be the
+existing macroblocks  to the top, left and above the current MB. For
+macroblocks  on the left-hand side of the frame, but not the top-left
+MB, the aperture consists of only the macroblock above for macroblocks
+on the top of the frame, but not the top-left macroblock the aperture
+consists solely of the macroblock to the left for the top-left
+macroblock the aperture is empty. The nominal aperture for macroblock
+data is illustrated in  below.
+
+
+
+
+Figure  Macroblock prediction aperture
+
+Block motion data prediction aperture
+
+The nominal prediction aperture for block motion data is defined to be:
+the prediction units containing the blocks to the left, top and top-left
+of the top-left block in the current prediction unit. An example
+aperture for different macroblock splittings is shown in . Prediction
+units at the top and left of the frame have prediction aperture
+restricted to those prediction units in the nominal aperture that lie
+within the frame. 
+
+
+
+
+Figure  Prediction aperture for prediction units within a MB.  
+
+Where a prediction unit in the prediction aperture has a value of the
+same type as that being decoded, it forms part of the prediction.
+However, not all prediction units in the prediction aperture may have
+such a value. For example if Reference 2 motion vectors are being
+decoded but the top-left prediction unit only has Reference 1 motion
+vectors, then it will not provide values in the prediction.  
+
+

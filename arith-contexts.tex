@@ -1,0 +1,23 @@
+\begin{comment}
+The decoder shall maintain the statistics relating to the set of
+contexts that may be used in decoding a data element. How these shall be
+initialised is set out in Sections  and . A context is modelled as
+consisting of the following unsigned integer values, which constitute
+its state:
+
+COUNT0
+
+COUNT1
+
+COUNT0 represents a count of the number of zeroes that have occurred in
+the context, COUNT1 a count of the number of ones that have occurred in
+the context. 
+
+From these values WEIGHT, SCALED\_COUNT0 and SCALED\_COUNT1 are derived.
+WEIGHT shall always be equal to COUNT0+COUNT1. WEIGHT shall always be
+less than 1024
+
+SCALED\_COUNT0 is a count of zeroes scaled to a total count of 1024.
+SCALED\_COUNT1 is a count of ones, likewise scaled to a total count of
+1024. The derivation of the scaled counts is specified in Section .
+\end{comment}

@@ -1,0 +1,36 @@
+The Discrete Wavelet Transform (DWT) takes an image and recursively
+decomposes it into sets of horizontal/vertical frequency subbands of low
+and high frequency. The result is a set of data which occupies the same
+total memory space as the original image, however energy is concentrated
+in the components corresponding to the lower frequency subbands.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.9\textwidth]{figs/dwt}
+    \caption{Logical structure of DWT transformed frame}
+    \label{fig:dwt}
+\end{figure}
+
+The inverse transform recursively builds up the image from the lowest
+frequency subbands to the highest.  The forward and inverse transforms
+are capable of perfectly reconstructing the original image.
+
+The DWT used in Dirac has been optimised using a method known as
+lifting.  Lifted wavelet filters have some useful properties:
+\begin{itemize}
+    \item they may filter data in place (i.e. using the same memory for
+    the image, the transformed image and the partially processed
+    subsets).
+
+    \item the filtering operations are shorter than convolutional
+        filters.
+
+    \item the same filters may be used for the inverse and forward
+        transforms.
+\end{itemize}
+
+Part of the forward transform process involves padding the image to
+allow the wavelet transform to opperate correctly.  The padded data is
+also required in the inverse transform, but is discarded afterwards.
+
+

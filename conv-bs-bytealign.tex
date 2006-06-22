@@ -1,0 +1,7 @@
+If a structure is byte aligned the first bit of the structure coincides
+with the first bit of the next byte in the bytestream.
+
+If a structure is byte aligned the previous structure may need to be
+padded with up to 7 bits. These seven padding bits are undefined.
+Decoding the bytestream does not depend on the value of these undefined
+bits.

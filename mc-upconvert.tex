@@ -1,0 +1,59 @@
+Motion compensation is performed against reference pictures that have
+been upconverted by a factor of $2^\lambda$, allowing sub-pixel
+precision in motion estimation.
+
+\begin{equation*}
+\URef_{r,u,v} = \text{upconvert}(\Ref_r,2^\lambda,u,v)
+\end{equation*}
+\annotate{df}{no function}
+
+\subsubsection{Method A: Half-pixel interpolation using ten-tap filter}
+Upconversion by a factor of two is performed using half-pixel
+interpolation with a symmetric ten-tap filter.
+
+\begin{figure}[h!]
+\begin{centering}
+\begin{tabular}{l|ccccc}
+Tap & $t_0$ & $t_1$ & $t_2$ & $t_3$ & $t_4$\\
+\hline
+Value & 167 & -56 & 25 & -11 & 3
+\end{tabular}
+\caption{Interpolation filter coefficients}
+\end{centering}
+\end{figure}
+
+While this filter may appear to be variable separable, due to integer
+rounding, filtering must be performed vertically first, then horizontally.
+
+\begin{equation*}
+\text{upconvertA\_1d}(p,u) =
+  \begin{cases}
+    \displaystyle
+    \clip\left(\left[128
+          + \sum_{i=0}^{4} t_i (p_{\frac{u-1}{2}-i} + p_{\frac{u+1}{2}+i})
+          \right] \gg 8, 0, 2^{\text{\texttt{bit\_depth}}-1} \right) & \text{if $u$ is odd},\\
+    p_{\frac{u}{2}} & \text{otherwise}.
+  \end{cases}
+\end{equation*}
+\annotate{df}{no 2d version}
+
+
+\subsubsection{Method B: Quarter- and eighth-pixel linear interpolation}
+Upconversion by factors of four or eight is achieved by first
+upconverting by a factor of two using method A, then linearly interpolating by a
+factor of two or four respectively:
+
+\begin{equation*}
+\text{upconvertB\_2d}(n,p,u,v) =
+  \left\bracevert\begin{aligned}
+    &\text{let } u' = u \bmod n \text{ in} \\
+    &\text{let } v' = v \bmod n \text{ in} \\
+    &\text{let } a = n^2 (n-u')(n-v')  p_{\frac{u-u'}{n},\frac{v-v'}{n}} \text{ in} \\
+    &\text{let } c = n^2 u'(n-u')  p_{\frac{u-u'}{n},\frac{v+n-v'}{n}} \text{ in} \\
+    &\text{let } b = n^2 v'(n-v')  p_{\frac{u+n-u'}{n},\frac{v-v'}{n}} \text{ in} \\
+    &\text{let } d = n^2 v'u'  p_{\frac{u+n-u'}{n},\frac{v+n-v'}{n}} \text{ in} \\
+    &\Bigl[ a + b + c + d + 2^{2n} \Bigr] \gg 2n
+    \end{aligned}\right.
+\end{equation*}
+\annotate{df}{$\frac{u-u'}{n}$ is $x$}
+

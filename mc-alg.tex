@@ -1,0 +1,34 @@
+
+
+
+
+The pixel $(x,y)$ of the predicted picture $P$ is formed by summing the
+weighted contributions from all the blocks ($\B$) that cover $(x,y)$, for
+each reference.  The pixel $(x,y)$ is covered by no more than four
+blocks in the overlapping region of the block structure, leading to a
+maximum of eight contributions (four from each reference).
+
+
+The motion compensation process is defined as:
+
+\begin{multline*}
+P(x,y) =
+ \left[
+    2^{\tau+\sigma-1} +
+    \displaystyle\sum^{\text{numrefs}}_{r}\, \sum^{\forall \B \text{ at } (x,y)}_{\B}
+      \left\bracevert\begin{aligned}
+        \text{let}\quad& W = \begin{cases}
+                                \W_r &\scriptstyle\text{if numrefs = 1 or } \Brefsinuse = \lbrace0,1\rbrace,\\
+                                2^{\tau-1}   &\scriptstyle\text{if numrefs = 2 and } \Bpredmode = \predIntra,\\
+                                2^\tau &\scriptstyle\text{otherwise.}
+                              \end{cases} \\%
+        \text{in}\quad & W*\text{block\_predict}(r,\B,x,y)*\omega_{x-\Bx, y-\By}
+        \end{aligned}\right.
+ \right]
+   \gg (\tau + \sigma)
+\end{multline*}
+
+\annotate{df}{sigma not defined}
+\annotate{df}{too wide?}
+
+

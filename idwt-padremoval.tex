@@ -1,0 +1,45 @@
+This section defines the decoding process iwt\_pad\_removal().
+
+When carrying out the forward transform in the coder, it is desirable
+that the data is in blocks which permit the iterative subsampling which
+is required as part of the lifting process. For some pictures, the
+natural size of the image may not give rise to an appropriate set of
+values, so padding is inserted. The padding has no useful data and so
+should be discarded.
+
+This process is invoked after iwt\_synthesis(). In this process values
+not used subsequently are discarded.
+
+Values WIDTH and HEIGHT are defined as follows. For Intra frame
+components, if the component is the luma component, the values are set
+as
+
+WIDTH = LUMA\_WIDTH
+
+HEIGHT = LUMA\_HEIGHT
+
+If the component is a chroma component, then
+
+WIDTH = CHROMA\_WIDTH
+
+HEIGHT = CHROMA\_HEIGHT
+
+For Inter frame component data, the values are set as follows. For luma
+components,
+
+WIDTH = MC\_LUMA\_WIDTH
+
+HEIGHT = MC\_LUMA\_HEIGHT
+
+If the component is a chroma component, then
+
+WIDTH = MC\_CHROMA\_WIDTH
+
+HEIGHT = MC\_CHROMA\_HEIGHT
+
+All component data with horizontal index greater than or equal to WIDTH
+or with vertical index greater than or equal to HEIGHT is discarded
+(Figure ??).
+
+[Figure ?? Discarded data values]
+

@@ -1,0 +1,144 @@
+When reading the data from the bytestream, we choose to read in an
+appropriate format, not just in bytes. The different formats used in the
+pseudocode are:
+
+\textbf{read\_bool()}
+
+reads a single bit from the byte stream and returns a Boolean value.
+
+\textbf{fread\_uint(number\_of\_bytes)}
+
+reads and returns the unsigned integer that occupies a fixed length
+format of number\_of\_bytes in the byte stream.
+
+\textbf{read\_uegol()}
+
+reads and returns an unsigned integer in the variable length exp Golomb
+format
+
+\textbf{read\_segol()}
+
+reads and returns an signed integer in the variable length exp Golomb
+format
+
+\textbf{read\_ba(context)}
+
+reads a single arithmetic coded bit from the bytestream and returns a
+Boolean value.
+
+For definition see section XX (Arithmetic Decoding) below.
+
+\textbf{read\_uua(context\_list)}
+
+reads and returns an unsigned integer encoded in the bytestream as an
+arithmetic coded unary binarisation. context\_list is a list of contexts
+for each bin. If the number of contexts in the list is less than the bin
+number then the last context on the list is used. That is a common
+context is used for all the higher bins.
+
+\textbf{Read Arithmetic Coded Unsigned Integer }
+
+\begin{verbatim}
+read\_uua(context_list):
+    context_index = 0 #Bin Number (numbered from zero)
+    max_index = len(context_list) - 1
+    value = 0
+    more = True
+    while (more):
+        if ( read_ba(context_list[context_index]) ):
+            more = False
+        else:
+            value += 1
+            if (context_index < max_index):
+                context_index += 1
+    return value
+\end{verbatim}
+
+\textbf{read\_uuta(context\_list)}
+
+reads and returns an unsigned integer encoded in the bytestream as an
+arithmetic coded truncated unary binarisation. context\_list is a list
+of contexts for each bin. If the number of contexts in the list is less
+than the bin number then the content of the bin is assumed to be 1 (i.e.
+the conditional probability of that bin, the context, is exactly 1).
+
+\textbf{Read Truncated Arithmetic Coded Unsigned Integer }
+\begin{verbatim}
+
+read\_uuta(context_list):
+    context_index = 0 #Bin Number (numbered from zero)
+    max_index = len(context_list) - 1
+    value = 0
+    more = True
+    while (more):
+        if ( read_ba(context_list[context_index]) ):
+            more = False
+        else:
+            value += 1
+            if (context_index < max_index):
+                context_index += 1
+            else:
+                more = False
+    return value
+\end{verbatim}
+
+\textbf{read\_sua(context\_list)}
+
+reads and returns a signed integer encoded in the bytestream as an
+arithmetic coded unary binarisation.  context\_list is a two element
+list. The first element is a  context list for reading the magnitude of
+the signed integer.  The second element is the context for the sign bit.
+The magnitude context list is a list of contexts for each bin. If the
+number of contexts in the magnitude context list is less than the bin
+number then the last context on the list is used. That is a common
+context is used for all the higher bins.
+
+\textbf{Read Arithmetic Coded Signed Integer }
+
+\begin{verbatim}
+read\_sua(context\_list):
+# context_list contains a magnitude context list followed
+# by a sign context
+    #Read magnitude
+    magnitude = read_uua(context_list[0])
+    if ( magnitude==0 ):
+        value = 0
+    else:
+        #Read sign
+        sign = read_ba(context_list[1])
+        #Determine value
+        if ( sign = False):
+            value = magnitude
+        else:
+            value = -magnitude
+    return value
+\end{verbatim}
+
+\textbf{next\_byte()}
+
+In order to define the decoding process it is necessary to assume an
+implementation dependent function for reading bytes from the bitstream.
+This function hereafter is referred to as next\_byte.
+
+When called next\_byte returns the next byte from the bitstream.
+
+\textbf{next\_parse\_code()}
+
+Reads bytes from the stream until it encounters a parse code prefix,
+then reads the parse code and returns its value.
+
+The input to the decoder is a stream of bytes. But to achieve
+compression individual bits are used to pack the data more efficiently.
+So the decoder needs a way to read a sequence of individual bits from
+the byte stream. The procedure to read bits must retain information
+between invocations because sometimes a new byte must be read from the
+stream and sometime not. The process of reading bits from the byte
+stream is, therefore, a state machine.
+
+\textbf{next\_bit()}
+
+Reads and returns the next bit in a sequence of bits
+
+\textbf{read\_sint()}
+
+Reads and returns a signed variable length integer

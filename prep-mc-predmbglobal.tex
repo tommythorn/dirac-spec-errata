@@ -1,0 +1,23 @@
+This section specifies the function decode\_mb\_using\_global(x,y) for a
+macroblock at coordinates (x,y).
+
+MB\_USING\_GLOBAL is decoded differentially with respect to a prediction.
+The reconstruction procedure is 
+
+MB\_USING\_GLOBAL(x,y)=binary\_arith\_decode()+mb\_using\_global\_prediction(x,y)
+( mod 2 )
+
+A single context is used: MB\_USING\_GLOBAL\_CTX.
+
+The prediction function mb\_using\_global\_prediction(x,y) is defined as
+the mean of available previously-decoded predictors in the prediction
+arrangement defined in Section:
+
+if (x>0 \&\& y>0 )
+
+    mb\_using\_global\_prediction(x,y)=( MB\_USING\_GLOBAL (x-1,y)+
+                                                              MB\_USING\_GLOBAL (x-1,y-1)+
+                                                              MB\_USING\_GLOBAL (x,y-1) )/3
+
+It returns a value 0 or 1.
+

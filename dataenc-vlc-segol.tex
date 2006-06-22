@@ -1,0 +1,15 @@
+Signed exp-Golomb data is decoded to produce signed integer values. It
+consists of a uegol-coded unsigned value followed by a sign symbol, if
+the unsigned value is non-zero. The decoding procedure is:
+
+1. Decode an unsigned value value using the uegol(n) decoding procedure.
+Set as VALUE.
+
+2. Then
+\begin{verbatim}
+if ( VALUE )
+{
+    if ( !read\_bits( 1 ) )
+        VALUE = -VALUE
+}
+\end{verbatim}

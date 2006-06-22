@@ -1,0 +1,35 @@
+For the purposes of this specification a subband SUBBAND will be
+identified with a two dimensional data array of coefficients SUBBAND[][]
+where the first index ranges from 0 to SUBBAND\_HEIGHT-1 and the second
+index from 0 to SUBBAND\_WIDTH-1, so that
+
+SUBBAND[y][x]
+
+represents the xth coefficient on row y.
+
+Parents and children
+
+If SUBBAND\_NUM<NUM\_SUBBANDS-3 then the subband has a parent subband. The
+index of the parent subband is given by SUBBAND\_NUM+3.
+
+If a subband has a parent subband then each coefficient has a parent
+coefficient. The coordinates of the parent coefficient to a coefficient
+at coordinates (x,y) are (x>>1,y>>1) in the parent subband. A parent
+coefficient therefore has four children (). Parent subbands and their
+coefficients occur earlier in the bitstream than their children.
+
+
+
+
+Figure  The relationship between child coefficients and their parents
+(shaded).
+
+Orientation
+
+All subbands other than the DC subband have an associated orientation.
+If SUBBAND\_NUM mod 3=1 then the subband is vertically oriented. If
+SUBBAND\_NUM mod 3=2 then the subband is horizontally oriented. If
+SUBBAND\_NUM mod 3=0 then the subband is diagonally oriented.
+
+
+

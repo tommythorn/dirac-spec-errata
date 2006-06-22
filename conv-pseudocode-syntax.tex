@@ -1,0 +1,156 @@
+This description is a simple presentation of the syntax used in this
+specification.
+
+\textbf{Variables}
+
+Variables are strongly typed - but the choice of type is implicit rather
+than being explicitly defined.
+
+Variables are usually local to the procedure in which they are defined.
+Thus the same variable name may refer to different variables in
+different scopes.
+
+Global variables are identified in Appendix XX. There is no formal
+declaration of global variables in the pseudocode as would normally be
+the case in Python.
+
+Variables are passed to procedures by reference. That means they may be
+modified within the procedure and the modifications will be seen by
+subsequent procedures and lines of code.
+
+\textbf{Lists}
+
+Lists in the pseudocode are one dimensional arrays, defined in the
+manner: [1,2,3,4]. Elements of the list are counted from the left,
+starting with zero as the index. E.g:
+
+\begin{verbatim}
+	x 		= [1,2,3,4]
+	x[2] 	= 3
+\end{verbatim}
+
+\textbf{Dictionaries}
+
+Dictionaries in the pseudocode are look-up tables defined in the manner:
+
+$\lbrace a: \alpha , b: \beta, c: \gamma \rbrace$
+
+The look-up parameters a, b and c return values of $\alpha$, $\beta$,
+and $\gamma$  respectively.
+
+\textbf{Flow}
+
+The pseudocode comprises a series of statements, linked by functions and
+flow control statements such as if, while, and for.
+
+The statements do not have a termination character, unlike the ; in C
+for example.  Blocks of statements are indicated by indentation:
+indenting in begins a block, indenting out ends one.
+
+Statements that expect a block (and hence a following indentation) end
+in a colon.
+
+\textbf{if}
+
+The if control evaluates a function, and if true, passes the flow to the
+block of following statement or block of statements. If the control
+evaluates as false, then there is an option to include one or more elif
+controls which offer alternative responses if some other condition is
+true.  If none of the preceding controls evaluate to true, then there is
+the option to include an else control. E.g.
+
+
+\begin{verbatim}
+if control:
+    statement1
+elif anothercontrol:
+    statement2
+else:
+    statement3
+\end{verbatim}
+
+\textbf{for}
+
+The for control repeats a loop for each instance of a variable in a list. E.g.
+
+\begin{verbatim}
+
+for variable in list:
+    statement1
+    statement2
+\end{verbatim}
+
+\textbf{while}
+
+The while control repeats a loop until the switch variable is true. When
+it is false, the loop breaks to the next statement outside the block.
+E.g.
+
+\begin{verbatim}
+while (switch):
+    statement1
+    statement2        # changes value of switch to false
+NextStatement
+\end{verbatim}
+
+\textbf{Functions}
+
+Functions are identified by a function name, and the parameters that are
+passed to the function when it is evaluated.
+
+The function is defined using pseudocode in a block (which does not
+require the def or return  statements which are required in Python. The
+return  statement is optional, depending on functionality). E.g.
+
+\begin{verbatim}
+function (parameter):
+    variable = 2*parameter
+    return variable
+\end{verbatim}
+
+\textbf{Arithmetic}
+
+The following operators are used for arithmetic:
+
+$=$	equals
+
+$+$	addition
+
+$-$	subtraction
+
+$*$	multiplication
+
+$**$	raising preceding variable to the power of the following variable
+
+$//$	truncating division
+
+$/$	simple division
+
+$\%$	indicates modulo division - the remainder after the preceding
+variable has been divided by the following variable
+
+\textbf{Logic}
+
+The following operators are used in logic:
+
+$= =$ 	test of equality of two variables
+
+$<$	less than
+
+$<=$	less than or equal to
+
+$>$	greater than
+
+$>=$	greater than or equal to
+
+\textbf{Bitwise operations}
+
+$>>$	shift all the elements in a bit sequence one step right
+
+$<<$	shift all the elements in a bit sequence one step left
+
+\textbf{Comments}
+
+In many places, we have felt it useful to add comments to the code.
+These are preceded with the \# symbol and do not form part of the main
+code.

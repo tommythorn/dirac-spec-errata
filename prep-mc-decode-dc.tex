@@ -1,0 +1,74 @@
+This section specifies the decoding process for a DC value PU\_DC in a
+prediction unit whose top-left block has coordinates (x,y).
+
+DC values are decoded differentially with respect to a prediction. The
+decoding process is
+
+PU\_DC\_Y = dc\_pred()+su\_arith\_decode()
+
+If CHROMA\_FORMAT is not YONLY then the chroma DC values are also
+decoded:
+
+PU\_DC\_C1 = dc\_pred()+su\_arith\_decode()
+
+PU\_DC\_C2 = dc\_pred()+su\_arith\_decode()
+
+Different contexts are used depending upon the binarisation bins and
+component as per 
+
+
+Component
+
+Bin
+
+Context
+
+Y
+
+1
+
+Y\_DC\_BIN1\_CTX
+
+Y
+
+≥2
+
+Y\_DC\_BIN2+\_CTX
+
+C1
+
+1
+
+C1\_DC\_BIN1\_CTX
+
+C1
+
+≥2
+
+C2\_DC\_BIN2+\_CTX
+
+C2
+
+1
+
+C1\_DC\_BIN1\_CTX
+
+C2
+
+≥2
+
+C2\_DC\_BIN2+\_CTX
+
+
+Table   Contexts for DC value decoding
+
+Prediction 
+
+The prediction process dc\_pred() predicts component DC values for a
+prediction unit as the unbiased mean of available DC values for the
+corresponding component from prediction units in the prediction
+aperture. The prediction aperture is as specified in Section .
+
+DC values in a prediction unit are available if PRED\_MODE is INTRA.
+
+

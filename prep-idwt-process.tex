@@ -1,0 +1,37 @@
+This sections specifies the overall decoding process for coefficients
+within a subband. Data within a subband is divided into code blocks,
+representing rectangular blocks of coefficients. If SPATIAL\_PARTITION is
+TRUE, then subbands may be divided into more than one code block,
+otherwise only a single block is used. The horizontal number of code
+blocks is XNUM\_CODEBLOCKS. The vertical number of code blocks is
+YNUM\_CODEBLOCKS. 
+
+The value of XNUM\_CODEBLOCKS and YNUM\_CODEBLOCKS is derived as per
+Section . 
+
+Before any coefficient data is decoded, a count of coefficients is
+initialised by
+
+COEFF\_COUNT=0
+
+A reset interval COUNT\_RESET is set by 
+
+COUNT\_RESET=max( 25, min( (SUBBAND\_WIDTH*SUBBAND\_HEIGHT)//32, 800 ) )
+
+Code blocks are decoded in raster order. In pseudocode,
+
+for (v=0 ; v<YNUM\_CODEBLOCKS ; ++v)
+
+{
+
+    for (u=0 ; u<XNUM\_CODEBLOCKS ; ++u)
+
+        decode\_code\_block(u,v)
+
+}
+
+The state of the arithmetic decoder, including all contexts is
+maintained between codeblocks.
+
+
+

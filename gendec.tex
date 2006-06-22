@@ -1,0 +1,14 @@
+
+\begin{verbatim}
+mainloop:
+  sync()
+  pi = parse_info()
+  case pi.parse_code of:
+      AccessUnit -> state <- access_unit()
+      Frame      -> frame <- frame_()
+                    process_frame(frame, state)
+
+
+process_frame:
+  
+\end{verbatim}

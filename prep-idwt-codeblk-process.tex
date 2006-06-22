@@ -1,0 +1,71 @@
+This section specifies the operation of the decode\_code\_block(u,v)
+process for a code block in position (u,v).
+
+Code block parameters
+
+The code block in position (u,v) consists of coefficients in positions
+(i,j) such that
+
+XSTART<=i<XSTOP
+YSTART<=j<YSTOP
+
+where
+
+XSTART=(u*SUBBAND\_WIDTH)//XNUM\_CODEBLOCKS
+XSTOP=((u+1)*SUBBAND\_WIDTH)//XNUM\_CODEBLOCKS
+YSTART=(v*SUBBAND\_HEIGHT)//YNUM\_CODEBLOCKS
+YSTOP=((v+1)*SUBBAND\_HEIGHT)//YNUM\_CODEBLOCKS
+
+Skip flag
+
+If the number of code blocks in the subband is greater than 1 i.e.
+XNUM\_CODEBLOCKS>1 or YNUM\_CODEBLOCKS>1, a skip flag is decoded by the
+recipe
+
+SKIP[j][i]=binary\_arithdecode()
+
+If XNUM\_CODEBLOCKS=1 and YNUM\_CODEBLOCKS=1 then SKIP[j][i] is set to
+FALSE.
+
+If SKIP[j][i] is TRUE, then all coefficients within the code block are
+set to zero and code block decoding terminates.
+
+Quantisation parameters
+
+If SKIP[j][i] is FALSE and if MULTI\_QUANT is TRUE, then a quantisation
+index is decoded by the recipe
+
+QF[j][i]=su\_arith\_decode()+QUANT\_INDEX
+
+If there is only one code block or MULTI\_QUANT is FALSE then
+
+QF[j][i]=QUANT\_INDEX
+
+The quantisation factor QUANT\_FACTOR[j][i] and offset value OFFSET[j][i]
+are derived as follows:
+
+QUANT\_FACTOR[j][i]= [NB this differs from software]
+
+OFFSET[j][i]=round( QUANT\_FACTOR[j][i] * 0.375 )
+
+A table of QUANT\_FACTOR and OFFSET values is given in  in Appendix .
+
+Coefficient data
+
+Coefficients within a code block are decoded in raster order according
+to the specification of Section .
+
+If SKIP[j][i] is FALSE then the remaining code block data is decoded by
+the following process
+
+for (y=YSTART ; y<YSTOP ; ++y)
+
+{
+
+    for (x=XSTART ; x<XSTOP ; ++x)
+
+        decode\_coeff(x,y)
+
+}
+
+

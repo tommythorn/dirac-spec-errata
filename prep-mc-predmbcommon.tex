@@ -1,0 +1,24 @@
+This section specifies the function decode\_mb\_split(x,y) for a
+macroblock at coordinates (x,y).
+
+MB\_COMMON is decoded differentially with respect to a prediction. The
+reconstruction procedure is 
+
+MB\_COMMON(x,y)=binary\_arith\_decode()+mb\_split\_prediction(x,y) ( mod 2 )
+
+The MB\_COMMON prediction residue is encoded in the bitstream as a single
+binary bit, with context MB\_COMMON\_CTX.
+
+The prediction function mb\_common\_prediction(x,y) is defined as the mean
+of available previously-decoded predictors in the prediction arrangement
+defined in Section :
+
+if (x>0 \&\& y>0 )
+
+    mb\_common\_prediction(x,y)=( MB\_COMMON (x-1,y)+MB\_COMMON(x-1,y-1)+
+                                                        MB\_COMMON(x,y-1)
+)/3
+
+It returns a value 0 or 1.
+
+
