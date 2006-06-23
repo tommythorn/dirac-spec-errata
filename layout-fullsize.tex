@@ -59,27 +59,27 @@
 \newcounter{indent}
 \newlength{\indentx}
 \setlength{\indentx}{1em}
-\newenvironment{streamsyntax}[2]
+\newenvironment{pseudo}[2]
     {\newcommand{\dfindent}{\\\hline\hspace{\value{indent}\indentx}}
-     \newcommand{\bsIF}[1]{\dfindent\textrm{if (\texttt{##1}):}\stepcounter{indent} & &}
+     \newcommand{\bsIF}[1]{\dfindent\textrm{if (\textrm{##1}):}\stepcounter{indent} & &}
      \newcommand{\bsEND}{\addtocounter{indent}{-1}}
      \newcommand{\bsELSE}{\addtocounter{indent}{-1}\dfindent\textrm{else:}\stepcounter{indent} & &}
-     \newcommand{\bsELSEIF}[1]{\addtocounter{indent}{-1}\dfindent\textrm{else if (\texttt{##1}):}\stepcounter{indent} & &} 
-     \newcommand{\bsWHILE}[1]{\dfindent\textrm{while (\texttt{##1}):}\stepcounter{indent} & &}
-     \newcommand{\bsFOREACH}[2]{\dfindent\textrm{foreach \texttt{##1} in \texttt{##2}:}\stepcounter{indent} & &}
-     \newcommand{\bsFOR}[2]{\dfindent\textrm{for \texttt{##1} to \texttt{##2}:}\stepcounter{indent} & &}
-     \newcommand{\bsRET}[1]{\dfindent\textrm{return \texttt{##1}}\addtocounter{indent}{-1} & &}
-     \newcommand{\bsCODE}[1]{\dfindent\texttt{##1} & &}
-     %\newcommand{\bsITEM}[3]{\dfindent\textbf{\texttt{##1}} & ##2 & ##3}
-     \newcommand{\bsITEM}[3]{\dfindent\textbf{\texttt{##1 = read\_##2()}} & & ##3}
+     \newcommand{\bsELSEIF}[1]{\addtocounter{indent}{-1}\dfindent\textrm{else if (\textrm{##1}):}\stepcounter{indent} & &} 
+     \newcommand{\bsWHILE}[1]{\dfindent\textrm{while (\textrm{##1}):}\stepcounter{indent} & &}
+     \newcommand{\bsFOREACH}[2]{\dfindent\textrm{foreach \textrm{##1} in \textrm{##2}:}\stepcounter{indent} & &}
+     \newcommand{\bsFOR}[2]{\dfindent\textrm{for \textrm{##1} to \textrm{##2}:}\stepcounter{indent} & &}
+     \newcommand{\bsRET}[1]{\dfindent\textrm{return \textrm{##1}}\addtocounter{indent}{-1} & &}
+     \newcommand{\bsCODE}[1]{\dfindent\textrm{##1} & &}
+     %\newcommand{\bsITEM}[3]{\dfindent\textbf{\textrm{##1}} & ##2 & ##3}
+     \newcommand{\bsITEM}[3]{\dfindent\textbf{\textrm{##1 = read\_##2()}} & & ##3}
      \setcounter{indent}{1}
      \hspace{0.5in}
 %     \begin{tabular}{|m{3.75in}|m{0.6in}|m{0.25in}|}
      \begin{tabular}{|m{4.35in}m{0.0in}|m{0.25in}|}
          % firstline is function definition
          \hline
-%         \texttt{#1(#2)} : & \textbf{Type} & \textbf{Ref}
-         \texttt{#1(#2)} : &  & \textbf{Ref}
+%         \textrm{#1(#2)} : & \textbf{Type} & \textbf{Ref}
+         \textrm{#1(#2)} : &  & \textbf{Ref}
     }
     {    % last line is endof function
          \\\hline
