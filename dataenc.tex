@@ -1,18 +1,16 @@
-Data is encoded in the Dirac bitstream in a number of ways. These split
-into two sorts: fixed-length and variable length. The syntax and
-decoding semantics for these formats are described in the succeeding
-sections.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% - This chapter defines how raw and VLC data  - %
+% - is extracted                               - % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-These sections describe how bit sequences shall be interpreted as values
-of various types. For the purposes of this section, a bit sequences are
-numbered arrays of bits which are represented graphically with the first
-bit in the leftmost position:
-
-\begin{verbatim}
-b[0] b[1] b[2] ...
-\end{verbatim}
-
-This order is the order that bits are extracted from the bitstream in
-accordance with the bit packing convention (Section ).
-
-
+\input{dataenc-intro}
+\subsection{Fixed-length code formats}
+\subsubsection{Bool}\input{dataenc-bool}
+\subsubsection{n-bit literal}\input{dataenc-nbitlit}
+\subsubsection{n-byte literal}\input{dataenc-nbytelit}
+\subsection{Variable-length code formats}\input{dataenc-vlc}
+\subsubsection{Unsigned unary uu(n)}\input{dataenc-vlc-uu}
+\subsubsection{Signed unary su(n)}\input{dataenc-vlc-su}
+\subsubsection{Unsigned truncated unary ut(n)}\input{dataenc-vlc-ut}
+\subsubsection{Unsigned exp-Golomb uegol(n)}\input{dataenc-vlc-uegol}
+\subsubsection{Signed exp-Golomb segol(n)}\input{dataenc-vlc-segol}

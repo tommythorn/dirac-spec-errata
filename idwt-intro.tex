@@ -1,0 +1,15 @@
+
+This section defines the process iwt() for reconstructing component data
+from decoded subbands using the Inverse Wavelet Transform (IWT). iwt()
+is invoked in decoding Transform Data units which encapsulate component
+data, if and only if ZERO\_COEFFS is FALSE.
+
+The iwt() process consists of two sub-processes:
+
+1. iwt\_synthesis()
+
+2. iwt\_pad\_removal()
+
+The output of this process is a two-dimensional array DATA[][] of pixel
+data representing Y, U or V component data.
+

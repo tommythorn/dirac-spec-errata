@@ -1,0 +1,128 @@
+
+This section defines the operation of the motion compensation function
+$\mcfunc$.
+
+The arguments to this function are:
+
+\begin{itemize}
+    \item The picture being motion-compensated $\pic$
+    \item Reference pictures (one or two) $\refs$
+    \item Motion compensation parameters $\mcparams$, as produced by the motion
+    vector decoding process defined in Section ??.
+[Consist of: a set of prediction modes, motion vectors, picture weights, block dimensions etc]
+\end{itemize}
+
+The current picture is motion compensated by compensating each component in turn:
+
+\begin{verbatim}
+motion_compensate(refs, mc_params):
+    for c=0 to 2:
+        component_compensate(pic[c], refs[c], mc_params )
+\end{verbatim}
+
+The remainder of this section specifies the operation of $\compmc$ for luma and
+chroma component data.
+
+The $\compmc$ function proceeds by first initialising an array of blocks,
+a block being a set. 
+
+\subsubsection{Blocks}
+
+For convenience we will define a $\block$ data structure, which is a set
+of pixel coordinates $(x,y)$ covering a block in the picture component,
+together with its associated motion vector data:
+
+\begin{itemize}
+    \item A position of the blocks' top left pixel in picture
+    co-ordinates, $(\Bx, \By)$.
+
+    \item A prediction mode, $\Bpredmode$ that gives the prediction mode
+    in use for the block.  Valid values are: $\predIntra$, $\predInter$,
+    $\predGlobal$.
+
+    \item A set of references that the block uses, $\Brefsinuse$.
+    If $\Bpredmode = \predIntra$, then $\Brefsinuse$ is empty, otherwise
+    it is a valid combination of references in use: $\lbrace0\rbrace$,
+    $\lbrace1\rbrace$, $\lbrace0,1\rbrace$.
+
+    \item If $\Bpredmode = \predIntra$ then the block contains three dc
+    components (one for each component of the predicted picture),
+    refered to as $\Bdc$.
+
+    \item If $\Bpredmode = \predInter$ then the block contains a motion
+    vector for each reference the block uses ($\Brefsinuse$), refered to
+    as $\Bv_r, \forall r \in \Brefsinuse$.
+
+    \item If $\Bpredmode = \predGlobal$ then the block contains no
+    additional data, and uses the global motion parameters for each
+    reference the block uses ($\Brefsinuse$).
+  \end{itemize}
+\end{itemize}
+
+
+ Weighting values for each reference picture, $\W_0$ and $\W_1$,
+and a weighting precision, $\tau$ (in bits).
+
+\item General parameters consisting of block dimensions $(\xblen,
+\yblen)$, block seperations $(\xbsep, \ybsep)$ and motion vector
+precision, $\lambda$ (in bits).
+
+\item Optional global motion parameters for each reference consisting of
+a $2\times2$ zoom-rotation-shear matrix $\gmA_0$, $\gmA_1$; a
+$2\times1$ translation vector $\gmB_0$, $\gmB_1$; a $2\times1$
+perspective vector $\gmC_0$, $\gmC_1$; precision values for the $\gmA$
+matricies $\mu_0$, $\mu_1$ (in bits); and precision values for the
+$\gmC$ matricies $\psi_0$, $\psi_1$ (in bits).
+
+\item A set of blocks, each block $\B$ consisting of:
+  \begin{itemize}
+    \item A position of the blocks' top left pixel in picture
+    co-ordinates, $(\Bx, \By)$.
+
+    \item A prediction mode, $\Bpredmode$ that gives the prediction mode
+    in use for the block.  Valid values are: $\predIntra$, $\predInter$,
+    $\predGlobal$.
+
+    \item A set of references that the block uses, $\Brefsinuse$.
+    If $\Bpredmode = \predIntra$, then $\Brefsinuse$ is empty, otherwise
+    it is a valid combination of references in use: $\lbrace0\rbrace$,
+    $\lbrace1\rbrace$, $\lbrace0,1\rbrace$.
+
+    \item If $\Bpredmode = \predIntra$ then the block contains three dc
+    components (one for each component of the predicted picture),
+    refered to as $\Bdc$.
+
+    \item If $\Bpredmode = \predInter$ then the block contains a motion
+    vector for each reference the block uses ($\Brefsinuse$), refered to
+    as $\Bv_r, \forall r \in \Brefsinuse$.
+
+    \item If $\Bpredmode = \predGlobal$ then the block contains no
+    additional data, and uses the global motion parameters for each
+    reference the block uses ($\Brefsinuse$).
+  \end{itemize}
+\end{itemize}
+
+Motion compensation is performed independently on each video
+component\footnote{With scaling of parameters in the cases of
+downsampled chroma components as per section~\ref{mc:scale}.}, is
+defined pixel-wise; Section~\ref{mc:impl} provides some notes for
+performing the process in a block-wise manner.
+
+Throughout this section, the following conventions are used.
+
+\begin{itemize}
+\item $(x,y)$ are co-ordinates in the predicted picture.
+\item $(u,v)$ are co-ordinates in an upconverted reference picture.
+\end{itemize}
+\annotate{df}{coordinate convention is shown in
+fig~\ref{fig:blockcoverage}, but is defined earlier in the spec}
+
+\begin{comment}
+For each component, motion compensation is effected by forming a
+prediction for each pixel within the component and adding it to the
+pixel value. Specifically, for luma components, set
+
+The use of OBMC implies that each pixel may fall into between 1 and 4
+Prediction Units (), and the prediction value is a weighted combination
+of predictions from each prediction unit of which the pixel is a member.
+\end{comment}

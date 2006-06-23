@@ -1,5 +1,16 @@
-This section describes the arithmetic decoding which is
-used to extract wavelet coefficients and Motion Vector data from the
-bytestream.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% - This chapter defines the arithmetic decoding  - %
+% - engine                                        - % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+\input{arith-intro}
+\subsection{Arithmetic decoding engine}\input{arith-engine}
+\subsection{Data input}\input{arith-datainput}
+\subsection{Initialisation}\input{arith-init}
+\subsection{Contexts}\input{arith-contexts}
+\subsection{Decoder functions}\input{arith-decoder}
+\subsubsection{Unsigned unary arithmetic decoding}\input{arith-decoder-uua}
+\subsubsection{Signed unary arithmetic decoding}\input{arith-decoder-sua}
+\subsubsection{Truncated unary arithmetic decoding}\input{arith-decoder-tua}
+\subsubsection{Binary arithmetic decoding}\input{arith-decoder-ba}
+\subsection{Implementation}\input{arith-decoder-impl}

@@ -1,8 +1,18 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% - This chapter defines how motion compensation - %
+% - is done using the motion data                - % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Preamble, we define some commands used in the motion compensation
 %section:
 
-\providecommand{\Ref}[0]{\text{\texttt{Ref}}}
+\providecommand{\pic}[0]{\text{\texttt{pic}}}
+\providecommand{\block}[0]{\text{\texttt{block}}}
+\providecommand{\refs}[0]{\text{\texttt{refs}}}
+\providecommand{\mcparams}[0]{\text{\texttt{mc\_params}}}
+\providecommand{\mcfunc}[0]{\text{\texttt{motion\_compensate()}}}
+\providecommand{\compmc}[0]{\text{\texttt{component\_compensate()}}}
+
 \providecommand{\URef}[0]{\mathfrak{R}}
 \providecommand{\picWidth}[0]{\text{\texttt{pic\_width}}}
 \providecommand{\picHeight}[0]{\text{\texttt{pic\_height}}}
@@ -25,79 +35,17 @@
 \providecommand{\Bdc}[0]{\text{\texttt{b.dc}}}
 \providecommand{\Bv}[0]{\text{\texttt{b.v}}}
 
+NB. Meta-data needed so far.
 
+Picture = Array 0 .. 2 of components
+Component = bool - luma_or_chroma + 2-d array of data of appropriate dims
 
-This section describes how to use block data to derive a prediction for
-a picture based on one or two reference pictures. We have as avaliable
-data:
-
-\begin{itemize}
-\item One or two Reference pictures, $\Ref_0$ and $\Ref_1$, of dimension
-$(\picWidth, \picHeight)$.
-
-\item Weighting values for each reference picture, $\W_0$ and $\W_1$,
-and a weighting precision, $\tau$ (in bits).
-
-\item General parameters consisting of block dimensions $(\xblen,
-\yblen)$, block seperations $(\xbsep, \ybsep)$ and motion vector
-precision, $\lambda$ (in bits).
-
-\item Optional global motion parameters for each reference consisting of
-a $2\times2$ zoom-rotation-shear matrix $\gmA_0$, $\gmA_1$; a
-$2\times1$ translation vector $\gmB_0$, $\gmB_1$; a $2\times1$
-perspective vector $\gmC_0$, $\gmC_1$; precision values for the $\gmA$
-matricies $\mu_0$, $\mu_1$ (in bits); and precision values for the
-$\gmC$ matricies $\psi_0$, $\psi_1$ (in bits).
-
-\item A set of blocks, each block $\B$ consisting of:
-  \begin{itemize}
-    \item A position of the blocks' top left pixel in picture
-    co-ordinates, $(\Bx, \By)$.
-
-    \item A prediction mode, $\Bpredmode$ that gives the prediction mode
-    in use for the block.  Valid values are: $\predIntra$, $\predInter$,
-    $\predGlobal$.
-
-    \item A set of references that the block uses, $\Brefsinuse$.
-    If $\Bpredmode = \predIntra$, then $\Brefsinuse$ is empty, otherwise
-    it is a valid combination of references in use: $\lbrace0\rbrace$,
-    $\lbrace1\rbrace$, $\lbrace0,1\rbrace$.
-
-    \item If $\Bpredmode = \predIntra$ then the block contains three dc
-    components (one for each component of the predicted picture),
-    refered to as $\Bdc$.
-
-    \item If $\Bpredmode = \predInter$ then the block contains a motion
-    vector for each reference the block uses ($\Brefsinuse$), refered to
-    as $\Bv_r, \forall r \in \Brefsinuse$.
-
-    \item If $\Bpredmode = \predGlobal$ then the block contains no
-    additional data, and uses the global motion parameters for each
-    reference the block uses ($\Brefsinuse$).
-  \end{itemize}
-\end{itemize}
-
-Motion compensation is performed independently on each video
-component\footnote{With scaling of parameters in the cases of
-downsampled chroma components as per section~\ref{mc:scale}.}, is
-defined pixel-wise; Section~\ref{mc:impl} provides some notes for
-performing the process in a block-wise manner.
-
-Throughout this section, the following conventions are used.
-
-\begin{itemize}
-\item $(x,y)$ are co-ordinates in the predicted picture.
-\item $(u,v)$ are co-ordinates in an upconverted reference picture.
-\end{itemize}
-\annotate{df}{coordinate convention is shown in
-fig~\ref{fig:blockcoverage}, but is defined earlier in the spec}
-
-\begin{comment}
-For each component, motion compensation is effected by forming a
-prediction for each pixel within the component and adding it to the
-pixel value. Specifically, for luma components, set
-
-The use of OBMC implies that each pixel may fall into between 1 and 4
-Prediction Units (), and the prediction value is a weighted combination
-of predictions from each prediction unit of which the pixel is a member.
-\end{comment}
+\input{mc-intro}
+\subsection{Block coverage}\input{mc-blockcoverage}
+\subsection{Algorithm}\input{mc-alg}
+\subsection{Upconversion}\input{mc-upconvert}
+\subsection{Forming an unweighted block prediction}\input{mc-pred}
+\subsection{Overlapped-block motion compensation weighting matrix}\input{mc-obmc-matrix}
+\subsection{Chominance components}\input{mc-chomascaling}
+\subsection{Notes on precision}\input{mc-precision}
+\subsection{Example implementation}\input{mc-impl}

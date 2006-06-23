@@ -1,166 +1,29 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -       Introductions       - %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% TO DO: separate off the introduction too
 
 \section{Abstract}\input{abstract}
-
 \section{Introduction}
 \subsection{Purpose}\input{intro-purpose}
 \subsection{Scope}\input{intro-scope}
 \subsection{Document structure}\input{intro-docstruct}
 
-\part{Dirac concepts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% - Main body of the document - %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Overview of Dirac video coding (Informative)}
-%\subsection{A general introduction to video compression for beginners}\input{begin-videocoding}
-%\subsection{Outline of the compressino methods used in Dirac}\input{begin-compmethods}
-%\subsection{Prediction using motion compensation}\input{begin-mc}
-%\subsubsection{Types of picture}\input{begin-pictypes}
-%\subsubsection{Blocks}\input{begin-mc-blocks}
-%\subsubsection{Global motion parameters}\input{begin-mc-global}
-%\subsubsection{Accuracy}\input{begin-mc-accuracy}
-%\subsubsection{Intra frames}\input{begin-mc-intra}
-%\subsection{Wavelet tranforms}\input{begin-dwt}
-%\subsubsection{Wavelet analysis}\input{begin-dwt-fwd}
-%\subsubsection{Parent-child relationships}\input{begin-dwt-parentchild}
-%\subsection{Entropy coding}\input{begin-ec}
-%\subsubsection{Entropy coding of wavelets}\input{begin-ec-dwt}
-%\subsubsection{Entropy coding of motion vectors}\input{begin-ec-mc}
-%\subsection{Bytestream}\input{begin-bs}
+\part{Dirac concepts}\input{dirac-concepts}
+\part{Stream access}\input{stream-access}
+\part{Stream parsing and interpretation}\input{parsing}
+\part{Decoding operations}\input{decoding-ops}
 
-\clearpage
-\section{Logical constructs used in Dirac}\input{logicalstruct-intro}
-%\subsection{Sequence}\input{logicalstruct-sequence}
-%\subsection{Parse unit}\input{logicalstruct-parseunit}
-%\subsection{Access unit}\input{logicalstruct-accessunit}
-%\subsection{Frames}\input{logicalstruct-frames}
-%\subsection{Coordinate systems}\input{logicalstruct-coordinates}
-%\subsection{Frame ordering}\input{logicalstruct-frameordering}
-%\subsection{Wavelet transform}\input{logicalstruct-dwt}
-%\subsection{Subband coding}\input{logicalstruct-subbands}
-%\subsection{Blocks}\input{logicalstruct-blocks}
-%\subsection{Local motion compensation}\input{logicalstruct-localmc}
-%\subsection{Global motion compensation}\input{logicalstruct-globalmc}
-%\subsection{Superblocks}\input{logicalstruct-superblocks}
-%\subsection{Arithmetic coding}\input{logicalstruct-arithcoding}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -      Appendices etc       - %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\clearpage
-\section{The conventions used in the specification}\input{conv-intro}
-%\subsection{Pictorial representation}\input{conv-parse-diagrams}
-%\subsection{Pseudocode}\input{conv-pseudocode}
-%\subsection{The syntax of the pseudocode}\input{conv-pseudocode-syntax}
-%\subsection{Reading data}\input{conv-bs-reading}
-%\subsection{Byte alignment}\input{conv-bs-bytealign}
-%\subsection{Default parameters}\input{conv-bs-defaults}
-%\subsection{Numbering of parse diagrams}\input{conv-parse-diagnums}
-
-\clearpage
-\section{Semantics (Meaning of terms)}\input{semantics-intro}
-%\subsection{Static and synchronisation parameters}\input{semantics-auh}
-%\subsection{Motion vector parameters}\input{semantics-mv}
-%\subsection{Wavelet parameters}\input{semantics-dwt}
-
-\part{Stream access}
-
-\section{Data encodings}\input{dataenc}
-\subsection{Fixed-length code formats}
-\subsubsection{Bool}\input{dataenc-bool}
-\subsubsection{n-bit literal}\input{dataenc-nbitlit}
-\subsubsection{n-byte literal}\input{dataenc-nbytelit}
-\subsection{Variable-length code formats}\input{dataenc-vlc}
-\subsubsection{Unsigned unary uu(n)}\input{dataenc-vlc-uu}
-\subsubsection{Signed unary su(n)}\input{dataenc-vlc-su}
-\subsubsection{Unsigned truncated unary ut(n)}\input{dataenc-vlc-ut}
-\subsubsection{Unsigned exp-Golomb uegol(n)}\input{dataenc-vlc-uegol}
-\subsubsection{Signed exp-Golomb segol(n)}\input{dataenc-vlc-segol}
-
-\clearpage
-\section{Arithmetic decoding}\input{arith}
-\subsection{Arithmetic decoding engine}\input{arith-engine}
-\subsection{Data input}\input{arith-datainput}
-\subsection{Initialisation}\input{arith-init}
-\subsection{Contexts}\input{arith-contexts}
-\subsection{Decoder functions}\input{arith-decoder}
-\subsubsection{Unsigned unary arithmetic decoding}\input{arith-decoder-uua}
-\subsubsection{Signed unary arithmetic decoding}\input{arith-decoder-sua}
-\subsubsection{Truncated unary arithmetic decoding}\input{arith-decoder-tua}
-\subsubsection{Binary arithmetic decoding}\input{arith-decoder-ba}
-\subsection{Implementation}\input{arith-decoder-impl}
-
-\part{Stream parsing and interpretation}
-
-\clearpage
-\section{Bytestream specification}\input{bs-intro}
-\subsection{Syntactic specification}\input{bs-syntax}
-\subsection{Semantic specification}\input{bs-semantics}
-
-\clearpage
-
-\part{Decoding operations}
-
-\section{Picture decoding process}
-
-\section{preparing decoded data for idwt}
-\subsection{Subband Coefficient Data decoding}\input{prep-idwt}
-\subsection{Decoded subband data conventions}\input{prep-idwt-conventions}
-\subsection{Overall subband decoding process}\input{prep-idwt-process}
-\subsection{Number and dimension of code blocks}\input{prep-idwt-codeblk-dim}
-\subsection{Code block decoding process}\input{prep-idwt-codeblk-process}
-\subsection{Subband coefficient decoding process}\input{prep-idwt-coef-process}
-\subsection{Magnitude context modelling}\input{prep-idwt-ctxt-magnitude}
-\subsection{Sign context modelling}\input{prep-idwt-ctxt-sign}
-\subsection{Skip parameter context modelling}\input{prep-idwt-ctxt-skip}
-\subsection{Quantisation index context modelling}\input{prep-idwt-ctxt-quantindex}
-\subsection{Context initialisation}\input{prep-idwt-ctxt-init}
-\subsection{Intra DC subband prediction}\input{prep-idwt-pred-dc}
-
-\clearpage
-\section{preparing decoded data for mc}
-\subsection{Block Motion Data decoding}\input{prep-mc-decoding}
-\subsection{Motion vector data prediction apertures}\input{prep-mc-predapeature}
-\subsection{MB data}\input{prep-mc-mbdata}
-\subsection{MB\_USING\_GLOBAL decoding}\input{prep-mc-predmbglobal}
-\subsection{MB\_SPLIT decoding}\input{prep-mc-predmbsplit}
-\subsection{MB\_COMMON decoding}\input{prep-mc-predmbcommon}
-\subsection{Prediction modes}\input{prep-mc-predictionmodes}
-\subsection{Block motion data decoding}\input{prep-mc-decode-blkmotion}
-\subsection{Block prediction mode decoding}\input{prep-mc-decode-predictionmode}
-\subsection{Block motion vector decoding}\input{prep-mc-decode-mv}
-\subsection{Decoding of DC values}\input{prep-mc-decode-dc}
-\subsection{Motion vector data context initialisation}\input{prep-mc-ctxt-init}
-
-
-\clearpage
-\section{Inverse discrete wavelet transform}\input{idwt}
-\subsection{IWT synthesis operation}\input{idwt-synthesis}
-\subsection{Removal of IWT pad values}\input{idwt-padremoval}
-\subsection{Vertical and horizontal synthesis}\input{idwt-vhsynthesis}
-\subsection{Interleaving}\input{idwt-interleaving}
-\subsection{One-dimensional synthesis}\input{idwt-1dsynthesis}
-\subsection{Integer lifting}\input{idwt-lifting}
-\subsection{avaliable filters}\input{idwt-filters}
-
-
-
-\clearpage
-\section{Motion compensation}\input{mc}
-\subsection{Block coverage}\input{mc-blockcoverage}
-\subsection{Algorithm}\input{mc-alg}
-\subsection{Upconversion}\input{mc-upconvert}
-\subsection{Forming an unweighted block prediction}\input{mc-pred}
-\subsection{Overlapped-block motion compensation weighting matrix}\input{mc-obmc-matrix}
-\subsection{Chominance components}\input{mc-chomascaling}
-\subsection{Notes on precision}\input{mc-precision}
-\subsection{Example implementation}\input{mc-impl}
-
-
-
-
-
-
-
-
-
-
-
-
+% TO DO: separate off the appendices also
 
 \appendix
 \section{Arithmetic Encoding}\input{arith-encoder}
@@ -179,10 +42,10 @@
 \subsection{Colour matrix}\input{vidsys-colourmatrix}
 \subsection{Transfer charactaristics}\input{vidsys-transfer}
 
-\clearpage
-\section{genralized decoder}\input{gendec}
+%\clearpage
+%\section{genralized decoder}\input{gendec}
 
-\clearpage
-\section{References}
-\annotate{shas}{I hope we do not have any references - it would be nice
-to be freestanding.}
+%\clearpage
+%\section{References}
+%\annotate{shas}{I hope we do not have any references - it would be nice
+%to be freestanding.}
