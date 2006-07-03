@@ -1,16 +1,22 @@
-\begin{comment}
 The arithmetic decoding process accesses data in a contiguous block of
-length LENGTH bytes in the bitstream (LENGTH=MV\_DATA\_LENGTH or
-SUBBAND\_DATA\_LENGTH depending on whether motion data or subband
-coefficient data is being decoded).
+length $block\_data\_length$. These bits are sufficient to allow for the
+decoding of all coefficients. However, the specification of arithmetic
+decoding operations in this section may cause further bits to be read,
+even though they are not required for determining decoded values. For this
+reason a read function $read\_bita()$ is defined which returns $0$ if the
+bounds of this block of data have been exceeded:
 
-A function input\_bit() is defined such that: if less than LENGTH full
-bytes of data have been input into the arithmetic decoding process,
-input\_bit() shall return the next bit in bitstream order according to
-the conventions of Section ; otherwise 0 shall be returned.
+\begin{pseudo}{read\_bita}{}
+\bsIF{bytes\_left==0}
+\bsRET{0}
+\bsELSE
+\bsRET{read\_bit()}
+\bsEND
+\end{pseudo}
 
 \begin{informative}
-When decoding some implementations may require more than LENGTH bytes of
-data input in order to stabilise and decode the last values.
+The Dirac arithmetic decoding engine uses 16 bit words, and so no more than 16
+additional bits can be read beyond the end of the block. Hence it is sufficient
+to read in the entire block of data and pad the end with two zero bytes to
+avoid a branch condition with each input bit.
 \end{informative}
-\end{comment}

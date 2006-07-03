@@ -64,22 +64,5 @@ shift_bit_in():
     low &= 0xFFFF
     code << 1
     code &= 0xFFFF
-    code += read_bit()
-\end{verbatim}
-
-Read Next Coded Bit
-\begin{verbatim}
-read_bit():
-# Function returns a value 0 or 1, not a Boolean
-    if ( bits_left == 0 ):
-        if ( bytes_left == 0 ):
-            bit_buffer = 0
-        else:
-            bit_buffer = next_byte()
-            bytes_left -= 1
-        bits_left = 8
-    value == bit_buffer & 0x1
-    bit_buffer >>= 1
-    bit_count -= 1
-    return value
+    code += read_bita()
 \end{verbatim}
