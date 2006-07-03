@@ -1,0 +1,57 @@
+This section defines the operation of the $read\_sinta(context\_set)$ function
+ for extracting integer values from a block of arithmetically coded data.
+
+Integer values are binarised using interleaved exp-Golomb binarisation as per
+Section ??. The set $context\_set$ of contexts therefore consists of three parts: 
+a set of follow contexts, $context\_set[follow]$, a single data context 
+$context\_set[data]$ and a sign context $context\_set[sign]$.
+
+Each follow context is used for decoding the corresponding follow bit, with the
+last follow context being used for all subsequent follow bits (if any) also.
+
+The $read\_sinta()$ process is identical to the $read\_sint()$ process
+specified in Section ??, except that instances of $read\_bool()$ are replaced
+by instances of $read\_ba()$ using suitable contextualisation.
+
+
+\begin{pseudo}{read\_uinta()}{context\_set}
+
+\end{pseudo}
+\begin{pseudo}{read\_sinta()}{context\_set}
+\bsCODE{value=read\_unita(context_set)}
+\bsIF{value != 0}
+  \bsIF{read\_ba(\text{state[contexts]}[context_set[sign])] == \true}
+    \bsCODE{value=-value}
+  \bsEND
+\bsEND
+\end{pseudo}
+
+Read Arithmetic Coded Unsigned Integer
+\begin{verbatim}
+read_uua(context_list):
+
+    value = 0
+    context_index = 0 #Bin Number (numbered from zero)
+    max_index = len(context_list) - 1
+    # Read first bit
+    context = context_list[context_index]
+    if ( read_ba(context) ):
+        more = False
+    else:
+        value += 1
+        more = True
+    context_list[context_index] = context
+    # Read remaining bits
+    while ( more ):
+        if ( context_index < max_index):
+            context_index += 1
+        context = context_list[context_index]
+
+        if ( read_ba(context) ):
+            more = False
+        else:
+            value += 1
+            more = True
+        context_list[context_index] = context
+    return value
+\end{verbatim}
