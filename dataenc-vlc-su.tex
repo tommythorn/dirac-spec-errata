@@ -1,21 +1,2 @@
-Signed unary data is represents signed integer values. It consists of a
-uu-coded unsigned value followed by a sign symbol, if the unsigned value
-is non-zero. The sign symbol is 1 for positive and 0 for negative:
 
-\begin{figure}[h]
-\begin{tabular}{c|c}
-Value & Binarisation \\
-\hline\\
-0     & 1\\
-1     & 011\\
--1    & 010\\
-2     & 0011\\
--2    & 0010\\
-\dots & \dots\\
-n     & $\underbrace{0\dots0}_n 11$\\
--n    & $\underbrace{0\dots0}_n 10$
-\end{tabular}
-
-\caption{Conversion from signed unary to binary}
-\end{figure}
 

@@ -1,41 +1,64 @@
-Unsigned exp-Golomb data is decoded to produce unsigned integer values.
-The format consists of two parts. A prefix part, consisting of n zeroes
-followed by a one, indicates how many further bits to read. A suffix
-part, consisting of n bits, is then used to determine the value. The
-decoding procedure for extracting a value VALUE is mathematically
-equivalent to:
+This section defines the unsigned interleaved exp-Golomb data format and the operation
+of the $read\_uint()$ function. 
 
-\begin{verbatim}
-COUNT= 0
-while( !read\_bits(1) ) {
-    COUNT++
-}
-VALUE = (1<<COUNT) -1 + read\_bits( COUNT )
-\end{verbatim}
+Unsigned interleaved exp-Golomb data is decoded to produce unsigned
+ integer values.The format consists of two interleaved parts, which are interleaved
+in the encoding, and each code is an odd number, $2K+1$ bits, in length.
 
-where the value returned by read\_bits( COUNT ) is interpeted as a binary
-representation of an unsigned integer with most-significant bit first.
-The bit sequences corresponding to some values are shown in  .
+The $K+1$ bits in the even positions (counting from zero) are the "follow" bits, and 
+the $K$ bits in the odd positions are the "data" bits which are used to construct
+the decoded value itself. A follow bit value of $0$ indicates a subsequent data bit,
+whereas a follow bit value of $1$ terminates the code:
+
+$0 d_{K-1} 0 d_{K-2} ... 0 d_{0} 1$
+
+The data bits themselves are the binary representation 
+$d_{K-1} d_{K-2}... d_0$ of the first $K$ bits of the $K+1$-bit number 
+$N+1=d_{K-1} d_{K-2}... d_0$, where $N$ is the number to
+be decoded. A table of encodings of the first 10 values is shown in figure
+\ref{uegolcodings}.
 
 \begin{figure}[h]
-\begin{tabular}{c|c}
+\begin{tabular}{l|c}
 Bit sequence & Decoded value \\
 \hline\\
-1       &  0\\
-010     &  1\\
-011     &  2\\
-00100   &  3\\
-00101   &  4\\
-00110   &  5\\
-00111   &  6\\
-0001000 &  7\\
-0001001 &  8\\
-0001010 &  9\\
-0001011 & 10
+1                 &  0\\
+0 0 1             &  1\\
+0 1 1             &  2\\
+0 0 0 0 1         &  3\\
+0 0 0 1 1         &  4\\
+0 1 0 0 1         &  5\\
+0 1 0 1 1         &  6\\
+0 0 0 0 0 0 1     &  7\\
+0 0 0 0 0 1 1     &  8\\
+0 0 0 1 0 0 1     &  9\\
+
 \end{tabular}
 
-\caption{Example conversions from uegol-coded values to binary}
+\caption{Example conversions from unsigned interleaved exp-Golomb-coded 
+values to unsigned integers \label{uegolcodings}}
 \end{figure}
 
+Although apparently complex, this code has a very simple decoding loop. The 
+$read\_uint()$ function returns an unsigned integer value and is defined by the recipe:
+
+\begin{pseudo}{read\_uint}{}
+\bsCODE{value = 1}
+\bsWHILE{read\_bool()== \false}
+  \bsCODE{value \ll = 1}
+  \bsIF{read\_bool()}
+    \bsCODE{value += 1}
+  \bsEND
+\bsEND
+\bsCODE{value -= 1}
+\bsRET{value}
+
+\end{pseudo}
 
 
+\begin{informative}
+Conventional exp-Golomb coding places all "follow" bits at the beginning as a prefix. This is
+easier to read, but requires that a count of the prefix length be maintained. Values can only
+be decoded in two loops - the prefix followed by the data bits. Interleaved exp-golomb 
+coding allows values to be decoded in a single loop, without the need for a length count.
+\end{informative}

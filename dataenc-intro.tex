@@ -1,16 +1,7 @@
-Data is encoded in the Dirac bitstream in a number of ways. These split
-into two sorts: fixed-length and variable length. The syntax and
-decoding semantics for these formats are described in the succeeding
-sections.
+Data is encoded in the Dirac bitstream in three basic ways: fixed-length
+bit-wise and byte-wise encodings; variable-length codes; and arithmetic encoding.
 
-These sections describe how bit sequences shall be interpreted as values
-of various types. For the purposes of this section, a bit sequences are
-numbered arrays of bits which are represented graphically with the first
-bit in the leftmost position:
-
-\begin{verbatim}
-b[0] b[1] b[2] ...
-\end{verbatim}
-
-This order is the order that bits are extracted from the bitstream in
-accordance with the bit packing convention (Section ).
+This section defines how data bits are to be extracted from the bitstream and how
+sequences of bits are to be interpreted as values of various types using fundamental
+data-reading functions, covering encodings of the first two sorts. The extraction
+of arithmetic-encoded data is defined in Section \ref{arithdecoding}.

@@ -1,0 +1,38 @@
+\label{bitpacking}
+
+This section defines the operation of the $read\_bit()$, $read\_byte()$ 
+and $byte\_align()$ functions used for direct access to the Dirac stream.
+
+Access to the Dirac stream is bytewise, and a decoder is deemed to maintain
+a copy of the current byte, \CurrentByte, and an index to the next bit
+to be read, \NextBit. \NextBit is an integer from 0 (least-significant bit) to 7 
+(most-significant bit). Bits within bytes are accessed from the msb first to the
+lsb.
+
+Each access unit and individual frame is a whole number of bytes. Decoding from the
+start of an access unit, \NextBit is set to 7.
+
+The $read\_byte()$ function returns the next byte in the Dirac stream and sets
+\NextBit to 7.
+
+The $read\_bit()$ function is defined by
+
+\begin{pseudo}{read\_bit}{}
+\bsIF{\NextBit < 0}
+\bsCODE{\CurrentByte = read\_byte()}
+\bsEND
+\bsCODE{bit = ( \CurrentByte \gg \NextBit ) \& 1 }
+\bsCODE{\NextBit -= 1}
+\bsRET{bit}
+\end{pseudo}
+
+The $byte\_align()$ function discards data in the current byte and begins data access
+at the next byte, unless input is already at the beginning of a byte. This is used to 
+ensure that a whole number of bytes are read before
+beginning reading a new stream element.
+
+\begin{pseudo}{byte\_align()}{}
+\bsIF{\NextBit != 7}
+\bsCODE{\CurrentByte = read\_byte()}
+\bsEND
+\end{pseudo}
