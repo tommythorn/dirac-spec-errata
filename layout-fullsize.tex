@@ -65,6 +65,8 @@
 \newcounter{indent}
 \newlength{\indentx}
 \setlength{\indentx}{1em}
+
+% Environment for pseudocode with a function declaration %
 \newenvironment{pseudo}[2]
     {\newcommand{\dfindent}{\\\hline\hspace{\value{indent}\indentx}}
      \newcommand{\bsIF}[1]{\dfindent\text{if (\text{$##1$}):}\stepcounter{indent} & &}
@@ -72,26 +74,49 @@
      \newcommand{\bsELSE}{\addtocounter{indent}{-1}\dfindent\text{else:}\stepcounter{indent} & &}
      \newcommand{\bsELSEIF}[1]{\addtocounter{indent}{-1}\dfindent\text{else if (\text{$##1$}):}\stepcounter{indent} & &} 
      \newcommand{\bsWHILE}[1]{\dfindent\text{while (\text{$##1$}):}\stepcounter{indent} & &}
-     \newcommand{\bsFOREACH}[2]{\dfindent\text{foreach \text{$##1$} in \text{$##2$}:}\stepcounter{indent} & &}
+     \newcommand{\bsFOREACH}[2]{\dfindent\text{for each \text{$##1$} in \text{$##2$}:}\stepcounter{indent} & &}
      \newcommand{\bsFOR}[2]{\dfindent\text{for \text{$##1$} to \text{$##2$}:}\stepcounter{indent} & &}
-     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}}\addtocounter{indent}{-1} & &}
+%     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}}\addtocounter{indent}{-1} & &}
+     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}} & &}
      \newcommand{\bsCODE}[1]{\dfindent\text{$##1$} & &}
-     %\newcommand{\bsITEM}[3]{\dfindent\textbf{\text{##1}} & ##2 & ##3}
      \newcommand{\bsITEM}[3]{\dfindent\text{$##1 = read\_##2()$} & & ##3}
      \setcounter{indent}{1}
      \hspace{0.5in}
-%     \begin{tabular}{|m{3.75in}|m{0.6in}|m{0.25in}|}
      \begin{tabular}{|m{4.2in}m{0.0in}|m{0.4in}|}
          % firstline is function definition
          \hline
-%         \text{#1(#2)} : & \textbf{Type} & \textbf{Ref}
-         \text{$#1(#2)$} : &  & \textbf{Ref}
+         \text{$#1(#2)$} : &  & %\textbf{Ref}
     }
-    {    % last line is endof function
+    {    % last line is end of function
          \\\hline
          \end{tabular}
          }
 
+% Environment for pseudocode without a function declaration %
+\newenvironment{pseudo*}[0]
+    {\newcommand{\dfindent}{\\\hline\hspace{\value{indent}\indentx}}
+     \newcommand{\bsIF}[1]{\dfindent\text{if (\text{$##1$}):}\stepcounter{indent} & &}
+     \newcommand{\bsEND}{\addtocounter{indent}{-1}}
+     \newcommand{\bsELSE}{\addtocounter{indent}{-1}\dfindent\text{else:}\stepcounter{indent} & &}
+     \newcommand{\bsELSEIF}[1]{\addtocounter{indent}{-1}\dfindent\text{else if (\text{$##1$}):}\stepcounter{indent} & &} 
+     \newcommand{\bsWHILE}[1]{\dfindent\text{while (\text{$##1$}):}\stepcounter{indent} & &}
+     \newcommand{\bsFOREACH}[2]{\dfindent\text{for each \text{$##1$} in \text{$##2$}:}\stepcounter{indent} & &}
+     \newcommand{\bsFOR}[2]{\dfindent\text{for \text{$##1$} to \text{$##2$}:}\stepcounter{indent} & &}
+%     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}}\addtocounter{indent}{-1} & &}
+     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}} & &}
+     \newcommand{\bsCODE}[1]{\dfindent\text{$##1$} & &}
+     \newcommand{\bsITEM}[3]{\dfindent\text{$##1 = read\_##2()$} & & ##3}
+     \setcounter{indent}{1}
+     \hspace{0.5in}
+     \begin{tabular}{|m{4.2in}m{0.0in}|m{0.4in}|}
+
+         \hline
+          &  & 
+    }
+    {    % last line is end of function part
+         \\\hline
+         \end{tabular}
+         }
 \tableofcontents
 \clearpage
 \input{spec-structure}
