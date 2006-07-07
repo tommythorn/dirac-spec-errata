@@ -1,4 +1,17 @@
+\label{arithcontexts}
+
 [Contexts will exist in a state array. Will be accessed via integer indices]
+
+
+An individual context is reset by halving the counts of $0$ and $1$ and ensuring that
+these counts do not reach zero:
+
+\begin{pseudo}{reset\_context}{index}
+\bsCODE{\Contexts[0] = \Contexts[0]//2}
+\bsCODE{\Contexts[0] += 1}
+\bsCODE{\Contexts[1] = \Contexts[1]//2}
+\bsCODE{\Contexts[1] += 1}
+\end{pseudo}
 
 \begin{comment}
 The decoder shall maintain the statistics relating to the set of

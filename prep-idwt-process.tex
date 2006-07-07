@@ -1,37 +1,185 @@
-This sections specifies the overall decoding process for coefficients
-within a subband. Data within a subband is divided into code blocks,
-representing rectangular blocks of coefficients. If SPATIAL\_PARTITION is
-TRUE, then subbands may be divided into more than one code block,
-otherwise only a single block is used. The horizontal number of code
-blocks is XNUM\_CODEBLOCKS. The vertical number of code blocks is
-YNUM\_CODEBLOCKS. 
+\label{subbanddecodeprocess}
 
-The value of XNUM\_CODEBLOCKS and YNUM\_CODEBLOCKS is derived as per
-Section . 
+This section specifies the process $subband\_decode(level,orient)$ for coefficients
+within a subband at level $level$ ($0$ to \TransformDepth) and of orientation $orient$
+(\LL, \LH, \HL, or \HH). 
 
-Before any coefficient data is decoded, a count of coefficients is
-initialised by
+\subsubsection{Subband header and codeblock loop}
 
-COEFF\_COUNT=0
+This section specifies the operation of the $subband\_decode(data, level, orient)$
+function for decoding a subband at level $level$ and of orientation $orient$.
 
-A reset interval COUNT\_RESET is set by 
+\paragraph{Initialisation\newline}
 
-COUNT\_RESET=max( 25, min( (SUBBAND\_WIDTH*SUBBAND\_HEIGHT)//32, 800 ) )
-
-Code blocks are decoded in raster order. In pseudocode,
-
-for (v=0 ; v<YNUM\_CODEBLOCKS ; ++v)
-
-{
-
-    for (u=0 ; u<XNUM\_CODEBLOCKS ; ++u)
-
-        decode\_code\_block(u,v)
-
-}
-
-The state of the arithmetic decoder, including all contexts is
-maintained between codeblocks.
+The $subband\_decode()$ process begins by reading a length code. If this length is
+zero, then the subband is deemed to be skipped and all coefficients are set to zero
+before exiting.
 
 
+\begin{pseudo*}
+\bsITEM{length}{uint}
+\bsIF{length == 0}
+  \bsFOR{y=0}{subband\_height(level)-1}
+    \bsFOR{x=0}{subband\_width(level)-1}
+    \bsCODE{band[y][x] = 0}
+    \bsEND
+  \bsEND
+  \bsRET{}
+\bsEND
+\end{pseudo*}
 
+If $length!=0$ then the subband coefficient decoding process is initialised by
+setting up arithmetic decoding, initialising the coefficient count, reading
+the quantisation index and byte-aligning the subsequent read operations.
+
+\begin{pseudo*}
+\bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
+\bsCODE{\CoefficientCount=0}
+\bsCODE{quant\_index = read\_uint()}
+\bsCODE{byte\_align()}
+\end{pseudo*}
+
+Note that byte alignment only occurs if $length$ is non-zero: a skipped 
+subband is not byte-aligned.
+
+\paragraph{Codeblocks\newline}
+
+Data within a subband is divided into code blocks,
+representing rectangular blocks of coefficients. The numbers of codeblocks
+in each subband are determined in decoding the transform header, as specified
+in Section \ref{transformheader} [NB: Tim's spec is wrong in that the limit on
+the number of code blocks depends on the *chroma* dimensions ie so that the
+chroma code blocks size is >=4. His call to $subband\_width/height$ doesn't first 
+set the component dimensions to be the chroma dimensions. Could just make this a 
+matter of compliancy rather than setting the numbers].
+
+The overall subband decoding process loops over all the code blocks after initialising the
+arithmetic decoding engine, and setting quantisers. There is a different code block decoding
+process for Intra DC bands, since values are coded using spatial prediction.
+
+\begin{pseudo*}
+  \bsCODE{band = data[level][orient]}
+  \bsIF{level>1}
+  \bsCODE{parent = data[level-1][orient]}
+  \bsELSE
+    \bsCODE{parent = []}
+  \bsEND
+  \bsFOR{y=0}{\Codeblocks[level][vertical]-1}
+    \bsFOR{x=0}{\Codeblocks[level][horizontal]-1}
+      \bsCODE{codeblock(band,parent,orient,quant\_index,y,x)}{\ref{codeblocks}}
+    \bsEND
+  \bsEND
+
+  \bsIF{IsIntra() \&\& level==0}
+    \bsCODE{intra\_dc\_prediction(band,level)}{\ref{intradcprediction}}
+  \bsEND
+
+\bsEND
+
+\end{pseudo*}
+
+
+\subsubsection{Decoding subband codeblocks}
+
+\label{codeblocks}
+
+This section defines the operation of the 
+$codeblock(band,parent,orient,quant\_index,y,x)$ function, which decodes a 
+codeblock in position $(x,y)$ and populates it with reconstructed 
+wavelet coefficients (figure ??).
+
+[Include a figure here]
+
+\paragraph{Codeblock dimensions\newline}
+
+The codeblock covers coefficients in the horizontal range $left$ to $right-1$ and in the vertical
+range $bottom$ to $top-1$ where these values are defined by:
+
+\begin{eqnarray*}
+  left & = & (subband\_width(level)*x)//\Codeblocks[level][horizontal] \\
+  right & = & (subband\_width(level)*(x+1)//\Codeblocks[level][horizontal] \\
+  bottom & = & (subband\_height(level)*y)//\Codeblocks[level][vertical] \\
+  top & = & (subband\_height(level)*(y+1)//\Codeblocks[level][vertical]
+\end{eqnarray*}
+
+\paragraph{Codeblock decode process\newline}
+
+The codeblock decoding process is defined as:
+
+\begin{pseudo}{codeblock}{band, parent,orient,quant\_index,y,x}
+\bsCODE{zero\_block\_flag=set\_zero\_flag()}{\ref{zeroblockflag}}
+\bsIF{zero\_block\_flag == \true}
+  \bsFOR{v=bottom}{top-1}
+    \bsFOR{h=left}{right-1}
+      \bsCODE{band[v][h] = 0}
+    \bsEND
+  \bsEND
+\bsELSE
+  \bsCODE{quant\_idx += quant\_offset()}{\ref{blockquantidx}}
+  \bsFOR{v=bottom}{top-1}
+    \bsFOR{h=left}{right-1}
+      \bsCODE{coeff\_decode(band,parent,orient,quant_idx,v,h)}{\ref{wltcoeff}}
+    \bsEND
+  \bsEND
+
+\bsEND
+
+\end{pseudo}
+
+\paragraph{Zero block flag\newline}
+\label{zeroblockflag}
+
+We may set the number of codeblocks in the subband as
+
+$num\_blocks = \Codeblocks[level][horizontal]*\Codeblocks[level][vertical]$
+
+If $num\_blocks$ is 1 or $level=0$, then $zero\_block\_flag()$ returns \false.
+
+Otherwise, the flag is decoded from the stream: $read\_boola(\ZeroCodeblock)$
+is returned.
+
+\paragraph{Block quantiser offset\newline}
+\label{blockquantidx}
+
+If single quantisers per subband are used, the codeblock quantiser is set to the 
+subband quantiser. Otherwise, the codeblock quantiser is encoded in the stream
+differentially. Thus, if \CodeblockMode is set to SingleQuantiser then $quant\_offset()$
+returns $0$.
+
+If \CodeblockMode is set to MultipleQuantiser then the quantiser index offset
+is decoded from the stream: $read\_sinta(quant\_contexts())$ is returned, where
+$quant\_contexts()$ returns the context set:
+
+\begin{itemize}
+\item{Follow= \{\QOffsetFollow\}}
+\item{Data=\QOffsetInfo}
+\item{Sign=\QOffsetSign}
+\end{itemize}
+
+\subsubsection{Intra DC band prediction}
+\label{intradcprediction}
+
+This section defines the operation of the $intra\_dc\_prediction(band,level)$ function
+for reconstructing values within Intra picture DC bands using spatial prediction.
+
+\begin{pseudo}{intra\_dc\_prediction}{band,level}
+
+\bsCODE{prediction = 0 }
+\bsFOR{v=0}{subband\_height(level)-1}
+  \bsFOR{h=0}{subband\_width(level)-1}
+    \bsCODE{prediction = 0 }
+    \bsIF{v>0)}
+      \bsCODE{prediction += band[v-1][h]}
+      \bsIF{h>0)}
+        \bsCODE{prediction += band[v-1][h-1]+band[v][h-1]}
+      \bsEND
+    \bsELSE
+      \bsIF{h>0)}
+        \bsCODE{prediction += band[0][h-1]}
+      \bsEND
+    \bsEND
+    \bsCODE{band[v][h] += prediction}
+  \bsEND
+\bsEND
+
+\end{pseudo}

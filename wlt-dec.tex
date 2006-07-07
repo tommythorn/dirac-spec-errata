@@ -3,15 +3,19 @@
 % - are decoded                                   - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{Subband Coefficient Data decoding}\input{prep-idwt}
+% TO DO: Need a section here about subband numbering and decoding the whole 
+% set of subbands
+
+\newcommand{\LL}{\textit{LL}}
+\newcommand{\LH}{\textit{LH}}
+\newcommand{\HL}{\textit{HL}}
+\newcommand{\HH}{\textit{HH}}
+
+\label{transformdec}
+
+% Do intro
+
 \subsection{Decoded subband data conventions}\input{prep-idwt-conventions}
-\subsection{Overall subband decoding process}\input{prep-idwt-process}
-\subsection{Number and dimension of code blocks}\input{prep-idwt-codeblk-dim}
-\subsection{Code block decoding process}\input{prep-idwt-codeblk-process}
+\subsection{Wavelet data decoding process}\input{prep-idwt-decoding}
+\subsection{Subband decoding process}\input{prep-idwt-process}
 \subsection{Subband coefficient decoding process}\input{prep-idwt-coef-process}
-\subsection{Magnitude context modelling}\input{prep-idwt-ctxt-magnitude}
-\subsection{Sign context modelling}\input{prep-idwt-ctxt-sign}
-\subsection{Skip parameter context modelling}\input{prep-idwt-ctxt-skip}
-\subsection{Quantisation index context modelling}\input{prep-idwt-ctxt-quantindex}
-\subsection{Context initialisation}\input{prep-idwt-ctxt-init}
-\subsection{Intra DC subband prediction}\input{prep-idwt-pred-dc}

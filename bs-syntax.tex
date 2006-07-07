@@ -1,111 +1,4 @@
 
-\newcommand{\fdefine}[2]{%
-    \label{#1}%
-    \expandafter\def\csname #1\endcsname{{#2}}}
-
-\newcommand{\pdefine}[2]{%
-    \label{#1}%
-    \expandafter\def\csname #1\endcsname{{\texttt{#2}}}}
-
-
-\pdefine{ParseInfoPrefix}{parse\_info\_prefix}
-\pdefine{ParseCode}{parse\_code}
-\pdefine{NextParseOffset}{next\_parse\_offset}
-\pdefine{PrevParseOffset}{previous\_parse\_offset}
-
-\pdefine{AUFrameNumber}{au\_frame\_number}
-\pdefine{VersionMajor}{version\_major}
-\pdefine{VersionMinor}{version\_minor}
-\pdefine{Profile}{profile}
-\pdefine{Level}{level}
-
-\pdefine{VideoFormat}{video\_format}
-\pdefine{CustomImageSize}{custom\_image\_size}
-\pdefine{LumaWidth}{luma\_width}
-\pdefine{LumaHeight}{luma\_height}
-\pdefine{UnusualChromaFormat}{unusual\_chroma\_format}
-\pdefine{ChromaFormatIndex}{chroma\_format\_index}
-\pdefine{CustomVideoDepth}{custom\_video\_depth}
-\pdefine{VideoDepthValue}{video\_depth\_value}
-
-\pdefine{UnusualScanFormat}{unusual\_scan\_format}
-\pdefine{Interlaced}{interlaced}
-\pdefine{UnusualFieldDominance}{unusual\_field\_dominance}
-\pdefine{TopFieldFirst}{top\_field\_first}
-\pdefine{UnusualFieldInterleaving}{unusual\_field\_interleaving}
-\pdefine{SequentialFields}{sequential\_fields}
-\pdefine{CustomFrameRate}{custom\_frame\_rate}
-\pdefine{FrameRateIndex}{frame\_rate\_index}
-\pdefine{FrameRateNumerator}{frame\_rate\_numerator}
-\pdefine{FrameRateDenominator}{frame\_rate\_denominator}
-\pdefine{CustomAspectRatio}{custom\_aspect\_ratio}
-\pdefine{AspectRatioIndex}{aspect\_ratio\_index}
-\pdefine{AspectRatioNumerator}{aspect\_ratio\_numerator}
-\pdefine{AspectRatioDenominator}{aspect\_ratio\_denominator}
-
-\pdefine{CustomCleanArea}{custom\_clean\_area}
-\pdefine{CleanWidth}{clean\_width}
-\pdefine{CleanHeight}{clean\_height}
-\pdefine{LeftOffset}{left\_offset}
-\pdefine{TopOffset}{top\_offset}
-
-\pdefine{CustomSignalRange}{custom\_signal\_range}
-\pdefine{SignalRangeIndex}{signal\_range\_index}
-\pdefine{LumaOffset}{luma\_offset}
-\pdefine{LumaExcursion}{luma\_excursion}
-\pdefine{ChromaOffset}{chroma\_offset}
-\pdefine{ChromaExcursion}{chroma\_excursion}
-
-\pdefine{UnusualColourSpec}{unusual\_colour\_spec}
-\pdefine{ColourSpecIndex}{colour\_spec\_index}
-\pdefine{UnusualColourPrimaries}{unusual\_colour\_primaries}
-\pdefine{ColourPrimariesIndex}{colour\_primaries\_index}
-\pdefine{UnusualColourMatrix}{unusual\_colour\_matrix}
-\pdefine{ColourMatrixIndex}{colour\_matrix\_index}
-\pdefine{UnusualTransferFunction}{unusual\_transfer\_function}
-\pdefine{TransferFunctionIndex}{transfer\_function\_index}
-
-\pdefine{PictureNumberOffset}{picture\_number\_offset}
-\pdefine{RefOffsetA}{ref1\_offset}
-\pdefine{RefOffsetB}{ref2\_offset}
-\pdefine{NumRetiredPictures}{num\_retired\_pictures}
-\pdefine{RetiredPictureOffset}{retired\_picture\_offset}
-
-\pdefine{BlockDataLength}{block\_data\_length}
-\pdefine{CompressedBlockData}{compressed\_block\_data}
-\pdefine{CustomBlockParameters}{custom\_block\_parameters}
-\pdefine{BlockParametersIndex}{block\_parameters\_index}
-\pdefine{LumaXBLen}{luma\_xblen}
-\pdefine{LumaYBLen}{luma\_yblen}
-\pdefine{LumaXBSep}{luma\_xbsep}
-\pdefine{LumaYBSep}{luma\_ybsep}
-\pdefine{CustomMotionVectorPrecision}{custom\_motion\_vector\_precision}
-\pdefine{MotionVectorPrecision}{motion\_vector\_precision}
-\pdefine{UsingGlobalMotionFlag}{using\_global\_motion\_flag}
-\pdefine{GlobalMotionOnlyFlag}{global\_motion\_only\_flag}
-\pdefine{CustomPicturePredictionMode}{custom\_picture\_prediction\_mode}
-\pdefine{PicturePredictionModeIndex}{picture\_prediction\_mode\_index}
-
-
-\pdefine{CustomReferenceWeights}{custom\_reference\_weights}
-\pdefine{PictureWeightBits}{picture\_weight\_bits}
-\pdefine{PictureWeightRefA}{picture\_weight\_ref1}
-\pdefine{PictureWeightRefB}{picture\_weight\_ref2}
-\pdefine{NonZeroPanTiltFlag}{nonzero\_pan\_tilt\_flag}
-\pdefine{GMpan}{pan}
-\pdefine{GMtilt}{tilt}
-\pdefine{NonZeroZRSFlag}{nonzero\_zoom\_rotation\_shear\_flag}
-\pdefine{ZRSexponent}{ZRS\_exponent}
-\pdefine{GMaTL}{a11}
-\pdefine{GMaTR}{a12}
-\pdefine{GMaBL}{a21}
-\pdefine{GMaBR}{a22}
-\pdefine{NonZeroPerspectiveFlag}{nonzero\_perspective\_flag}
-\pdefine{GMperspectiveExponent}{perspective\_exponent}
-\pdefine{GMperspectiveX}{perspective\_x}
-\pdefine{GMperspectiveY}{perspective\_y}
-
-
 %\lstset{language=Python,basicstyle=\ttfamily,keywordstyle=\rmfamily\underline}
 
 
@@ -125,7 +18,7 @@
 %\bsCODE{}
 %\item{}{}
 
-\begin{streamsyntax}{sequence}{}
+\begin{pseudo}{sequence}{}
 \bsCODE{i = 0}
 \bsWHILE{true}
  \bsCODE{seq[i] = parse\_unit()}
@@ -133,13 +26,13 @@
   \bsRET{seq}%\bsEND
  \bsCODE{i = i + 1}
  \bsEND
-\end{streamsyntax}
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Parse unit}
 
-\begin{streamsyntax}{parse\_unit}{}
+\begin{pseudo}{parse\_unit}{}
 \bsCODE{pu[type] = read\_parse\_info()}
 \bsIF{pu[type] == AccessUnitHdr}
  \bsCODE{pu[data] = read\_access\_unit\_header()}
@@ -147,365 +40,400 @@
  \bsCODE{pu[data] = read\_picture()}
  \bsEND
 \bsRET{pu}
-\end{streamsyntax}
+\end{pseudo}
 
 
-\begin{streamsyntax}{parse\_info}{}
+\begin{pseudo}{parse\_info}{}
 \bsCODE{bytealign()}
 \bsITEM{\ParseInfoPrefix}{be(4)}{}
 \bsITEM{\ParseCode}{be(1)}{}
 \bsITEM{\NextParseOffset}{be(3)}{}
 \bsITEM{\PrevParseOffset}{be(3)}{}
 \bsRET{\ParseCode}
-\end{streamsyntax}
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Access unit}
 
-\begin{streamsyntax}{access\_unit\_header}{}
+[This probably has to change. TJD]
+
+\begin{pseudo}{access\_unit\_header}{}
 \bsCODE{bytealign()}
-\bsCODE{auh[parse\_params] = read\_parse\_parameters()}
-\bsCODE{auh[seq\_params]   = read\_sequence\_parameters()}
-\bsCODE{auh[display\_params] = read\_display\_parameters()}
-\bsRET{auh}
-\end{streamsyntax}
+\bsCODE{read\_parse\_parameters()}
+\bsCODE{read\_sequence\_parameters()}
+\bsCODE{read\_display\_parameters()}
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Access unit parse parameters}
 
-\begin{streamsyntax}{parse\_parameters}{}
-\bsITEM{pp[\AUFrameNumber]}{be(4)}{}
-\bsITEM{pp[\VersionMajor]}{unsigned}{}
-\bsITEM{pp[\VersionMinor]}{unsigned}{}
-\bsITEM{pp[\Profile]}{unsigned}{}
-\bsITEM{pp[\Level]}{unsigned}{}
-\bsRET{pp}
-\end{streamsyntax}
+\begin{pseudo}{parse\_parameters}{}
+\bsITEM{\AUFrameNumber}{be(4)}{}
+\bsITEM{\VersionMajor}{unsigned}{}
+\bsITEM{\VersionMinor]}{unsigned}{}
+\bsITEM{\Profile}{unsigned}{}
+\bsITEM{\Level}{unsigned}{}
+
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Access unit sequence parameters}
 
-\begin{streamsyntax}{sequence\_parameters}{}
-\bsITEM{sp[\VideoFormat]}{unsigned}{}
-\bsCODE{sp[custom\_image\_size] = custom\_image\_size()}
-\bsCODE{sp[unusual\_chroma\_format] = unusual\_chroma\_format()}
-\bsCODE{sp[custom\_video\_depth] = custom\_video\_depth()}
-\bsRET{sp}
-\end{streamsyntax}
+The AU sequence parameters consist of the video format, the
+image dimensions, the chroma format and the video depth. Default values are
+set accoding to the video format defaults (Appendix ??).
 
-\begin{streamsyntax}{custom\_image\_size}{}
-\bsITEM{cis[\CustomImageSize]}{boolean}{}
-\bsIF{cis[\CustomImageSize]}
- \bsITEM{cis[\LumaWidth]}{unsigned}{}
- \bsITEM{cis[\LumaHeight]}{unsigned}{}
- \bsEND
-\bsRET{cis}
-\end{streamsyntax}
 
-\begin{streamsyntax}{unusual\_chroma\_format}{}
-\bsITEM{ucf[\UnusualChromaFormat]}{boolean}{}
-\bsIF{ucf[\UnusualChromaFormat]}
- \bsITEM{ucf[\ChromaFormatIndex]}{unsigned}{}
- \bsEND
-\bsRET{ucf}
-\end{streamsyntax}
+\begin{pseudo}{sequence\_parameters}{}
+\bsITEM{\VideoFormat}{unsigned}{}
+\bsCODE{custom\_image\_size()}
+\bsCODE{unusual\_chroma\_format()}
+\bsCODE{set\_chroma_dimensions()}
+\bsCODE{custom\_video\_depth()}
+\end{pseudo}
 
-\begin{streamsyntax}{custom\_video\_depth}{}
-\bsITEM{cvd[\CustomVideoDepth]}{boolean}{}
-\bsIF{cvd[\CustomVideoDepth]}
- \bsITEM{cvd[\VideoDepthValue]}{unsigned}{}
+[Need to work out how this fits ...]
+\begin{pseudo}{custom\_image\_size}{}
+\bsITEM{\CustomImageSize}{boolean}{}
+\bsIF{\CustomImageSize}
+ \bsITEM{\LumaWidth}{unsigned}{}
+ \bsITEM{\LumaHeight}{unsigned}{}
+\bsEND
+\end{pseudo}
+
+The chroma format is decoded as follows. Available formats are blah blah ... {TBC]
+
+\begin{pseudo}{unusual\_chroma\_format}{}
+\bsITEM{\UnusualChromaFormat}{boolean}{}
+\bsIF{\UnusualChromaFormat}
+ \bsITEM{\ChromaFormatIndex}{unsigned}{}
  \bsEND
-\bsRET{cvd}
-\end{streamsyntax}
+\bsCODE{set\_chroma\_dimensions()}
+\end{pseudo}
+
+Chroma dimensions are set according to the scaling implied by the chroma format:
+
+\begin{pseudo}{set\_chroma\_dims}{}
+[TBC]
+\end{pseudo}
+
+
+
+\begin{pseudo}{custom\_video\_depth}{}
+\bsITEM{\CustomVideoDepth}{boolean}{}
+\bsIF{\CustomVideoDepth}
+ \bsITEM{\VideoDepthValue}{unsigned}{}
+ \bsEND
+\end{pseudo}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Access unit source parameters}
 
-\begin{streamsyntax}{source\_parameters}{}
-\bsCODE{sp[unusual\_scan\_format] = unusual\_scan\_format()}
-\bsCODE{sp[custom\_frame\_rate] = custom\_frame\_rate()}
-\bsCODE{sp[custom\_aspect\_ratio] = custom\_aspect\_ratio()}
-\bsCODE{sp[custom\_clean\_area] = custom\_clean\_area()}
-\bsCODE{sp[custom\_signal\_range] = custom\_signal\_range()}
-\bsCODE{sp[unusual\_colour\_spec] = unusual\_colour\_spec()}
+\begin{pseudo}{source\_parameters}{}
+\bsCODE{unusual\_scan\_format()}
+\bsCODE{custom\_frame\_rate()}
+\bsCODE{custom\_aspect\_ratio()}
+\bsCODE{custom\_clean\_area()}
+\bsCODE{custom\_signal\_range()}
+\bsCODE{unusual\_colour\_spec()}
 \bsRET{sp}
-\end{streamsyntax}
+\end{pseudo}
 \annotate{df}{replace colour\_spec with colourimetry?}
 
-\begin{streamsyntax}{unusual\_scan\_format}{}
-\bsITEM{usf[\UnusualScanFormat]}{boolean}{}
-\bsIF{usf[\UnusualScanFormat]}
- \bsITEM{usf[\Interlaced]}{boolean}{}
- \bsIF{usf[\Interlaced]}
-  \bsITEM{usf[\UnusualFieldDominance]}{boolean}{}
-  \bsIF{usf[\UnusualFieldDominance]}
-   \bsITEM{usf[\TopFieldFirst]}{boolean}{}
+\begin{pseudo}{unusual\_scan\_format}{}
+\bsITEM{\UnusualScanFormat}{boolean}{}
+\bsIF{\UnusualScanFormat}
+ \bsITEM{\Interlaced}{boolean}{}
+ \bsIF{\Interlaced}
+  \bsITEM{\UnusualFieldDominance}{boolean}{}
+  \bsIF{\UnusualFieldDominance}
+   \bsITEM{\TopFieldFirst}{boolean}{}
    \bsEND
-  \bsITEM{usf[\UnusualFieldInterleaving]}{boolean}{}
-  \bsIF{usf[\UnusualFieldInterleaving]}
-   \bsITEM{usf[\SequentialFields]}{boolean}{}
-   \bsEND
-  \bsEND
- \bsEND
-\bsRET{usf}
-\end{streamsyntax}
-
-\begin{streamsyntax}{custom\_frame\_rate}{}
-\bsITEM{cfr[\CustomFrameRate]}{boolean}{}
-\bsIF{cfr[\CustomFrameRate]}
- \bsITEM{cfr[\FrameRateIndex]}{unsigned}{}
- \bsIF{cfr[\FrameRateIndex] == 0}
-  \bsITEM{cfr[\FrameRateNumerator]}{unsigned}{}
-  \bsITEM{cfr[\FrameRateDenominator]}{unsigned}{}
-  \bsEND
- \bsEND
-\bsRET{cfr}
-\end{streamsyntax}
-
-\begin{streamsyntax}{custom\_aspect\_ratio}{}
-\bsITEM{car[\CustomAspectRatio]}{boolean}{}
-\bsIF{car[\CustomAspectRatio]}
- \bsITEM{car[\AspectRatioIndex]}{unsigned}{}
- \bsIF{car[\AspectRatioIndex] == 0}
-  \bsITEM{car[\AspectRatioNumerator]}{unsigned}{}
-  \bsITEM{car[\AspectRatioDenominator]}{unsigned}{}
-  \bsEND
- \bsEND
-\bsRET{car}
-\end{streamsyntax}
-
-\begin{streamsyntax}{custom\_clean\_area}{}
-\bsITEM{cca[\CustomCleanArea]}{boolean}{}
-\bsIF{cca[\CustomCleanArea]}
- \bsITEM{cca[\CleanWidth]}{unsigned}{}
- \bsITEM{cca[\CleanHeight]}{unsigned}{}
- \bsITEM{cca[\LeftOffset]}{unsigned}{}
- \bsITEM{cca[\TopOffset]}{unsigned}{}
- \bsEND
-\bsRET{cca}
-\end{streamsyntax}
-
-\begin{streamsyntax}{custom\_signal\_range}{}
-\bsITEM{csr[\CustomSignalRange]}{boolean}{}
-\bsIF{csr[\CustomSignalRange]}
- \bsITEM{csr[\SignalRangeIndex]}{unsigned}{}
- \bsIF{csr[\SignalRangeIndex] == 0}
-  \bsITEM{csr[\LumaOffset]}{unsigned}{}
-  \bsITEM{csr[\LumaExcursion]}{unsigned}{}
-  \bsITEM{csr[\ChromaOffset]}{unsigned}{}
-  \bsITEM{csr[\ChromaExcursion]}{unsigned}{}
-  \bsEND
- \bsEND
-\bsRET{csr}
-\end{streamsyntax}
-
-\begin{streamsyntax}{unusual\_colour\_spec}{}
-\bsITEM{ucs[\UnusualColourSpec]}{boolean}{}
-\bsIF{ucs[\UnusualColourSpec]}
- \bsITEM{ucs[\ColourSpecIndex]}{unsigned}{}
- \bsIF{ucs[\ColourSpecIndex] == 0}
-  \bsITEM{ucs[\UnusualColourPrimaries]}{boolean}{}
-  \bsIF{ucs[\UnusualColourPrimaries]}
-   \bsITEM{ucs[\ColourPrimariesIndex]}{unsigned}{}
-   \bsEND
-  \bsITEM{ucs[\UnusualColourMatrix]}{boolean}{}
-  \bsIF{ucs[\UnusualColourMatrix]}
-   \bsITEM{ucs[\ColourMatrixIndex]}{unsigned}{}
-   \bsEND
-  \bsITEM{ucs[\UnusualTransferFunction]}{boolean}{}
-  \bsIF{ucs[\UnusualTransferFunction]}
-   \bsITEM{ucs[\TransferFunctionIndex]}{unsigned}{}
+  \bsITEM{\UnusualFieldInterleaving}{boolean}{}
+  \bsIF{\UnusualFieldInterleaving}
+   \bsITEM{\SequentialFields}{boolean}{}
    \bsEND
   \bsEND
  \bsEND
-\bsRET{ucs}
-\end{streamsyntax}
+\end{pseudo}
+
+\begin{pseudo}{custom\_frame\_rate}{}
+\bsITEM{\CustomFrameRate}{boolean}{}
+\bsIF{\CustomFrameRate}
+ \bsITEM{\FrameRateIndex}{unsigned}{}
+ \bsIF{\FrameRateIndex == 0}
+  \bsITEM{\FrameRateNumerator}{unsigned}{}
+  \bsITEM{\FrameRateDenominator}{unsigned}{}
+  \bsEND
+ \bsEND
+\end{pseudo}
+
+\begin{pseudo}{custom\_aspect\_ratio}{}
+\bsITEM{\CustomAspectRatio}{boolean}{}
+\bsIF{\CustomAspectRatio}
+ \bsITEM{\AspectRatioIndex}{unsigned}{}
+ \bsIF{\AspectRatioIndex == 0}
+  \bsITEM{\AspectRatioNumerator}{unsigned}{}
+  \bsITEM{\AspectRatioDenominator}{unsigned}{}
+  \bsEND
+ \bsEND
+\end{pseudo}
+
+\begin{pseudo}{custom\_clean\_area}{}
+\bsITEM{\CustomCleanArea}{boolean}{}
+\bsIF{\CustomCleanArea}
+ \bsITEM{\CleanWidth}{unsigned}{}
+ \bsITEM{\CleanHeight}{unsigned}{}
+ \bsITEM{\LeftOffset}{unsigned}{}
+ \bsITEM{\TopOffset}{unsigned}{}
+ \bsEND
+
+\end{pseudo}
+
+\begin{pseudo}{custom\_signal\_range}{}
+\bsITEM{\CustomSignalRange}{boolean}{}
+\bsIF{\CustomSignalRange}
+ \bsITEM{\SignalRangeIndex}{unsigned}{}
+ \bsIF{\SignalRangeIndex == 0}
+  \bsITEM{\LumaOffset}{unsigned}{}
+  \bsITEM{\LumaExcursion}{unsigned}{}
+  \bsITEM{\ChromaOffset}{unsigned}{}
+  \bsITEM{\ChromaExcursion}{unsigned}{}
+  \bsEND
+ \bsEND
+\end{pseudo}
+
+\begin{pseudo}{unusual\_colour\_spec}{}
+\bsITEM{\UnusualColourSpec}{boolean}{}
+\bsIF{\UnusualColourSpec}
+ \bsITEM{\ColourSpecIndex}{unsigned}{}
+ \bsIF{\ColourSpecIndex] == 0}
+  \bsITEM{\UnusualColourPrimaries}{boolean}{}
+  \bsIF{\UnusualColourPrimaries}
+   \bsITEM{\ColourPrimariesIndex}{unsigned}{}
+   \bsEND
+  \bsITEM{\UnusualColourMatrix}{boolean}{}
+  \bsIF{\UnusualColourMatrix}
+   \bsITEM{\ColourMatrixIndex}{unsigned}{}
+   \bsEND
+  \bsITEM{\UnusualTransferFunction}{boolean}{}
+  \bsIF{\UnusualTransferFunction}
+   \bsITEM{\TransferFunctionIndex}{unsigned}{}
+   \bsEND
+  \bsEND
+ \bsEND
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Picture}
 
-\begin{streamsyntax}{picture\_header}{}
+\begin{pseudo}{picture\_header}{}
 \bsCODE{bytealign()}
-\bsITEM{ph[\PictureNumberOffset]}{signed}{}
+\bsITEM{\PictureNumberOffset}{signed}{}
 \bsIF{\textit{is\_inter}}
- \bsCODE{ph[reference\_pictures\_numbers] = reference\_picture\_numbers()}
+ \bsCODE{reference\_picture\_numbers()}
  \bsEND
-\bsCODE{ph[retired\_picture\_list] = retired\_picture\_list()}
-\bsRET{ph}
-\end{streamsyntax}
+\bsCODE{retired\_picture\_list()}
 
-\begin{streamsyntax}{reference\_picture\_numbers}{}
-\bsITEM{rpn[\RefOffsetA]}{signed}{}
-\bsIF{\textit{num\_refs} == 2}
- \bsITEM{rpn[\RefOffsetB]}{signed}{}
- \bsEND
-\bsRET{rpn}
-\end{streamsyntax}
+\end{pseudo}
 
-\begin{streamsyntax}{retired\_picture\_list}{}
-\bsITEM{rpl[\NumRetiredPictures]}{unsigned}{}
-\bsFOR{i = 0}{rpl[\NumRetiredPictures] - 1}
- \bsITEM{rpl[\RetiredPictureOffset][i]}{signed}{}
+\begin{pseudo}{reference\_picture\_numbers}{}
+\bsITEM{\RefOffsetA}{signed}{}
+\bsIF{\textit{num\_refs} == 2}[Has this been defined??]
+ \bsITEM{\RefOffsetB}{signed}{}
  \bsEND
-\bsRET{rpl}
-\end{streamsyntax}
+
+\end{pseudo}
+
+\begin{pseudo}{retired\_picture\_list}{}
+\bsITEM{\NumRetiredPictures}{unsigned}{}
+\bsFOR{i = 0}{\NumRetiredPictures - 1}
+ \bsITEM{\RetiredPictureOffset[i]}{signed}{}
+ \bsEND
+
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Picture prediction}
 
-\begin{streamsyntax}{picture\_prediction}{}
-\bsCODE{pp[picture\_prediction\_parameters] = picture\_prediction\_parameters()}
-\bsITEM{pp[\BlockDataLength]}{unsigned}{}
+\begin{pseudo}{picture\_prediction}{}
+\bsCODE{picture\_prediction\_parameters()}
+\bsITEM{\BlockDataLength]}{unsigned}{}
 \bsCODE{bytealign()}
-\bsITEM{pp[\CompressedBlockData]}{chunk}{}
+\bsITEM{\CompressedBlockData]}{chunk}{}[We don't want to do this now - arithmetic decoding is at parsing level]
 %    compressed\_block\_data = read\_chunk(block\_data\_length)
-\bsRET{pp}
-\end{streamsyntax}
+\end{pseudo}
 
-\begin{streamsyntax}{picture\_prediction\_parameters}{}
-\bsCODE{ppp[custom\_block\_parameters] = custom\_block\_parameters()}
-\bsCODE{ppp[motion\_vector\_precision] = motion\_vector\_precision()}
-\bsCODE{ppp[global\_motion] = global\_motion()}
-\bsCODE{ppp[custom\_picture\_prediction\_mode] = custom\_picture\_prediction\_mode()}
-\bsCODE{ppp[picture\_weights] = picture\_weights()}
-\bsRET{ppp}
-\end{streamsyntax}
+\begin{pseudo}{picture\_prediction\_parameters}{}
+\bsCODE{custom\_block\_parameters()}
+\bsCODE{motion\_vector\_precision()}
+\bsCODE{global\_motion()}
+\bsCODE{custom\_picture\_prediction\_mode()}
+\bsCODE{picture\_weights()}
+\end{pseudo}
 
-\begin{streamsyntax}{block\_parameters}{}
-\bsITEM{bp[\CustomBlockParameters]}{boolean}{}
-\bsIF{bp[\CustomBlockParameters]}
- \bsITEM{bp[\BlockParametersIndex]}{unsigned}{}
- \bsIF{bp[\BlockParametersIndex] == 0}
-  \bsITEM{bp[\LumaXBLen]}{unsigned}{}
-  \bsITEM{bp[\LumaYBLen]}{unsigned}{}
-  \bsITEM{bp[\LumaXBSep]}{unsigned}{}
-  \bsITEM{bp[\LumaYBSep]}{unsigned}{}
+\begin{pseudo}{block\_parameters}{}
+\bsITEM{\CustomBlockParameters}{boolean}{}
+\bsIF{\CustomBlockParameters}
+ \bsITEM{\BlockParametersIndex}{unsigned}{}
+ \bsIF{\BlockParametersIndex == 0}
+  \bsITEM{\LumaXBLen}{unsigned}{}
+  \bsITEM{\LumaYBLen}{unsigned}{}
+  \bsITEM{\LumaXBSep}{unsigned}{}
+  \bsITEM{\LumaYBSep}{unsigned}{}
   \bsEND
  \bsEND
-\bsRET{bp}
-\end{streamsyntax}
+\end{pseudo}
 
-\begin{streamsyntax}{custom\_motion\_vector\_precision}{}
-\bsITEM{cmvp[\CustomMotionVectorPrecision]}{boolean}{}
-\bsIF{cmvp[\CustomMotionVectorPrecision]}
- \bsITEM{cmvp[\MotionVectorPrecision]}{unsigned}{}
+\begin{pseudo}{custom\_motion\_vector\_precision}{}
+\bsITEM{\CustomMotionVectorPrecision}{boolean}{}
+\bsIF{\CustomMotionVectorPrecision}
+ \bsITEM{\MotionVectorPrecision}{unsigned}{}
  \bsEND
-\bsRET{cmvp}
-\end{streamsyntax}
+\end{pseudo}
 
-\begin{streamsyntax}{global\_motion}{}
-\bsITEM{gm[\UsingGlobalMotionFlag]}{boolean}{}
-\bsIF{gm[\UsingGlobalMotionFlag]}
- \bsITEM{gm[\GlobalMotionOnlyFlag]}{boolean}{}
- \bsCODE{gm[gm\_params\_ref1] = global\_motion\_parameters()}
+\begin{pseudo}{global\_motion}{}
+\bsITEM{\UsingGlobalMotionFlag}{boolean}{}
+\bsIF{\UsingGlobalMotionFlag}
+ \bsITEM{\GlobalMotionOnlyFlag}{boolean}{}
+ \bsCODE{global\_motion\_parameters()}
  \bsIF{\textit{num\_refs} == 2}
-  \bsCODE{gm[gm\_params\_ref2] = global\_motion\_parameters()}
+  \bsCODE{global\_motion\_parameters()}
   \bsEND
  \bsEND
-\bsRET{gm}
-\end{streamsyntax}
+\end{pseudo}
 
-\begin{streamsyntax}{custom\_picture\_prediction\_mode}{}
-\bsITEM{cppm[\CustomPicturePredictionMode]}{boolean}{}
-\bsIF{cppm[\CustomPicturePredictionMode]}
- \bsITEM{cppm[\PicturePredictionModeIndex]}{unsigned}{}
+\begin{pseudo}{custom\_picture\_prediction\_mode}{}
+\bsITEM{\CustomPicturePredictionMode}{boolean}{}
+\bsIF{\CustomPicturePredictionMode}
+ \bsITEM{\PicturePredictionModeIndex}{unsigned}{}
  \bsEND
-\bsRET{cppm}
-\end{streamsyntax}
 
-\begin{streamsyntax}{custom\_picture\_weights}{}
-\bsITEM{cpw[\CustomReferenceWeights]}{boolean}{}
-\bsIF{cpw[\CustomReferenceWeights]}
- \bsITEM{cpw[\PictureWeightBits]}{unsigned}{}
- \bsITEM{cpw[\PictureWeightRefA]}{signed}{}
+\end{pseudo}
+
+\begin{pseudo}{custom\_picture\_weights}{}
+\bsITEM{\CustomReferenceWeights}{boolean}{}
+\bsIF{\CustomReferenceWeights}
+ \bsITEM{\PictureWeightBits}{unsigned}{}
+ \bsITEM{\PictureWeightRefA}{signed}{}
  \bsIF{\textit{num\_refs} == 2}
-  \bsITEM{cpw[\PictureWeightRefB]}{signed}{}
+  \bsITEM{\PictureWeightRefB}{signed}{}
   \bsEND
  \bsEND
-\bsRET{cpw}
-\end{streamsyntax}
+\end{pseudo}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Global motion parameters}
 
-\begin{streamsyntax}{global\_motion\_parameters}{}
-\bsCODE{gmp[pan\_tilt] = pan\_tilt()}
-\bsCODE{gmp[zoom\_rotate\_sheer] = zoom\_rotate\_sheer()}
-\bsCODE{gmp[perspective] = perspective()}
-\end{streamsyntax}
+\begin{pseudo}{global\_motion\_parameters}{}
+\bsCODE{pan\_tilt()}
+\bsCODE{zoom\_rotate\_sheer()}
+\bsCODE{perspective()}
+\end{pseudo}
 
-\begin{streamsyntax}{pan\_tilt}{}
-\bsITEM{pt[\NonZeroPanTiltFlag]}{boolean}{}
-\bsIF{pt[\NonZeroPanTiltFlag]}
- \bsITEM{pt[\GMpan]}{signed}{}
- \bsITEM{pt[\GMtilt]}{signed}{}
+\begin{pseudo}{pan\_tilt}{}
+\bsITEM{\NonZeroPanTiltFlag}{boolean}{}
+\bsIF{\NonZeroPanTiltFlag}
+ \bsITEM{\GMpan}{signed}{}
+ \bsITEM{\GMtilt}{signed}{}
  \bsEND
-\bsRET{pt}
-\end{streamsyntax}
 
-\begin{streamsyntax}{zoom\_rotation\_shear}{}
-\bsITEM{zrs[\NonZeroZRSFlag]}{boolean}{}
-\bsIF{zrs[\NonZeroZRSFlag]}
- \bsITEM{zrs[\ZRSexponent]}{unsigned}{}
- \bsITEM{zrs[\GMaTL]}{signed}{}
- \bsITEM{zrs[\GMaTR]}{signed}{}
- \bsITEM{zrs[\GMaBL]}{signed}{}
- \bsITEM{zrs[\GMaTR]}{signed}{}
- \bsEND
-\bsRET{zrs}
-\end{streamsyntax}
+\end{pseudo}
 
-\begin{streamsyntax}{perspective}{}
-\bsITEM{p[\NonZeroPerspectiveFlag]}{boolean}{}
-\bsIF{p[\NonZeroPerspectiveFlag]}
- \bsITEM{p[\GMperspectiveExponent]}{unsigned}{}
- \bsITEM{p[\GMperspectiveX]}{signed}{}
- \bsITEM{p[\GMperspectiveY]}{signed}{}
+\begin{pseudo}{zoom\_rotation\_shear}{}
+\bsITEM{\NonZeroZRSFlag}{boolean}{}
+\bsIF{\NonZeroZRSFlag}
+ \bsITEM{\ZRSexponent}{unsigned}{}
+ \bsITEM{\GMaTL}{signed}{}
+ \bsITEM{\GMaTR}{signed}{}
+ \bsITEM{\GMaBL}{signed}{}
+ \bsITEM{\GMaTR}{signed}{}
  \bsEND
-\bsRET{p}
-\end{streamsyntax}
+
+\end{pseudo}
+
+\begin{pseudo}{perspective}{}
+\bsITEM{\NonZeroPerspectiveFlag}{boolean}{}
+\bsIF{\NonZeroPerspectiveFlag}
+ \bsITEM{\GMperspectiveExponent}{unsigned}{}
+ \bsITEM{\GMperspectiveX}{signed}{}
+ \bsITEM{\GMperspectiveY}{signed}{}
+ \bsEND
+\end{pseudo}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsection{Wavelet transform}
 
-\begin{verbatim}
-wavelet_transform():
-    if (is_inter()):
-        zero_residual = read_bool()
-    if (is_intra || !zero_residual):
-        transform_parameters()
-        transform_data()
-        transform_data()
-        transform_data()
-\end{verbatim}
+The $wavelet\_tranform()$ function decodes metadata determining the wavelet 
+transform (including filters, wavelet depth, code block structures)
+together with the transformed wavelet coefficients.
 
-\begin{verbatim}
-transform_parameters():
-    unusual_wavelet_filter()
-    unusual_wavelet_depth()
-    spatial_partition()
-\end{verbatim}
+Decoded wavelet transform coefficient data is stored in the state
+variables \YTransform, \UTransform and \VTransform for subsequent 
+processing using the inverse wavelet transform (Section \ref{idwt}).
 
+\begin{pseudo}{wavelet\_transform}{state}
+\bsIF{is\_intra()}
+    \bsCODE{state[\textit{Zero Residual}] = false}
+\bsELSE
+    \bsCODE{state[\textit{Zero Residual}] = read\_bool()}
+\bsEND
+
+\bsIF{ !state[\textit{zero\_residual}]}
+    \bsCODE{transform\_parameters(state)}
+    \bsCODE{\ComponentWidth = \LumaWidth}
+    \bsCODE{\ComponentHeight = \LumaHeight}
+    \bsCODE{\YTransform = transform\_data(state)}
+
+    \bsCODE{\ComponentWidth = \ChromaWidth}
+    \bsCODE{\ComponentHeight = \ChromaHeight}
+    \bsCODE{\UTransform = transform\_data(state)}
+    \bsCODE{\VTransform = transform\_data(state)}
+\end{pseudo}
+
+Wavelet coefficients have been encoded using arithmetic coding, and their 
+decoding is specified in section \ref{transformdec}. The remainder of this
+section specifies the decoding of transform parameters.
+
+\begin{pseudo}{transform\_parameters}{state}
+\bsCODE{wavelet\_filter()}{\ref{wltfilter}}
+\bsCODE{wavelet\_depth()}{\ref{wltdepth}}
+\bsCODE{spatial\_partition()}{\ref{spatialpartition}}
+\end{pseudo}
+
+\paragraph{Wavelet filters\newline}
+\label{wltfilter}
+[Say sthg - TBD]
 \begin{verbatim}
-unusual_wavelet_filter():
+wavelet_filter():
     unusual_wavelet = read_bool()
     if (unusual_wavelet):
         wavelet_index = read_uint()
 \end{verbatim}
 
+\paragraph{Wavelet depth\newline}
+\label{wltdepth}
+[Say sthg-TBD]
+
 \begin{verbatim}
-unusual_wavelet_depth():
+wavelet_depth():
     unusual_wavelet_depth = read_bool()
     if (unusual_wavelet_depth):
         transform_depth = read_uegol()
 \end{verbatim}
+
+\paragraph{Spatial partition of wavelet data\newline}
+\label{spatialpartition}
+
+[Say sthg-TBD]
 
 \begin{verbatim}
 spatial_partition():
@@ -525,23 +453,6 @@ codeblock_size():
     vertical_codeblock_size = read_uegol()
 \end{verbatim}
 \annotate{df}{i'd flatten codeblock\_size too}
-
-\begin{verbatim}
-transform_data():
-    subband(0,LL)
-    for level in range(1,transform_depth+1):
-        for band in [LH, HL, HH]:
-            subband(level,band)
-\end{verbatim}
-
-\begin{verbatim}
-subband(level,band):
-    subband_data_length[level][band] = read_uegol()
-    if (subband_data_length[level][band] != 0):
-        quantiser_index[level][band] = read_uegol()
-        BYTEALIGN()
-        compressed_subband_data[level][band] = read_chunk(subband_data_length[level][band])
-\end{verbatim}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%

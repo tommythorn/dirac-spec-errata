@@ -1,50 +1,275 @@
-This section describes the operation of the decode\_coeff(x,y) process
-for a coefficient in position (x,y), within a code block in position
-(i,j).
+\label{wltcoeff}
 
-A value magnitude is decoded by the recipe
+This section describes the operation of the 
+$coeff_decode(band,parent,orient,quant\_idx,v,h)$ process
+for decoding a coefficient in position $(h,v)$ in the subband $band$ with
+parent band $parent$ and orientation $orient$.
 
-SUBBAND[y][x]=uu\_arith\_decode()
+Decoding a coefficient makes use of arithmetic decoding, inverse quantisation
+and, in the case of DC (level 0) bands of Intra frames, neighbourhood prediction.
+The decoding process periodically refreshes the contexts, by
+halving the context counts every time a count is reached.
 
-The magnitude is then scaled by:
+Arithmetic coding uses a highly compact set of contexts, 
+with magnitudes contextualised on whether parent values
+and neighbouring values are zero or non-zero.
 
-SUBBAND[y][x] *= QF[j][i]
+\subsubsection{Overall coefficient decoding process}
 
-If SUBBAND[y][x] is not zero, an offset is added:
+Two different processes are used for decoding coefficients, depending
+upon whether spatial prediction is required or not.
 
-SUBBAND[y][x] += OFFSET[j][i]
-
-If SUBBAND[y][x]>0, then a sign value is decoded
-
-SIGN=binary\_arith\_decode()
-
-and if SIGN is FALSE
-
-SUBBAND[y][x] = -SUBBAND[y][x]
-
-If the frame is an INTRA frame and the subband is the DC band, then the
-coefficient is modified by a prediction:
-
-SUBBAND[y][x] += intra\_dc\_prediction(x,y)
-
-The operation of intra\_dc\_prediction() is defined in Section . 
-
-The derivation of contexts for use in magnitude and sign decoding is
-defined in Sections  and .
-
-After the coefficient has been decoded, then the count of coefficients
-is updated:
-
-COUNT++
-
-if (COUNT>== RESET\_COUNT\_RESET)
-
-{
-
-    COUNT=0
-
-    halve\_all\_counts()
-
-}
+\begin{pseudo}{coeff\_decode}{band,parent,orient,quant\_index,v,h}
+    \bsCODE{parent = parent\_val(parent, v, h)}{\ref{parentval}}
+    \bsCODE{nhood = zero_nhood(band,v,h)}{\ref{zeronhood}}
+    \bsCODE{sign\_pred = sign\_predict(band,orient,v,h)}{\ref{signpredict}}
+    \bsCODE{context\_set = select\_coeff\_ctxs(parent, nhood, sign\_pred)}{\ref{selectcoeffcontext}}
+    \bsCODE{quant\_coeff = read\_sina( context\_set )}{}
+    \bsCODE{band[v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
+    \bsCODE{update\_count()}{\ref{updatecounts}}
+\end{pseudo}
 
 
+\subsubsection{Parent values}
+\label{parentval}
+The function $parent\_val()$ returns the parent value of a coefficient in a subband,
+which is the co-located coefficient in the parent subband. If there is no parent,
+$0$ is returned:
+
+\begin{pseudo}{parent\_val}{parent,v,h}
+  \bsIF{parent == []}
+    \bsRET{0}
+  \bsELSE
+    \bsRET{parent[v//2][h//2]}
+  \bsEND
+\end{pseudo}
+
+\subsubsection{Zero neighbourhood}
+\label{zeronhood}
+
+The $zero\_nhood()$ function returns a boolean indicating whether neighbouring
+values are all zero.
+
+\begin{pseudo}{zero\_nhood}{band,v,h}
+\bsIF{v>0}
+  \bsIF{band[v-1][h]!=0}
+    \bsRET{\false}
+  \bsEND
+  \bsIF{h>0}
+    \bsIF{band[v-1][h-1])!=0 || band[v][h-1]!=0}
+      \bsRET{\false}
+    \bsEND
+  \bsEND
+\bsELSE
+  \bsIF{h>0}
+    \bsIF{ band[v][h-1] !=0}
+      \bsRET{\false}
+    \bsEND
+  \bsEND
+\bsEND
+\bsRET{\true}
+\end{pseudo}
+
+\subsubsection{Sign prediction}
+\label{signpredict}
+
+The $sign\_predict()$ function returns a prediction for the sign of the 
+current pixel. Correlation within subbands depends upon orientation,
+and so this is taken into account in forming the prediction.
+
+For vertically-oriented (HL) bands, the predictor is the sign of the
+coefficient above the current coefficient; for horizontally-oriented (LH)
+bands, the predictor is the sign of the coefficient to the left. 
+
+The predictions are not used for differential encoding of the sign, but for
+conditioning of the sign contexts only.
+
+\begin{pseudo}{sign\_predict}{band,orient,v,h}
+\bsIF{orient==HL}
+  \bsIF{v==0}
+    \bsRET{0}
+  \bsELSE
+    \bsRET{sign(band[v-1][h])}
+  \bsEND
+\bsELSEIF{orient==LH}
+  \bsIF{h==0}
+    \bsRET{0}
+  \bsELSE
+    \bsRET{sign(band[v][h-1])}
+  \bsEND
+\bsELSE
+  \bsRET{0}
+\bsEND{}
+\end{pseudo}
+
+\subsubsection{Coefficient context selection}
+\label{selectcoeffcontext}
+
+This section defines the $select\_context(zero\_nhood, parent, sign)$
+function, which chooses a context index set for decoding a coefficient value.
+
+Twelve possible coefficient index sets are defined, and are returned as specified 
+in Table \ref{contexttable}.
+
+Note that parent values affect the context of all follow bits, and that neighbour
+values only affect the context of the first follow bit. A common Data context is used
+for all coefficients.
+
+%% Table of context sets for signed coefficient extraction %%
+\begin{tabular}{|c|c|c||l|l|}
+%\label{contexttable}
+\hline
+ $parent$ & $zero\_nhood$ & $sign$ & \multicolumn{2}{c|}{\bf{Context set}} \\
+
+% Zero parent, zero neighbour, zero sign prediction
+\hline
+0 & \true & 0 &  Follow & \{\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                            \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
+  &   &   &  Data & \CoeffInfo \\ \cline{4-5}
+  &   &   &  Sign & \SignZero \\
+
+% Zero parent, zero neighbour, -ve sign prediction
+\hline
+0 & \true & $<0$ &  Follow & \{\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
+  &   &    &  Data & \CoeffInfo \\ \cline{4-5}
+  &   &    &  Sign & \SignNeg \\
+
+% Zero parent, zero neighbour, +ve sign  prediction
+\hline
+0 & \true & $>0$ &  Follow & \{\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
+  &   &    &  Data & \CoeffInfo \\ \cline{4-5}
+  &   &    &  Sign & \SignPos \\
+
+% Zero parent, non-zero neighbour, zero sign prediction
+\hline
+0 & \false & 0 &  Follow & \{\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                             \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
+  &   &   &  Data & \CoeffInfo \\ \cline{4-5}
+  &   &   &  Sign & \SignZero \\
+
+% Zero parent, non-zero neighbour, -ve sign prediction
+\hline
+0 & \false & $<0$ &  Follow & \{\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
+  &        &    &  Data & \CoeffInfo \\ \cline{4-5}
+  &        &    &  Sign & \SignNeg \\
+
+% Zero parent, non-zero neighbour, +ve sign prediction
+\hline
+0 & \false & $>0$ &  Follow & \{\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
+  &        &      &  Data & \CoeffInfo \\ \cline{4-5}
+  &        &      &  Sign & \SignPos \\
+
+% Non-zero parent, zero neighbour, zero sign prediction
+\hline
+$\neq 0$ &  \true & 0 &  Follow & \{\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
+& &      &  Data & \CoeffInfo \\ \cline{4-5}
+& &      &  Sign & \SignZero \\
+
+% Non-zero parent, zero neighbour, -ve sign prediction
+\hline
+$\neq 0$ & \true & $<0$ &  Follow & \{\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
+& &      &  Data & \CoeffInfo \\ \cline{4-5}
+& &      &  Sign & \SignNeg \\
+
+% Non-zero parent, zero neighbour, +ve sign prediction
+\hline
+$\neq 0$ & \true & $>0$ &  Follow & \{\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
+& &      &  Data & \CoeffInfo \\ \cline{4-5}
+& &      &  Sign & \SignPos \\
+
+% Non-zero parent, non-zero neighbour, zero sign prediction
+\hline
+$\neq 0$ & \false & 0 &  Follow & \{\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
+& &      &  Data & \CoeffInfo \\ \cline{4-5}
+& &      &  Sign & \SignZero \\
+
+% Zero parent, non-zero neighbour, -ve sign prediction
+\hline
+$\neq 0$ & \false & $<0$ &  Follow & \{\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                       \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
+& &      &  Data & \CoeffInfo \\ \cline{4-5}
+& &      &  Sign & \SignNeg \\
+
+% Zero parent, non-zero neighbour, +ve sign prediction
+\hline
+$\neq 0$ & \false  & $>0$ &  Follow & \{\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                        \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
+& &      &  Data & \CoeffInfo \\ \cline{4-5}
+& &      &  Sign & \SignPos \\
+\hline
+\end{tabular}
+
+
+\subsubsection{Inverse quantisation}
+\label{invquant}
+
+The inverse\_quant() function is defined by:
+
+\begin{pseudo}{inverse\_quantise}{quantised\_coeff, quant\_index}
+\bsCODE{magnitude = |{quantised\_coeff}|}
+\bsCODE{magnitude *= quant\_factor(quant\_index)}{\ref{quantfacs}}
+\bsCODE{magnitude += quant\_offset(quant\_index)}{\ref{quantfacs}}
+\bsCODE{magnitude = magnitude//4}
+\bsRET{sign( quantised\_coeff )*magnitude}
+\end{pseudo}
+
+\begin{informative}
+The pseudocode description separates inverse quantisation from decoding. However, 
+since dead-zone quantisation is used, the $inverse\_quant()$ function must compute
+the magnitude. Hence it is more efficient to first decode the coefficient magnitude,
+then inverse quantise, and then decode the coefficient sign. 
+\end{informative}
+
+
+\subsubsection{Quantisation factors and offsets}
+\label{quantfacs}
+
+This section specifies the operation of the $quant\_factor()$ and 
+$quant\_offset()$ functions for performing inversion quantisation.
+
+Quantisation factors represent an approximation of quarter-bit values 
+with two bits of accuracy (i.e. $round(2^{\frac{index}{4}+2})$:
+
+\begin{pseudo}{quant\_factor}{index}
+\bsCODE{base = 2**(index//4)}
+\bsIF{ (x\%4)==0 }
+  \bsRET{4*base}
+\bsELSEIF{ (x\%4)==1 }
+  \bsRET{78892*base+8292)//16585}
+\bsELSEIF{ (x\%4)==2 }
+  \bsRET{228486*base+20195)//40391}
+\bsELSEIF{ (x\%4)==3 }
+  \bsRET{440253*base+32722)//65444}
+\bsEND
+\end{pseudo}
+
+Offsets are approximately $3/8$ of the quantisation factors - these
+mark the reconstruction point within the quantisation interval:
+
+\begin{pseudo}{quant\_offset}{index}
+\bsRET{ (quant\_factor(index)*3+4)//8 }
+\end{pseudo}
+
+\subsubsection{Updating counts and resetting contexts}
+\label{updatecounts}
+
+The $update\_count()$ function updates a periodic count of subband 
+coefficients and rescales arithmetic decoding contexts if ?? has been reached.
+
+\begin{pseudo}{update\_count}{}
+\bsCODE{\CoefficientCount += 1}
+\bsIF{\CoefficientCount == \CoefficientReset}
+  \bsCODE{\CoefficientCount = 0}
+  \bsFOR{i=0}{17\text{[Use constant names?]}}
+    \bsCODE{reset\_context(i)}{\ref{arithcontexts}}
+  \bsEND
+\bsEND
+\end{pseudo}

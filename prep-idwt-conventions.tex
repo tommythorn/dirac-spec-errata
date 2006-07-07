@@ -1,35 +1,75 @@
-For the purposes of this specification a subband SUBBAND will be
-identified with a two dimensional data array of coefficients SUBBAND[][]
-where the first index ranges from 0 to SUBBAND\_HEIGHT-1 and the second
-index from 0 to SUBBAND\_WIDTH-1, so that
+\label{wltdecodeconventions}
 
-SUBBAND[y][x]
+\subsubsection{Wavelet data initialisation}
 
-represents the xth coefficient on row y.
+\label{wltinit}
 
-Parents and children
+The $transform\_data()$ process begins with an initialisation process, 
+$initialise\_data()$, which returns a structure which will
+contain the decoded wavelet coefficients for the component. 
 
-If SUBBAND\_NUM<NUM\_SUBBANDS-3 then the subband has a parent subband. The
-index of the parent subband is given by SUBBAND\_NUM+3.
+For the purposes of this specification, this is a four-dimensional array $data$,
+where individual subbands are two-dimensional arrays accessed by level and depth:
 
-If a subband has a parent subband then each coefficient has a parent
-coefficient. The coordinates of the parent coefficient to a coefficient
-at coordinates (x,y) are (x>>1,y>>1) in the parent subband. A parent
-coefficient therefore has four children (). Parent subbands and their
-coefficients occur earlier in the bitstream than their children.
+$band = data[level][orientation]$
 
+Valid levels are integers from in the range 0 to \TransformDepth inclusive. 
+Level 0 consists of a single subband with orientation \LL. 
+All other levels consist of 3 subbands of orientation \LH, \HL, 
+and \HH.
 
+Individual subband coefficients are signed integers accessed by vertical and 
+horizontal coordinates within the subband:
 
+$c = band[y][x], x\in\{0, ... , subband\_width(level)-1\}, 
+y\in\{0, ... , subband\_height(level)-1\}$
 
-Figure  The relationship between child coefficients and their parents
-(shaded).
-
-Orientation
-
-All subbands other than the DC subband have an associated orientation.
-If SUBBAND\_NUM mod 3=1 then the subband is vertically oriented. If
-SUBBAND\_NUM mod 3=2 then the subband is horizontally oriented. If
-SUBBAND\_NUM mod 3=0 then the subband is diagonally oriented.
-
+where the dimensions $subband\_width(level)$ and $subband\_height(level)$ of the subband
+are as defined in Section 
+\ref{subbandwidthheight}. These dimensions correspond to a wavelet transform
+being performed on a copy of the component data which has been padded (if necessary) so that its
+dimensions are a multiple of $2^{\TransformDepth}$.
 
 
+\subsubsection{Dimensions of wavelet subbands}
+\label{subbandwidthheight}
+
+This section defines the values of the $subband\_width(level)$ and $subband\_height(level)$
+functions, giving the width and height of subbands at a given level, and hence the range
+of subband vertical and horizontal indices. 
+
+Define the padded dimensions of the component by
+
+\begin{eqnarray*}
+ph = 2^{\TransformDepth}*\lceil\frac{\ComponentHeight}{2^{\TransformDepth}}\rceil \\
+pw = 2^{\TransformDepth}*\lceil\frac{\ComponentWidth}{2^{\TransformDepth}}\rceil
+\end{eqnarray*}
+
+If $level==0$,
+
+\begin{eqnarray*}
+subband\_height(level)=ph//2^{\TransformDepth} \\
+=\lceil\frac{\ComponentHeight}{2^{\TransformDepth}}\rceil \\
+subband\_width(level)=pw//2^{\TransformDepth} \\
+=\lceil\frac{\ComponentWidth}{2^{\TransformDepth}}\rceil
+\end{eqnarray*}
+
+If $level>0$
+\begin{eqnarray*}
+subband\_height(level)=ph//2^{\TransformDepth-level+1} \\
+=2^{level-1}*\lceil\frac{\ComponentHeight}{2^{\TransformDepth}}\rceil \\
+subband\_width(level)=pw//2^{\TransformDepth-level+1} \\
+=2^{level-1}*\lceil \frac{\ComponentWidth}{2^{\TransformDepth}}\rceil
+\end{eqnarray*}
+
+\begin{informative}
+In encoding, these padded dimensions may be achieved by padding the 
+component data up to the padded dimensions and applying the forward
+Discrete Wavelet Transform (the inverse of the operations specified in
+Section \ref{idwt}). Any values may be used for the padded data, although
+the choice will affect wavelet coefficients at the right and bottom 
+edges of the subbands. Good results, in compression terms, may be obtained
+ by using edge extension for intra pictures and zero extension for inter 
+pictures. A poor choice of padding may cause visible artefacts near the
+bottom and right edges at high levels of compression.
+\end{informative}

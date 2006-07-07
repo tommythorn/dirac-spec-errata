@@ -135,8 +135,9 @@
 \pdefine{SubbandDataLength}{subband\_data\_length}% [level][band]
 \pdefine{QuantIndex}{quantiser\_index}
 \pdefine{CompressedSubbandData}{compressed\_subband\_data}%needed?
-\pdefine{WaveletContexts}{wavelet\_contexts}
+\pdefine{Contexts}{contexts}
 \pdefine{CoefficientCount}{coefficient\_count}
+\pdefine{CoefficientReset}{coefficient\_reset}
 
 
 \pdefine{SBSplitResidue}{sb\_split\_residual}
@@ -162,3 +163,34 @@
 
 \pdefine{CurrentByte}{current\_byte}
 \pdefine{NextBit}{next\_bit}
+\pdefine{Contexts}{contexts}
+\pdefine{Codeblocks}{codeblocks}
+\pdefine{CodeblockMode}{codeblock\_mode}
+
+\newcommand{\SignZero}{\text{SIGN\_ZERO}}
+\newcommand{\SignPos}{\text{SIGN\_POS}}
+\newcommand{\SignNeg}{\text{SIGN\_NEG}}
+
+\newcommand{\ZPZNFollowOne}{\text{ZPZN\_FBIN1}}
+\newcommand{\ZPNNFollowOne}{\text{ZPNN\_FBIN1}}
+\newcommand{\ZPFollowTwo}{\text{ZP\_FBIN2}}
+\newcommand{\ZPFollowThree}{\text{ZP\_FBIN3}}
+\newcommand{\ZPFollowFour}{\text{ZP\_FBIN4}}
+\newcommand{\ZPFollowFive}{\text{ZP\_FBIN5}}
+\newcommand{\ZPFollowSixPlus}{\text{ZP\_FBIN6+}}
+
+\newcommand{\NPZNFollowOne}{\text{NPZN\_FBIN1}}
+\newcommand{\NPNNFollowOne}{\text{NPNN\_FBIN1}}
+\newcommand{\NPFollowTwo}{\text{NP\_FBIN2}}
+\newcommand{\NPFollowThree}{\text{NP\_FBIN3}}
+\newcommand{\NPFollowFour}{\text{NP\_FBIN4}}
+\newcommand{\NPFollowFive}{\text{NP\_FBIN5}}
+\newcommand{\NPFollowSixPlus}{\text{NP\_FBIN6+}}
+
+\newcommand{\CoeffInfo}{\text{COEFF\_INFO}}
+
+\newcommand{\ZeroCodeblock}{\text{ZERO\_BLOCK}}
+\newcommand{\QOffsetFollow}{\text{Q\_OFFSET\_FOLLOW}}
+\newcommand{\QOffsetInfo}{\text{Q\_OFFSET\_INFO}}
+\newcommand{\QOffsetSign}{\text{Q\_OFFSET\_SIGN}}
+\newcommand{\TotalCoeffCtxs}{\text{TOTAL\_COEFF\_CTXs}}
