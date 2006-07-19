@@ -35,6 +35,8 @@ the quantisation index and byte-aligning the subsequent read operations.
 \begin{pseudo*}
 \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
 \bsCODE{\CoefficientCount=0}
+\bsCODE{vol=subband\_height(level)*subband\_width(level)}
+\bsCODE{\CoefficientReset=max(min(vol//32, 800), 25)}
 \bsCODE{quant\_index = read\_uint()}
 \bsCODE{byte\_align()}
 \end{pseudo*}
