@@ -35,10 +35,10 @@ requiring comprehension of the entire specification.
 
 It is worth observing, nevertheless, that this partition of functionality has 
 some difficulties. In particular, the arithmetic decoding of wavelet subbands and 
-motion vectors could perhaps have been assigned to layer 2, since arithmetic
+has been assigned to layer 3, since arithmetic
 decoding is defined as a basic data access method. However, these processes
-do many other complicated things to manage contexts, perform predictions
-and we have considered them to be firmly in the semantic layer.
+do complicated things to manage contexts, perform predictions
+and could have been considered to be part of picture decoding.
 
 This layered structure is reflected in the structure of the specification,
 which is divided into four parts. The first part introduces Dirac concepts,
@@ -48,8 +48,9 @@ throughout the specification.
 
 The second part defines stream data access functions for data types. Part III
 deals with accessing, parsing the Dirac bitstream and populating data
-structures.
+structures, including the wavelet coefficient and motion data.
 
-Part IV defines decoder operations and picture output.
+Part IV defines high-level decoder operations and picture output, specifically the
+inverse wavelet transform and motion compensation.
 
 In addition to these parts, appendices deal with standard settings, ... TBC

@@ -109,103 +109,107 @@ This section defines the $select\_context(zero\_nhood, parent, sign)$
 function, which chooses a context index set for decoding a coefficient value.
 
 Twelve possible coefficient index sets are defined, and are returned as specified 
-in Table \ref{contexttable}.
+in Table \ref{contexttable}. Note that follow contexts are an array indexed from $0$
+as per Section \ref{arithreadint}.
 
 Note that parent values affect the context of all follow bits, and that neighbour
-values only affect the context of the first follow bit. A common Data context is used
+values only affect the context of the first follow bit. A common data context is used
 for all coefficients.
 
 %% Table of context sets for signed coefficient extraction %%
+\begin{table}[h!]
 \begin{tabular}{|c|c|c||l|l|}
-%\label{contexttable}
 \hline
  $parent$ & $zero\_nhood$ & $sign$ & \multicolumn{2}{c|}{\bf{Context set}} \\
 
 % Zero parent, zero neighbour, zero sign prediction
 \hline
-0 & \true & 0 &  Follow & \{\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                            \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
-  &   &   &  Data & \CoeffInfo \\ \cline{4-5}
-  &   &   &  Sign & \SignZero \\
+0 & \true & 0 &  follow[] & \ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                            \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
+  &   &   &  data & \CoeffData \\ \cline{4-5}
+  &   &   &  sign & \SignZero \\
 
 % Zero parent, zero neighbour, -ve sign prediction
 \hline
-0 & \true & $<0$ &  Follow & \{\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
-  &   &    &  Data & \CoeffInfo \\ \cline{4-5}
-  &   &    &  Sign & \SignNeg \\
+0 & \true & $<0$ &  follow[] & \ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
+  &   &    &  data & \CoeffData \\ \cline{4-5}
+  &   &    &  sign & \SignNeg \\
 
 % Zero parent, zero neighbour, +ve sign  prediction
 \hline
-0 & \true & $>0$ &  Follow & \{\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
-  &   &    &  Data & \CoeffInfo \\ \cline{4-5}
-  &   &    &  Sign & \SignPos \\
+0 & \true & $>0$ &  follow[] & \ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
+  &   &    &  data & \CoeffData \\ \cline{4-5}
+  &   &    &  sign & \SignPos \\
 
 % Zero parent, non-zero neighbour, zero sign prediction
 \hline
-0 & \false & 0 &  Follow & \{\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                             \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
-  &   &   &  Data & \CoeffInfo \\ \cline{4-5}
-  &   &   &  Sign & \SignZero \\
+0 & \false & 0 &  follow[] & \ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                             \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
+  &   &   &  data & \CoeffData \\ \cline{4-5}
+  &   &   &  sign & \SignZero \\
 
 % Zero parent, non-zero neighbour, -ve sign prediction
 \hline
-0 & \false & $<0$ &  Follow & \{\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
-  &        &    &  Data & \CoeffInfo \\ \cline{4-5}
-  &        &    &  Sign & \SignNeg \\
+0 & \false & $<0$ &  follow[] & \ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
+  &        &    &  data & \CoeffData \\ \cline{4-5}
+  &        &    &  sign & \SignNeg \\
 
 % Zero parent, non-zero neighbour, +ve sign prediction
 \hline
-0 & \false & $>0$ &  Follow & \{\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus\} \\ \cline{4-5}
-  &        &      &  Data & \CoeffInfo \\ \cline{4-5}
-  &        &      &  Sign & \SignPos \\
+0 & \false & $>0$ &  follow[] & \ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
+  &        &      &  data & \CoeffData \\ \cline{4-5}
+  &        &      &  sign & \SignPos \\
 
 % Non-zero parent, zero neighbour, zero sign prediction
 \hline
-$\neq 0$ &  \true & 0 &  Follow & \{\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
-& &      &  Data & \CoeffInfo \\ \cline{4-5}
-& &      &  Sign & \SignZero \\
+$\neq 0$ &  \true & 0 &  follow[] & \NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
+& &      &  data & \CoeffData \\ \cline{4-5}
+& &      &  sign & \SignZero \\
 
 % Non-zero parent, zero neighbour, -ve sign prediction
 \hline
-$\neq 0$ & \true & $<0$ &  Follow & \{\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
-& &      &  Data & \CoeffInfo \\ \cline{4-5}
-& &      &  Sign & \SignNeg \\
+$\neq 0$ & \true & $<0$ &  follow[] & \NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
+& &      &  data & \CoeffData \\ \cline{4-5}
+& &      &  sign & \SignNeg \\
 
 % Non-zero parent, zero neighbour, +ve sign prediction
 \hline
-$\neq 0$ & \true & $>0$ &  Follow & \{\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
-& &      &  Data & \CoeffInfo \\ \cline{4-5}
-& &      &  Sign & \SignPos \\
+$\neq 0$ & \true & $>0$ &  follow[] & \NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
+& &      &  data & \CoeffData \\ \cline{4-5}
+& &      &  sign & \SignPos \\
 
 % Non-zero parent, non-zero neighbour, zero sign prediction
 \hline
-$\neq 0$ & \false & 0 &  Follow & \{\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
-& &      &  Data & \CoeffInfo \\ \cline{4-5}
-& &      &  Sign & \SignZero \\
+$\neq 0$ & \false & 0 &  follow[] & \NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
+& &      &  data & \CoeffData \\ \cline{4-5}
+& &      &  sign & \SignZero \\
 
 % Zero parent, non-zero neighbour, -ve sign prediction
 \hline
-$\neq 0$ & \false & $<0$ &  Follow & \{\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                       \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
-& &      &  Data & \CoeffInfo \\ \cline{4-5}
-& &      &  Sign & \SignNeg \\
+$\neq 0$ & \false & $<0$ &  follow[] & \NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                       \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
+& &      &  data & \CoeffData \\ \cline{4-5}
+& &      &  sign & \SignNeg \\
 
 % Zero parent, non-zero neighbour, +ve sign prediction
 \hline
-$\neq 0$ & \false  & $>0$ &  Follow & \{\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                        \NPFollowFour,\NPFollowFive,\NPFollowSixPlus\} \\ \cline{4-5}
-& &      &  Data & \CoeffInfo \\ \cline{4-5}
-& &      &  Sign & \SignPos \\
+$\neq 0$ & \false  & $>0$ &  follow[] & \NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                        \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
+& &      &  data & \CoeffData \\ \cline{4-5}
+& &      &  sign & \SignPos \\
 \hline
+
 \end{tabular}
+\caption{Subband coefficient context sets}\label{contexttable}
+\end{table}
 
 
 \subsubsection{Inverse quantisation}
@@ -262,13 +266,13 @@ mark the reconstruction point within the quantisation interval:
 \label{updatecounts}
 
 The $update\_count()$ function updates a periodic count of subband 
-coefficients and rescales arithmetic decoding contexts if ?? has been reached.
+coefficients and rescales arithmetic decoding contexts if \CoefficientReset has been reached.
 
 \begin{pseudo}{update\_count}{}
 \bsCODE{\CoefficientCount += 1}
 \bsIF{\CoefficientCount == \CoefficientReset}
   \bsCODE{\CoefficientCount = 0}
-  \bsFOR{i=0}{17\text{[Use constant names?]}}
+  \bsFOR{i=0}{len(\AContexts)-1}
     \bsCODE{reset\_context(i)}{\ref{arithcontexts}}
   \bsEND
 \bsEND
