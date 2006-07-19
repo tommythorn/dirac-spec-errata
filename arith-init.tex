@@ -1,16 +1,38 @@
+\label{initarith}
+
 At the beginning of the decoding of any data unit, the arithmetic
 decoding state is initialised as follows:
 
-Initialise Arithmetic Decoding Engine
-\begin{verbatim}
-initialise_arithmetic_decoding(block_data_length):
-    #Arithmetic decoding is specified
-        using global variables
-    bytes_left = block_data_length
-    #Arithmetic coded data is byte aligned
-        so set zero "bits_left"
-    bits_left = 0
-    low = 0x0000
-    high = 0x0000
-    code = 0x0000
-\end{verbatim}
+\begin{pseudo}{initialise\_arithmetic\_decoding}{(block\_data\_length}
+\bsCODE{\ABitsLeft=8*block\_data\_length}
+\bsCODE{\ALow = 0x0000}
+\bsCODE{\AHigh = 0x0000}
+\bsCODE{\ACode = 0x0000}
+\bsCODE{init\_contexts()}
+\end{pseudo}
+
+Contexts are initialised by the $init\_contexts()$ function as follows:
+\begin{pseudo}{init\_contexts}{}
+\bsFOR{i=0}{len(\AContexts)-1}
+  \bsCODE{\AContexts[i][0]=1}
+  \bsCODE{\AContexts[i][1]=1}
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+[Move to a general section on spec methodology??]
+The use of global variables for implementation code is
+considered poor programming practice. It should be remembered that this
+document is a specification and not implementation code. Global
+variables are used in this specification for two reasons. Firstly they
+avoid the need to pass the arithmetic coding state to each function that
+reads arithmetic coded data, thereby (we hope) clarifying the specification.
+Secondly a specific implementation is likely to associate these
+variables with some sort of output stream object. For example in a
+software implementation written in C++ these variables may be associated
+with an output stream in which output is implemented using custom stream
+manipulators. Data output is highly implementation specific. The use of
+global variables is a way of specifying output in a generic way. Their
+use should not be taken to indicate that they should (or should not) be
+used in any specific implementation.
+\end{informative}

@@ -5,10 +5,23 @@
 
 \label{arithdecoding}
 
+% Arithmetic decoding engine state variables %
+
+\newcommand{\adefine}[2]{%
+    \label{#1}%
+    \expandafter\def\csname #1\endcsname{\text{statea[#2]}}}
+
+\adefine{AHigh}{high}
+\adefine{ALow}{low}
+\adefine{ACode}{code}
+\adefine{ABitsLeft}{bits\_left}
+\adefine{AContexts}{contexts}
+
+\adefine{ArithState}{}
+
 \input{arith-intro}
-\subsection{Arithmetic decoding engine}\input{arith-engine}
+\subsection{State and contexts}\input{arith-contexts}
 \subsection{Initialisation}\input{arith-init}
 \subsection{Data input}\input{arith-datainput}
-\subsection{Contexts}\input{arith-contexts}
 \subsection{Decoder functions}\input{arith-decoder}
-\subsubsection{Signed integer arithmetic decoding}\input{arith-decoder-sint}
+\input{arith-decoder-sint}

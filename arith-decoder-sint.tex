@@ -1,17 +1,37 @@
+\subsubsection{Arithmetic decoding of integer values}
+
 This section defines the operation of the $read\_sinta(context\_set)$ function
  for extracting integer values from a block of arithmetically coded data.
 
+\paragraph{Binarisation and contexts \\}
+
 Integer values are binarised using interleaved exp-Golomb binarisation as per
-Section ??. The set $context\_set$ of contexts therefore consists of three parts: 
-an array of follow contexts, $context\_set[follow]$ (indexed from 0 to 
-$len(context\_set[follow])$, a single data context 
-$context\_set[data]$ and a sign context $context\_set[sign]$.
+Section \ref{segol}: the $read\_sinta()$ process is essentially identical to the 
+$read\_sint()$ process specified therein, except that instances of $read\_bool()$ are replaced
+by instances of $read\_ba()$ (Section \ref{arithreadbool} using suitable contextualisation. 
 
-The $read\_sinta()$ process is identical to the $read\_sint()$ process
-specified in Section ??, except that instances of $read\_bool()$ are replaced
-by instances of $read\_ba()$ using suitable contextualisation. It uses $read\_uinta()$
-as for decoding the magnitude:
+A choice of context depends upon whether the bit is a data bit, follow bit, or sign bit, and the 
+position of the bit within the binarisation: $context\_set$ consists of three parts -
+\begin{itemize}
+\item an array of follow contexts, $context\_set[follow]$ (indexed from 0 to 
+$len(context\_set[follow])$
+\item a single data context $context\_set[data]$ 
+\item a sign context $context\_set[sign]$
+\end{itemize}
 
+Each follow context is used for decoding the corresponding follow bit, with the
+last follow context being used for all subsequent follow bits (if any) also. 
+The follow context selection function $follow\_context()$ is defined by:
+
+\begin{pseudo}{follow\_context}{index, context\_set}
+\bsCODE{pos= max(index, len(context\_set[follow])-1 }
+\bsCODE{ctx_index = context\_set[follow][pos]}
+\bsRET{\Contexts[ctx_index]}
+\end{pseudo}
+
+\paragraph{Unsigned integer decoding \\}
+
+Unsigned integers are decoded by:
 
 \begin{pseudo}{read\_uinta}{context\_set}
 \bsCODE{value = 1}
@@ -27,15 +47,7 @@ as for decoding the magnitude:
 \bsRET{value}
 \end{pseudo}
 
-Each follow context is used for decoding the corresponding follow bit, with the
-last follow context being used for all subsequent follow bits (if any) also. 
-The follow context selection function $follow\_context()$ is defined by:
-
-\begin{pseudo}{follow\_context}{index, context\_set}
-\bsCODE{pos= max(index, len(context\_set[follow])-1 }
-\bsCODE{ctx_index = context\_set[follow][pos]}
-\bsRET{\Contexts[ctx_index]}
-\end{pseudo}
+\paragraph{Signed integer decoding \\}
 
 $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 

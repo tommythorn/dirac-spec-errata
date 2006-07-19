@@ -1,16 +1,20 @@
-The arithmetic decoding process accesses data in a contiguous block of
-length $block\_data\_length$. These bits are sufficient to allow for the
+\label{inputarith}
+
+The arithmetic decoding process accesses data in a contiguous block of bytes
+whose size is set on initialisation (Section \ref{initarith}). The bits in this
+block are sufficient to allow for the
 decoding of all coefficients. However, the specification of arithmetic
-decoding operations in this section may cause further bits to be read,
+decoding operations in this section may occasionally cause further bits to be read,
 even though they are not required for determining decoded values. For this
 reason a read function $read\_bita()$ is defined which returns $0$ if the
 bounds of this block of data have been exceeded:
 
 \begin{pseudo}{read\_bita}{}
-\bsIF{bytes\_left==0}
-\bsRET{0}
+\bsIF{\ABitsLeft==0}
+  \bsRET{0}
 \bsELSE
-\bsRET{read\_bit()}
+  \bsCODE{\ABitsLeft -= 1}
+  \bsRET{read\_bit()}
 \bsEND
 \end{pseudo}
 

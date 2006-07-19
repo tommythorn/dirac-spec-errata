@@ -1,38 +1,33 @@
 \label{arithcontexts}
 
-[Contexts will exist in a state array. Will be accessed via integer indices]
+The global arithmetic decoder state consists of the following variables:
 
+\begin{pseudo*}
+\bsCODE{\ArithState:}
+\bsCODE{\ALow}{\#integer}
+\bsCODE{\AHigh}{\#integer}
+\bsCODE{\ACode}{\#integer}
+\bsCODE{\ABitsLeft}{\#integer}
+\bsCODE{\AContexts[]}{\#context array}
+\end{pseudo*}
+
+The state variable \AContexts is an array of all contexts
+used for entropy decoding in the Dirac decoder. 
+A context $context$ is an integer array consisting of two positive values,
+$context[0]$, and $context[1]$, representing counts of values $0$ and $1$
+respectively. Contexts are accessed by decoding functions
+via the indices defined in Section ??.
+
+\subsubsection{Resetting contexts}
 
 An individual context is reset by halving the counts of $0$ and $1$ and ensuring that
 these counts do not reach zero:
 
-\begin{pseudo}{reset\_context}{index}
-\bsCODE{\Contexts[0] = \Contexts[0]//2}
-\bsCODE{\Contexts[0] += 1}
-\bsCODE{\Contexts[1] = \Contexts[1]//2}
-\bsCODE{\Contexts[1] += 1}
+\begin{pseudo}{reset\_context}{context}
+\bsCODE{context[0] \gg= 1}
+\bsCODE{context[0] += 1}
+\bsCODE{context[1] \gg= 1}
+\bsCODE{context[1] += 1}
 \end{pseudo}
 
-\begin{comment}
-The decoder shall maintain the statistics relating to the set of
-contexts that may be used in decoding a data element. How these shall be
-initialised is set out in Sections  and . A context is modelled as
-consisting of the following unsigned integer values, which constitute
-its state:
-
-COUNT0
-
-COUNT1
-
-COUNT0 represents a count of the number of zeroes that have occurred in
-the context, COUNT1 a count of the number of ones that have occurred in
-the context. 
-
-From these values WEIGHT, SCALED\_COUNT0 and SCALED\_COUNT1 are derived.
-WEIGHT shall always be equal to COUNT0+COUNT1. WEIGHT shall always be
-less than 1024
-
-SCALED\_COUNT0 is a count of zeroes scaled to a total count of 1024.
-SCALED\_COUNT1 is a count of ones, likewise scaled to a total count of
-1024. The derivation of the scaled counts is specified in Section .
-\end{comment}
+Periodic resetting of all contexts occurs in entropy decoding 

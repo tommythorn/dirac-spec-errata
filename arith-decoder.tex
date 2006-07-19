@@ -1,36 +1,81 @@
-
-%src: 0.9
-
 The arithmetic decoding engine is a multi-context, adaptive binary
 arithmetic decoder, performing binary renormalisation and producing
 binary outputs. For each bit decoded, the semantics of the relevant
-decoder function determine a statistical context (probability model) to
-be used for the internal rescaling functions. Assuming this context, the
-raw arithmetic decoding function is written
+calling decoder function determine contexts to be passed to the
+arithmetic decoding operation (Section \ref{arithcontexts}).
 
-\begin{comment}
-binary\_arith\_decode()
+\subsubsection{Shifting bits in}
 
-Its operation is defined in Section .
+\label{arithshiftin}
 
-Signed and unsigned integer outputs can be derived by the use of
-binarisation schemes which turn a symbol into a string of bits. There
-are two basic binarisations employed for arithmetic coding: unary and
-truncated unary binarisation. These are defined in Appendix , giving
-rise to four decoder functions 
+This section defines the operation of the $shift\_bit\_in()$ 
+and $shift\_all_bits()$ functions
+for reading bits into the arithmetic decoding state variables.
 
-Unsigned unary arithmetic decoding: uu\_arith\_decode()
+\begin{pseudo}{shift\_bit\_in}{}
+\bsCODE{\AHigh \ll= 1}
+\bsCODE{\AHigh \&= \text{0xFFFF}}
+\bsCODE{\AHigh += 1}
+\bsCODE{\ALow \ll= 1}
+\bsCODE{\ALow \&= \text{0xFFFF}}
+\bsCODE{\ACode \ll= 1}
+\bsCODE{\ACode \&= \text{0xFFFF}}
+\bsCODE{\ACode += read\_bita()}{\ref{inputarith}}
+\end{pseudo}
 
-Signed unary arithmetic decoding:   su\_arith\_decode()
+$shift\_all\_bits()$ expands the interval between \ALow and \AHigh
+until the msbs (bit 15) differ and the interval no longer
+straddles the half-way point $0x8000$.
 
-Unsigned truncated unary arithmetic decoding:   ut\_arith\_decode()
+\begin{pseudo}{shift\_all\_bits()}{}
+\bsWHILE{ \AHigh\&0x8000)==0x0 \&\& (\ALow\&0x8000)==0x0}
+  \bsCODE{shift\_bit\_in()}
+\bsEND
+\bsWHILE{ (\AHigh\&0x4000)==0x0 and (\ALow\&0x4000)==0x4000 }
+  \bsCODE{\ACode \hat{\text{ }}= 0x4000}
+  \bsCODE{\AHigh \hat{\text{ }}= 0x4000}
+  \bsCODE{\ALow \hat{\text{ }}= 0x4000}
+  \bsCODE{shift\_bit\_in()}
+\bsEND
+\end{pseudo}
 
-In addition a decoding process may invoke halve\_all\_counts() to reset
-context statistics.
+\subsubsection{Decoding boolean values}
+
+\label{arithreadbool}
+
+This section specifies the operation of the $read\_boola()$ function
+for extracting a boolean value from the Dirac stream. Before extracting
+any values, all possible bits are shifted in to ensure that the decoding
+state has maximum information.
+
+\begin{pseudo}{read\_boola}{context\_index}
+\bsCODE{shift\_all\_bits()}{\ref{arithshiftin}}
+\bsCODE{context=\AContexts[context\_index]}
+\bsCODE{weight = context[0] + context[1]}
+\bsCODE{scaler = (0x10000+weight//2)//weight}
+\bsCODE{probability0 = context[0]*scaler}
+\bsCODE{count = code-low+1}
+\bsCODE{range = high-low+1}
+\bsCODE{range\_x\_prob = (range * probability0)>>16}
+\bsIF{ count > range\_x\_prob }
+  \bsCODE{value = \true}
+  \bsCODE{low = low + range\_x\_prob}
+  \bsCODE{context[1] += 1}
+\bsELSE
+  \bsCODE{value = False}
+  \bsCODE{high = low + range\_x\_prob - 1}
+  \bsCODE{context[0] += 1}
+\bsEND
+\bsIF{ (context[0] + context[1]) > 255 }
+  \bsCODE{reset\_context(context)}
+\bsEND
+\bsRET{value}
+\end{pseudo}
 
 \begin{informative}
-There is no signed truncated unary arithmetic decoding function in
-Dirac, since truncated unary values have been derived from modulo
-arithmetic and have no sign.
+The function scales the probability of $0$ from the decoding context
+so that a probability of $1$ is commensurate with the interval between
+ \ALow and \AHigh. If \ACode is greater than this cut-off, then $1$ has
+been encoded, else $0$ has.
+
 \end{informative}
-\end{comment}
