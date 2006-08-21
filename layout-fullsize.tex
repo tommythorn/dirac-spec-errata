@@ -45,12 +45,22 @@
 %\renewcommand\bibname{References}
 
 \DeclareMathOperator{\clip}{clip}
+\DeclareMathOperator{\median}{median}
+\DeclareMathOperator{\majority}{majority}
 
-\definecolor{shadecolour}{gray}{0.90}
+\definecolor{shadecolor}{gray}{0.90}
 \newenvironment{informative}[0]%
-{\def\FrameCommand{\colorbox{shadecolour}}%
- \MakeFramed {\setlength\hsize{0.8\textwidth}}{\bf Informative:}}%
-{\endMakeFramed}
+{
+\begin{shaded}
+\FrameCommand{{\bf Informative:}}
+}
+{\end{shaded}}
+
+\newenvironment{informative*}[0]%
+{
+\begin{shaded}
+}
+{\end{shaded}}
 
 \setcounter{secnumdepth}{4}
 
@@ -75,6 +85,7 @@
      \newcommand{\bsELSEIF}[1]{\addtocounter{indent}{-1}\dfindent\text{else if (\text{$##1$}):}\stepcounter{indent} & &} 
      \newcommand{\bsWHILE}[1]{\dfindent\text{while (\text{$##1$}):}\stepcounter{indent} & &}
      \newcommand{\bsFOREACH}[2]{\dfindent\text{for each \text{$##1$} in \text{$##2$}:}\stepcounter{indent} & &}
+     \newcommand{\bsFORSUCH}[2]{\dfindent\text{for \text{$##1$} such that \text{$##2$}:}\stepcounter{indent} & &}
      \newcommand{\bsFOR}[2]{\dfindent\text{for \text{$##1$} to \text{$##2$}:}\stepcounter{indent} & &}
 %     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}}\addtocounter{indent}{-1} & &}
      \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}} & &}
@@ -101,6 +112,7 @@
      \newcommand{\bsELSEIF}[1]{\addtocounter{indent}{-1}\dfindent\text{else if (\text{$##1$}):}\stepcounter{indent} & &} 
      \newcommand{\bsWHILE}[1]{\dfindent\text{while (\text{$##1$}):}\stepcounter{indent} & &}
      \newcommand{\bsFOREACH}[2]{\dfindent\text{for each \text{$##1$} in \text{$##2$}:}\stepcounter{indent} & &}
+     \newcommand{\bsFORSUCH}[2]{\dfindent\text{for \text{$##1$} such that \text{$##2$}:}\stepcounter{indent} & &}
      \newcommand{\bsFOR}[2]{\dfindent\text{for \text{$##1$} to \text{$##2$}:}\stepcounter{indent} & &}
 %     \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}}\addtocounter{indent}{-1} & &}
      \newcommand{\bsRET}[1]{\dfindent\text{return \text{$##1$}} & &}
@@ -120,5 +132,4 @@
 \tableofcontents
 \clearpage
 \input{spec-structure}
-
 \end{document}

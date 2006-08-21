@@ -9,7 +9,7 @@
 
 \newcommand{\adefine}[2]{%
     \label{#1}%
-    \expandafter\def\csname #1\endcsname{\text{statea[#2]}}}
+    \expandafter\def\csname #1\endcsname{\text{stateA[#2]}}}
 
 \adefine{AHigh}{high}
 \adefine{ALow}{low}
@@ -19,9 +19,257 @@
 
 \adefine{ArithState}{}
 
-\input{arith-intro}
-\subsection{State and contexts}\input{arith-contexts}
-\subsection{Initialisation}\input{arith-init}
-\subsection{Data input}\input{arith-datainput}
-\subsection{Decoder functions}\input{arith-decoder}
-\input{arith-decoder-sint}
+This section describes the arithmetic decoding engine and
+processes for using it to extract data from the Dirac stream.
+
+The arithmetic decoding engine consists of two elements: 
+
+\begin{itemize}
+\item a global state
+structure variable $\ArithState$ representing the state of the arithmetic 
+decoder (Section \ref{initarith})
+\item a set of functions for extracting values from the decoder 
+and updating the decoder state (Section \ref{extractarith})
+\end{itemize}
+
+\subsection{State and contexts}
+\label{arithcontexts}
+
+The global arithmetic decoder state $\ArithState$ consists of the following variables:
+
+\begin{itemize}
+\item $\ALow$, an integer representing the beginning of the current coding interval
+\item $\AHigh$, an integer representing the end of the current coding interval
+\item $\ACode$, an integer within the interval determined from the encoded bitstream
+\item $\ABitsLeft$, a decrementing count of the number of bits yet to be read in
+\item $\AContexts$, an array of all contexts used in the Dirac decoder
+\end{itemize}
+
+A context $context$ is an integer array consisting of two positive values,
+$context[0]$, and $context[1]$, representing counts of values $0$ and $1$
+respectively. Contexts are accessed by decoding functions
+via the indices defined in Section ??.
+
+\subsubsection{Rescaling contexts}
+\label{rescalecontext}
+
+An individual context is rescaled by halving the counts of $0$ and $1$ and ensuring that
+these counts do not reach zero:
+
+\begin{pseudo}{rescale\_context}{context}
+\bsCODE{context[0] \gg= 1}
+\bsCODE{context[0] += 1}
+\bsCODE{context[1] \gg= 1}
+\bsCODE{context[1] += 1}
+\end{pseudo}
+
+\subsection{Initialisation}
+\label{initarith}
+
+At the beginning of the decoding of any data unit, the arithmetic
+decoding state is initialised as follows:
+
+\begin{pseudo}{initialise\_arithmetic\_decoding}{block\_data\_length}
+\bsCODE{\ABitsLeft=8*block\_data\_length}
+\bsCODE{\ALow = \text{0x0000}}
+\bsCODE{\AHigh =\text{0x0000}}
+\bsCODE{\ACode =\text{ 0x0000}}
+\bsCODE{init\_contexts()}
+\end{pseudo}
+
+Contexts are initialised by the $init\_contexts()$ function as follows:
+
+\begin{pseudo}{init\_contexts}{}
+\bsFOR{i=0}{length(\AContexts)-1}
+  \bsCODE{\AContexts[i][0]=1}
+  \bsCODE{\AContexts[i][1]=1}
+\bsEND
+\end{pseudo}
+
+\subsection{Data input}
+\label{inputarith}
+
+The arithmetic decoding process accesses data in a contiguous block of bytes
+whose size is set on initialisation (Section \ref{initarith}). The bits in this
+block are sufficient to allow for the
+decoding of all coefficients. However, the specification of arithmetic
+decoding operations in this section may occasionally cause further bits to be read,
+even though they are not required for determining decoded values. For this
+reason a read function $read\_bita()$ is defined which returns $0$ if the
+bounds of this block of data have been exceeded:
+
+\begin{pseudo}{read\_bita}{}
+\bsIF{\ABitsLeft==0}
+  \bsRET{0}
+\bsELSE
+  \bsCODE{\ABitsLeft -= 1}
+  \bsRET{read\_bit()}
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+The Dirac arithmetic decoding engine uses 16 bit words, and so no more than 16
+additional bits can be read beyond the end of the block. Hence it is sufficient
+to read in the entire block of data and pad the end with two zero bytes to
+avoid a branch condition with each input bit.
+\end{informative}
+
+\subsection{Decoder functions}
+\label{extractarith}
+The arithmetic decoding engine is a multi-context, adaptive binary
+arithmetic decoder, performing binary renormalisation and producing
+binary outputs. For each bit decoded, the semantics of the relevant
+calling decoder function determine which contexts are passed to the
+arithmetic decoding operations.
+
+\subsubsection{Shifting bits in}
+
+\label{arithshiftin}
+
+This section defines the operation of the $shift\_bit\_in()$ 
+and $shift\_all\_bits()$ functions
+for reading bits into the arithmetic decoding state variables.
+
+\begin{pseudo}{shift\_bit\_in}{}
+\bsCODE{\AHigh \ll= 1}
+\bsCODE{\AHigh \&= \text{0xFFFF}}
+\bsCODE{\AHigh += 1}
+\bsCODE{\ALow \ll= 1}
+\bsCODE{\ALow \&= \text{0xFFFF}}
+\bsCODE{\ACode \ll= 1}
+\bsCODE{\ACode \&= \text{0xFFFF}}
+\bsCODE{\ACode += read\_bita()}{\ref{inputarith}}
+\end{pseudo}
+
+$shift\_all\_bits()$ expands the interval between $\ALow$ and $\AHigh$
+until the msbs (bit 15) differ and the interval no longer
+straddles the half-way point 0x8000.
+
+\begin{pseudo}{shift\_all\_bits()}{}
+\bsWHILE{ \AHigh\&\text{0x8000})==\text{0x0} \&\& (\ALow\&\text{0x8000})==\text{0x0}}
+  \bsCODE{shift\_bit\_in()}
+\bsEND
+\bsWHILE{ (\AHigh\&\text{0x4000})==\text{0x0} \text{and} (\ALow\&\text{0x4000})==\text{0x4000} }
+  \bsCODE{\ACode \hat{\text{ }}= \text{0x4000}}
+  \bsCODE{\AHigh \hat{\text{ }}= \text{0x4000}}
+  \bsCODE{\ALow \hat{\text{ }}= \text{0x4000}}
+  \bsCODE{shift\_bit\_in()}
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+Note that if 16-bit words (unsigned shorts) are used for decoder state variables $\ALow$,
+ $\AHigh$ and $\ACode$ then there is no need for {\&}-ing with 0xFFFF. However, the 
+operations specified here are defined in terms of integers, since intermediate calculations
+ require higher dynamic range. In software, the efficiency of using short word lengths may
+or may not be offset by the requirement to cast to other data types for these calculations.
+\end{informative}
+
+\subsubsection{Decoding boolean values}
+
+\label{arithreadbool}
+
+This section specifies the operation of the $read\_boola()$ function
+for extracting a boolean value from the Dirac stream. Before extracting
+any values, all possible bits are shifted in to ensure that the decoding
+state has maximum information.
+
+\begin{pseudo}{read\_boola}{context\_index}
+\bsCODE{shift\_all\_bits()}{\ref{arithshiftin}}
+\bsCODE{context=\AContexts[context\_index]}
+\bsCODE{weight = context[0] + context[1]}
+\bsCODE{scaler = (0x10000+weight//2)//weight}
+\bsCODE{probability0 = context[0]*scaler}
+\bsCODE{count = code-low+1}
+\bsCODE{range = high-low+1}
+\bsCODE{range\_x\_prob = (range * probability0)>>16}
+\bsIF{ count > range\_x\_prob }
+  \bsCODE{value = \true}
+  \bsCODE{low = low + range\_x\_prob}
+  \bsCODE{context[1] += 1}
+\bsELSE
+  \bsCODE{value = False}
+  \bsCODE{high = low + range\_x\_prob - 1}
+  \bsCODE{context[0] += 1}
+\bsEND
+\bsIF{ (context[0] + context[1]) > 255 }
+  \bsCODE{rescale\_context(context)}{\ref{rescalecontext}}
+\bsEND
+\bsRET{value}
+\end{pseudo}
+
+\begin{informative}
+The function scales the probability of $0$ from the decoding context
+so that a probability of $1$ is commensurate with the interval between
+ $\ALow$ and $\AHigh$. If $\ACode$ is greater than this cut-off, then 1 ($\true$) has
+been encoded, else 0 ($\false$) has.
+\end{informative}
+
+\subsubsection{Arithmetic decoding of integer values}
+
+\label{arithreadint}
+
+This section defines the operation of the $read\_sinta(context\_set)$ function
+ for extracting integer values from a block of arithmetically coded data.
+
+\paragraph{Binarisation and contexts \\}
+
+Signed and unsigned integer values are binarised using interleaved exp-Golomb
+ binarisation as per Section \ref{vlc}: the $read\_sinta()$ and $read\_uinta()$
+processes are essentially identical to the 
+$read\_sint()$ and $read\_uint()$ processes, except that instances of $read\_bool()$ are replaced
+by instances of $read\_ba()$ (Section \ref{arithreadbool}) using suitable contextualisation. 
+
+A choice of context depends upon whether the bit is a data bit, follow bit, or sign bit, and the 
+position of the bit within the binarisation: $context\_set$ consists of three parts -
+\begin{itemize}
+\item an array of follow contexts, $context\_set[follow]$ (indexed from 0 to 
+$len(context\_set[follow])$
+\item a single data context $context\_set[data]$ 
+\item a sign context $context\_set[sign]$ (ignored for unsigned integer decoding)
+\end{itemize}
+
+Each follow context is used for decoding the corresponding follow bit, with the
+last follow context being used for all subsequent follow bits (if any) also. 
+The follow context selection function $follow\_context()$ is defined by:
+
+\begin{pseudo}{follow\_context}{index, context\_set}
+\bsCODE{pos= max(index, length(context\_set[follow])-1 }
+\bsCODE{ctx_index = context\_set[follow][pos]}
+\bsRET{\Contexts[ctx\_index]}
+\end{pseudo}
+
+So the last follow context is used for all the remaining follow bits also.
+
+\paragraph{Unsigned integer decoding \\}
+
+Unsigned integers are decoded by:
+
+\begin{pseudo}{read\_uinta}{context\_set}
+\bsCODE{value = 1}
+\bsCODE{index = 0}
+\bsWHILE{read\_ba(follow\_context(index,context\_set) )== \false}
+  \bsCODE{value \ll = 1}
+  \bsIF{read\_ba(\text{state[contexts]}[context\_set[data])])}
+    \bsCODE{value += 1}
+  \bsEND
+  \bsCODE{index += 1}
+\bsEND
+\bsCODE{value -= 1}
+\bsRET{value}
+\end{pseudo}
+
+\paragraph{Signed integer decoding \\}
+
+$read\_sinta()$ decodes first the magnitude then the sign, as necessary:
+
+\begin{pseudo}{read\_sinta}{context\_set}
+\bsCODE{value=read\_uinta(context_set)}
+\bsIF{value != 0}
+  \bsIF{read\_ba(\Contexts[context\_set[sign])]) == \true}
+    \bsCODE{value=-value}
+  \bsEND
+\bsEND
+\bsRET{value}
+\end{pseudo}
+

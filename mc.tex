@@ -1,51 +1,692 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% - This chapter defines how motion compensation - %
-% - is done using the motion data                - % 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[TO DO: Add in global motion compensation stuff]
 
-%Preamble, we define some commands used in the motion compensation
-%section:
+This section defines the operation of the process
+$motion\_compensate(ref1, ref2,  data, c)$ for motion-compensating a
+picture component array  $data$ of type $c=Y, U$ or $V$ from reference 
+component arrays $ref1$ and $ref2$ of the same type.
 
-\providecommand{\pic}[0]{\text{\texttt{pic}}}
-\providecommand{\block}[0]{\text{\texttt{block}}}
-\providecommand{\refs}[0]{\text{\texttt{refs}}}
-\providecommand{\mcparams}[0]{\text{\texttt{mc\_params}}}
-\providecommand{\mcfunc}[0]{\text{\texttt{motion\_compensate()}}}
-\providecommand{\compmc}[0]{\text{\texttt{component\_compensate()}}}
+This process is invoked for each component in a picture, subsequent to the 
+decoding of coefficient data, specified in Section \ref{}, and the Inverse Wavelet 
+Transform (IWT), specified in Section \ref{??}. The IWT process extracts the
+motion-compensated prediction residue from the decoded subband coefficients.
 
-\providecommand{\URef}[0]{\mathfrak{R}}
-\providecommand{\picWidth}[0]{\text{\texttt{pic\_width}}}
-\providecommand{\picHeight}[0]{\text{\texttt{pic\_height}}}
-\providecommand{\W}[0]{\text{\texttt{W}}}
-\providecommand{\xblen}[0]{\text{\texttt{xblen}}}
-\providecommand{\yblen}[0]{\text{\texttt{yblen}}}
-\providecommand{\xbsep}[0]{\text{\texttt{xbsep}}}
-\providecommand{\ybsep}[0]{\text{\texttt{ybsep}}}
-\providecommand{\gmA}[0]{\pmb{\text{A}}}
-\providecommand{\gmB}[0]{\pmb{\text{b}}}
-\providecommand{\gmC}[0]{\pmb{\text{c}}}
-\providecommand{\B}[0]{\text{\texttt{b}}}
-\providecommand{\Bx}[0]{\text{\texttt{b.x}}}
-\providecommand{\By}[0]{\text{\texttt{b.y}}}
-\providecommand{\Bpredmode}[0]{\text{\texttt{b.predmode}}}
-\providecommand{\predIntra}[0]{\text{Intra}}
-\providecommand{\predInter}[0]{\text{Inter}}
-\providecommand{\predGlobal}[0]{\text{Global}}
-\providecommand{\Brefsinuse}[0]{\text{\texttt{b.refsinuse}}}
-\providecommand{\Bdc}[0]{\text{\texttt{b.dc}}}
-\providecommand{\Bv}[0]{\text{\texttt{b.v}}}
+\subsection{Definitions and conventions}
 
-%NB. Meta-data needed so far.
+Motion compensation uses the motion block data $\BlockData$ and (optionally) the
+global motion parameters $\GlobalParams$.
 
-%Picture = Array 0 .. 2 of components
-%Component = bool - luma_or_chroma + 2-d array of data of appropriate dims
+%Since $motion\_compensate()$ applies to both luma and (potentially subsampled)
+chroma data, for simplicity a number of local variables are defined. If $c=Y$ then:
+\begin{eqnarray*}
+lenX & = & \LumaWidth \\
+lenY & = & \LumaHeight \\
+xblen & = & \LumaXBlen \\
+yblen & = & \LumaYBlen \\
+xbsep & = & \LumaXBsep \\
+ybsep & = & \LumaYBsep
+\end{eqnarray*}
 
-\input{mc-intro}
-\subsection{Block coverage}\input{mc-blockcoverage}
-\subsection{Algorithm}\input{mc-alg}
-\subsection{Upconversion}\input{mc-upconvert}
-\subsection{Forming an unweighted block prediction}\input{mc-pred}
-\subsection{Overlapped-block motion compensation weighting matrix}\input{mc-obmc-matrix}
-\subsection{Chominance components}\input{mc-chomascaling}
-\subsection{Notes on precision}\input{mc-precision}
-\subsection{Example implementation}\input{mc-impl}
+If $c=U$ or $c=V$, then likewise:
+\begin{eqnarray*}
+lenX & = & \ChromaWidth \\
+lenY & = & \ChromaHeight \\
+xblen & = & \ChromaXBlen \\
+yblen & = & \ChromaYBlen \\
+xbsep & = & \ChromaXBsep \\
+ybsep & = & \ChromaYBsep
+\end{eqnarray*}
+
+%Define the offsets $xoffset, yoffset$ by
+\begin{eqnarray*}
+xoffset & = & (xblen-xbsep)//2 \\
+yoffset & = & (yblen-ybsep)//2
+\end{eqnarray*}
+
+\begin{informative}
+The subband data that makes up the IWT coefficients is padded in order that the IWT
+may function correctly. For simplicity, in this specification, padding data is removed
+after the IWT has been performed so that the picture data and reference data arrays have
+the same dimensions for motion compensation. However, it may be more efficient to perform
+all operations prior to the output of pictures using padded data, i.e. to discard padding values
+subsequent to motion compensation. Such a course of action is equivalent, so long as it is realised
+that blocks must be regarded as edge blocks if they overlap the actual picture area, not the
+larger area produced by padding. The specification of this section fully supports such an 
+interpretation.
+\end{informative}
+
+Throughout this Section, the following conventions are used.
+
+\begin{itemize}
+\item $x,y$ are co-ordinates in the predicted picture component
+\item $u,v$ are co-ordinates in a potentially upconverted reference picture component
+\end{itemize}
+
+\begin{informative*}
+\subsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
+
+Motion compensated prediction methods provide methods for determining 
+predictions for pixels in the current picture by using motion vectors to 
+define offsets from those pixels to pixels in previously decoded
+pictures. Motion compensation techniques vary in how those pixels are grouped
+together, and how a prediction is formed for pixels in a given group. In 
+conventional  block motion compensation, as used in MPEG2, H.264 and many other
+codecs, the picture is divided into {\em disjoint} rectangular blocks and the
+motion vector or vectors associated with that block defines the offset(s) into
+the reference pictures.
+
+In OBMC, by contrast, the predicted picture is divided into a regular overlapping 
+blocks of dimensions $xblen$ by $yblen$ that cover at least the entire picture 
+area as shown in figure \ref{fig:blockcoverage}.  Overlapping is ensured by starting
+each block at a horizontal separation $xbsep$ and a vertical separation $ybsep$ 
+from its neighbours, where these values are less than the corresponding block dimensions.
+\end{informative*}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figs/block-coverage.eps}
+\caption{Block coverage of the predicted picture}
+\label{fig:blockcoverage}
+\end{figure}
+
+\begin{informative*}
+The overlap between blocks horizontally is $xblen - xbsep$ and vertically is
+$yblen - ybsep$. As a result pixels in the overlapping areas lie in more than
+one block, and so more than one motion vector set (and set of associated predictions)
+applies to them. Indeed, a pixel may have up to eight predictions, as it may belong to
+up to four blocks, each of which may have up to two motion vectors. These are combined
+into a single prediction by using weights, which are so constructed so as to sum to 1. In the
+ Dirac integer implementation, fractional weights are achieved by insisting that weights sum 
+to a power of 2, which is then shifted out once all contributions have been summed.
+
+In Dirac blocks are positioned so that blocks will overspill the left and top edges by 
+($xoffset$) and ($yoffset$) pixels.  The number of blocks has been
+determined (Section ??) so that the picture area is wholly covered, and the overspill
+ on the right hand and bottom edges will be at least the amount on the left and top edges. 
+Indeed, the number of blocks has been set so that the blocks divide into whole superblocks
+(sets of 4x4 blocks), which mean that some blocks may fall entirely out of the picture area. 
+ Any predictions for pixels outside the picture area defined by $0 \leq x < lenX, 0 \leq y <lenY$
+are discarded.
+
+\end{informative*}
+
+\subsection{Overall motion compensation process}
+\label{mcprocess}
+
+The motion compensation process forms an integer prediction $p[y][x]$ for each pixel in the predicted
+picture component $data$, and adds it to the component data. This is then clipped to keep it in range.
+
+\begin{pseudo*}
+\bsFOR{y=0}{lenY-1}
+    \bsFOR{x=0}{lenX-1}
+        \bsCODE{data[y][x] += pixel\_predict(y, x, data, ref1, ref2, c)}
+        \bsCODE{data[y][x] = \clip(data[y][x], 0, 2^\VideoDepth-1)}
+    \bsEND
+\bsEND
+\end{pseudo*}
+
+For block indices $(i,j)$, define the set of elements in the corresponding
+block by:
+
+\begin{equation*}
+B(i,j)=\{(x,y): 
+\begin{array}{l}
+ max(0,i*xbsep-xoffset)\leq x<min(lenX,(i+1)*xbsep-xoffset), \\
+ max(0,j*ybsep-yoffset)\leq y<min(lenY,(i+1)*ybsep-yoffset)\}
+\end{array}
+\end{equation*}
+
+Define the total weight resolution $\alpha$ as follows: 
+
+\begin{pseudo*}
+\bsCODE{hbits  = log2(xblen-xbsep)+1}
+\bsCODE{vbits  = log2(yblen-ybsep)+1}
+\bsCODE{\alpha=hbits+vbits+\MVWeightPrecision}
+\end{pseudo*}
+
+The $pixel\_predict(y, x, ref1, ref2, c)$ function forms a prediction by adding together weighted predictions
+for all blocks containing the pixel $(x,y)$:
+
+\begin{pseudo}{pixel\_pred}{y, x, data, ref1, ref2, c}
+\bsCODE{p=0}
+\bsFORSUCH{(i,j)}{(x,y)\in B(i,j)}
+    \bsCODE{p+=wt(i,j,x,y)*block\_pred(ref1, ref2, j, x, y, c)}{\ref{mcspatialweights},\ref{mcblock}}
+    \bsCODE{p=(p+2^{\alpha-1})\gg \alpha}
+\bsEND
+\bsRET{p}
+\end{pseudo}
+
+\begin{informative}
+Note that the number of bits $\alpha$ used for the OBMC weighting matrix depends upon the block sizes - specifically
+the block overlaps - selected. A Dirac decoder level (\ref{levels}) specifies the maximum block overlaps allowable, and hence 
+the word widths necessary for processing OBMC.
+
+[Say sthg about block-based specification]
+\end{informative}
+
+\subsection{Spatial weighting matrix}
+
+\label{mcspatialweights}
+
+This section specifies the process $wt(i,j,x,y)$ for deriving a spatial weighting value for a pixel with
+coordinates $(x,y)$ in the block with coordinates $(i,j)$. Note that other weights are applied
+to the prediction as a result of the weights applied to each reference, which are incorporated
+into the block prediction (Section \ref{mcblocks}).
+
+The two-dimensional spatial weighting matrix $W$ applies a linear roll-off in both horizontal and vertical directions
+based on the position of the pixel $(x,y)$ within the block $B(i,j)$. Define $xpos, ypos$ as the relative
+pixel coordinates from the top-left corner of the block:
+
+\begin{eqnarray*}
+xpos & = & x-(i*xbsep-xoffset) \\
+ypos & = & x-(i*ybsep-yoffset) 
+\end{eqnarray*}
+
+Define a horizontal weighting array $WH$ by the recipe:
+
+\providecommand{\abs}[1]{\left\lvert#1\right\rvert}
+\begin{pseudo*}
+\bsCODE{max\_x=2(xblen-xbsep)}
+\bsIF{i==0 \text{and} xpos< xblen//2}
+    \bsCODE{WH[xpos]=max\_x}
+\bsELSEIF{i==\BlocksX \text{and} xpos\geq xblen//2}
+    \bsCODE{WH[xpos]=max\_x}
+\bsELSE
+    \bsCODE{WH[xpos]  =  \clip(xblen-2\abs{xpos-\dfrac{(xblen-1)}{2}}, max\_x ) }
+\bsEND
+\end{pseudo*}The $pixel\_predict(y, x, ref1, ref2, c)$ function forms a prediction by adding together weighted predictions
+for all blocks containing the pixel $(x,y)$:
+
+\begin{pseudo}{pixel\_pred}{y, x, data, ref1, ref2, c}
+\bsCODE{p=0}
+\bsFORSUCH{(i,j)}{(x,y)\in B(i,j)}
+    \bsCODE{p+=wt(i,j,x,y)*block\_pred(ref1, ref2, j, x, y, c)}{\ref{mcspatialweights},\ref{mcblock}}
+    \bsCODE{p=(p+2^{\alpha-1})\gg \alpha}
+\bsEND
+\bsRET{p}
+\end{pseudo}
+
+\begin{informative}
+Note that the number of bits $\alpha$ used for the OBMC weighting matrix depends upon the block sizes - specifically
+the block overlaps - selected. A Dirac decoder level (\ref{levels}) specifies the maximum block overlaps allowable, and hence 
+the word widths necessary for processing OBMC.
+
+[Say sthg about block-based specification]
+\end{informative}
+
+\subsection{Spatial weighting matrix}
+
+\label{mcspatialweights}
+
+This section specifies the process $wt(i,j,x,y)$ for deriving a spatial weighting value for a pixel with
+coordinates $(x,y)$ in the block with coordinates $(i,j)$. Note that other weights are applied
+to the prediction as a result of the weights applied to each reference, which are incorporated
+into the block prediction (Section \ref{mcblocks}).
+
+The two-dimensional spatial weighting matrix $W$ applies a linear roll-off in both horizontal and vertical directions
+based on the position of the pixel $(x,y)$ within the block $B(i,j)$. Define $xpos, ypos$ as the relative
+pixel coordinates from the top-left corner of the block:
+
+\begin{eqnarray*}
+xpos & = & x-(i*xbsep-xoffset) \\
+ypos & = & x-(i*ybsep-yoffset) 
+\end{eqnarray*}
+
+Define a horizontal weighting array $WH$ by the recipe:
+
+\providecommand{\abs}[1]{\left\lvert#1\right\rvert}
+\begin{pseudo*}
+\bsCODE{max\_x=2(xblen-xbsep)}
+\bsIF{i==0 \text{and} xpos< xblen//2}
+    \bsCODE{WH[xpos]=max\_x}
+\bsELSEIF{i==\BlocksX \text{and} xpos\geq xblen//2}
+    \bsCODE{WH[xpos]=max\_x}
+\bsELSE
+    \bsCODE{WH[xpos]  =  \clip(xblen-2\abs{xpos-\dfrac{(xblen-1)}{2}}, max\_x ) }
+\bsEND
+\end{pseudo*}
+
+Likewise define $WV$ by
+
+\begin{pseudo*}
+\bsCODE{max\_y=2(yblen-ybsep)}
+\bsIF{j==0 \text{and} xpos< yblen//2}
+    \bsCODE{WH[ypos]=max\_y}
+\bsELSEIF{j==\BlocksY \text{and} ypos\geq yblen//2}
+    \bsCODE{WH[ypos]=max\_y}
+\bsELSE
+    \bsCODE{WV[ypos]  =  \clip(yblen - 2\abs{ypos-\dfrac{(yblen-1)}{2}},0, max\_y) }
+\bsEND
+\end{pseudo*}
+
+The overall spatial weighting matrix $W$ is given by
+
+\begin{equation*}
+W[ypos][xpos] = WH[xpos][WV[ypos]
+\end{equation*}
+
+and this is the value returned.
+
+Note that blocks at the extremities of the block set receive maximum weight around their outward-facing edges.
+This is to compensate for the lack of blocks making weight contributions on these edges, and ensures that
+the total contribution for the pixels in the blocks is $2^alpha$. In section ($i=0$), the profile of the matrix 
+for interior blocks is:
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figs/obmc-profile}
+\caption{Profile of overlapped-block motion compensation matrix}
+\label{fig:weightprofile}
+\end{figure}
+
+\subsection{Block prediction}
+
+\label{mcblock}
+
+This section specified the operation of the $block\_pred(ref1, ref2, j, x, y, c)$ 
+for forming a prediction for a pixel 
+with coordinates $(x,y)$ in component $c$, belonging to the block with coordinates $(i,j)$ in the component
+data $data$.
+
+The prediction used depends 
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.7\textwidth]{figs/obmc-profile}
+\caption{Profile of overlapped-block motion compensation matrix}
+\label{fig:weightprofile}
+\end{figure}
+
+\subsection{Block prediction}
+
+\label{mcblock}
+
+This section specified the operation of the $block\_pred(ref1, ref2, j, x, y, c)$ 
+for forming a prediction for a pixel 
+with coordinates $(x,y)$ in component $c$, belonging to the block with coordinates $(i,j)$ in the component
+data $data$.
+
+The prediction used depends on the block mode $m=\BlockData[j][i][mode]$. Prediction values are weighted
+in accordance with the reference picture weights (Section \ref{}). 
+
+Motion vectors for chroma on the block mode $m=\BlockData[j][i][mode]$. Prediction values are weighted
+in accordance with the reference picture weights (Section \ref{}). 
+
+Motion vectors for chroma components must be scaled according to the chroma scale factors. If $c=Y$, set
+
+\begin{pseudo*}
+\bsCODE{mv1= \BlockData[j][i][ref1]}
+\bsCODE{mv2= \BlockData[j][i][ref2]}
+\end{pseudo*}
+
+whereas if $c=U$ or $c=V$, set
+
+\begin{pseudo*}
+\bsCODE{mv1.x = (\BlockData[j][i][ref1].x +(chroma\_h_factor()//2) )//chroma\_h_factor()}{\ref{chromafactors}}
+\bsCODE{mv1.y = (\BlockData[j][i][ref1].y +(chroma\_v_factor()//2) )//chroma\_v_factor()}{\ref{chromafactors}}
+\bsCODE{mv2.x = (\BlockData[j][i][ref2].x +(chroma\_h_factor()//2) )//chroma\_h_factor()}{\ref{chromafactors}}
+\bsCODE{mv2.y = (\BlockData[j][i][ref2].y +(chroma\_v_factor()//2) )//chroma\_v_factor()}{\ref{chromafactors}}
+\end{pseudo*}
+
+There are four cases, corresponding to
+each mode:
+
+{\bf Case 1: $m=\Intra$ }
+
+Set $wt=2^\MVWeightPrecision$. \newline
+Return $wt*\BlockData[j][i][dc][c]$.
+
+{\bf Case 2: m==\RefOneOnly}
+
+Set $wt=\RefOneWeight+\RefTwoWeight$. \newline
+Return $wt*upconvert(ref1, (x\ll \MotionVectorPrecision)+mv1.x, (y\ll \MotionVectorPrecision)+mv1.y)$ (Section \ref{upconvert}).
+
+{\bf Case 3: m==\RefTwoOnly}
+
+Set $wt=\RefOneWeight+\RefTwoWeight$. \newline
+Return $wt*upconvert(ref2, (x\ll \MotionVectorPrecision)+mv2.x, (y\ll \MotionVectorPrecision)+mv2.y)$ (Section \ref{upconvert}).
+
+{\bf Case 4: m==\RefOneAndTwo}
+
+Set $wt1=\RefOneWeight$ and $wt2=\RefTwoWeight$. \newline
+Set $v1=upconvert(ref1, (x\ll \MotionVectorPrecision)+mv1.x, (y\ll \MotionVectorPrecision)+mv1.y)$ (Section \ref{upconvert}). \newline
+Set $v2=upconvert(ref2, (x\ll \MotionVectorPrecision)+mv2.x, (y\ll \MotionVectorPrecision)+mv2.y)$ (Section \ref{upconvert}). \newline
+Return $wt1*v1+wt2*v2$.
+
+\begin{informative}
+The prediction weights used for each type of prediction may appear confusing. It is helpful
+to think of two cases for using reference picture weighting. The first is interpolative 
+prediction, where the picture being predicted is, for example, a cross-fade and is
+closely approximated by some mixture of the reference pictures:
+ $P\backsimeq\delta R_1+(1-delta)R_2$. Here the weights we'd like to
+use for each frame prediction add up to 1 (or $2^\MVWeightPrecision$ for integer weights). 
+The second case is scaling prediction, where 
+the weights we'd like to use for the frame predictions don't add up to 1: for example,
+a fade to or from black
+$P\backsimeq\delta_1 R_1$ and $P\backsimeq\delta_2 R_2$. It is not possible to choose 
+weights for each prediction mode which will be optimal in each case. The weighting
+factors chosen will give work with interpolative prediction (which is more common) 
+but are not perfect for scaling prediction. It would have been possible to create a variety of
+prediction modes to cover all cases, however the potential savings do not justify the
+additional complexity.
+
+For interpolative prediction, all data in the current picture will be of commensurate scale to
+that of the references. In forming the bi-directional prediction, a value $W_1 p_1 + W_2 p2_2$ is 
+formed, so the prediction has "scale" $W_1+W_2$. $W_1+W_2$ is 
+therefore the weighting value used to scale unidirectional prediction, in order to provide
+predictions of commensurate order. The unity weighting value $2^\MVWeightPrecision$ is used
+for DC blocks as this gives the best prediction, and in the interpolative case this equals $W_1+W_2$
+so all predictions are of the same order.
+
+The weighting factors we would like to use for unidirectionally predicted blocks in the scaling case
+are $2W_1$ and $2W_2$ - the factor 2 takes into account that we're only adding in one prediction
+value as against two for bidirectional prediction. These factors differ from $W_1+W_2$, and hence
+unidirectional prediction is incorrect when there are two references. Note, however, that we can
+still perform prediction with the correct scaling values when we only have a single reference. Note
+also that the value of $W_1+W_2$ was selected instead of $2^\MVWeightPrecision$, which
+would be equivalent in the interpolative case, as it gives a better approximation when the
+weights do not sum to $2^\MVWeightPrecision$.
+\end{informative}
+
+\subsection{Upconversion}
+\label{upconvert}
+
+This section specifies the operation of the $upconvert(ref, u, v)$ function
+for producing a value from an upconverted picture reference. This
+allows for sub-pixel precision in motion compensation.
+
+Motion vectors are allowed to extend beyond the edges of the 
+upconverted reference picture component and values lying outside the range
+of the component are determined by edge extension, using the values:
+\begin{eqnarray*}
+cu & = &\clip(u, 0, 2^\MotionVectorPrecision*width(ref)) \\
+cv & = &\clip(v, 0, 2^\MotionVectorPrecision*height(ref))
+\end{eqnarray*}
+
+There are four cases, depending upon the motion vector precision selected.
+
+\subsubsection{Pixel-accurate motion vectors}
+
+If $\MotionVectorPrecision==0$, no upconversion is actually required and the value
+$ref[cv][cu]$ is returned.
+
+\subsubsection{Half-pixel accurate motion vectors}
+\ref{halfpel}
+
+If $\MotionVectorPrecision==1$ then the reference picture component $ref$ is
+upconverted by a factor of 2 in each dimension to create an
+array $upref$. The value returned is $upref[cv][cu]$.
+
+$upref$ is created in two stages, first upconverting vertically by
+a factor of 2, then horizontally. Define the interpolation filter $h$
+to be the 10-tap symmetric filter with taps as defined in figure \ref{upfilter}.
+
+\begin{figure}[h!]
+\begin{centering}
+\begin{tabular}{l|ccccc}
+Tap & $t_0$ & $t_1$ & $t_2$ & $t_3$ & $t_4$\\
+\hline
+Value & 167 & -56 & 25 & -11 & 3
+\end{tabular}
+\caption{Interpolation filter coefficients \label{upfilter}}
+\end{centering}
+\end{figure}
+\subsection{Upconversion}
+\label{upconvert}
+
+This section specifies the operation of the $upconvert(ref, u, v)$ function
+for producing a value from an upconverted picture reference. This
+allows for sub-pixel precision in motion compensation.
+
+Motion vectors are allowed to extend beyond the edges of the 
+upconverted reference picture component and values lying outside the range
+of the component are determined by edge extension, using the values:
+\begin{eqnarray*}
+cu & = &\clip(u, 0, 2^\MotionVectorPrecision*width(ref)) \\
+cv & = &\clip(v, 0, 2^\MotionVectorPrecision*height(ref))
+\end{eqnarray*}
+
+There are four cases, depending upon the motion vector precision selected.
+
+\subsubsection{Pixel-accurate motion vectors}
+
+If $\MotionVectorPrecision==0$, no upconversion is actually required and the value
+$ref[cv][cu]$ is returned.
+
+\subsubsection{Half-pixel accurate motion vectors}
+\ref{halfpel}
+
+If $\MotionVectorPrecision==1$ then the reference picture component $ref$ is
+upconverted by a factor of 2 in each dimension to create an
+array $upref$. The value returned is $upref[cv][cu]$.
+
+$upref$ is created in two stages, first upconverting vertically by
+a factor of 2, then horizontally. Define the interpolation filter $h$
+to be the 10-tap symmetric filter with taps as defined in figure \ref{upfilter}.
+
+\begin{figure}[h!]
+\begin{centering}
+\begin{tabular}{l|ccccc}
+Tap & $t_0$ & $t_1$ & $t_2$ & $t_3$ & $t_4$\\
+\hline
+Value & 167 & -56 & 25 & -11 & 3
+\end{tabular}
+\caption{Interpolation filter coefficients \label{upfilter}}
+\end{centering}
+\end{figure}
+
+Define an array $ref2$ of height $2*height(ref)$ and width $width(ref)$ by
+the recipe, for $0\leq p<width(ref)$ and $0\leq q<2*height(ref)$:
+
+{\bf Case 1.} If $q\%2==0$, set
+\begin{equation*}
+ref2[q][p]=ref2[q//2][p]
+\end{equation*}
+
+{\bf Case 2.} If $q\%2!=0$, $ref2[q][p]$ is set by
+
+\begin{pseudo*}
+\bsCODE{ref2[q][p]=  \sum_{i=0}^{4} t_i *(ref[\clip( (q-1)//2-i, 0, height(ref)-1)][p]+
+ref[\clip((q+1)//2+i, 0,height(ref)-1)) ][p])}
+\bsCODE{ref2[q][p] = (ref2[q][p]+128)\gg 8}
+\bsCODE{ref2[q][p] = \clip(ref2[q][p], 0, 2^\VideoDepth-1}
+\end{pseudo*}
+
+The full upconverted array is constructed from $ref2$ in the same way.
+ For $0\leq p<2*width(ref)$ and $0\leq q<2*height(ref)$ we have:
+
+{\bf Case 1.} If $p\%2==0$, set
+\begin{equation*}
+upref[q][p]=ref2[q][p//2]
+\end{equation*}
+
+{\bf Case 2.} If $p\%2!=0$, $upref[q][p]$ is set by
+
+\begin{pseudo*}
+\bsCODE{upref[q][p]=  \sum_{i=0}^{4} t_i *\left(ref2[q][\clip( (p-1)//2-i, 0, width(ref2)-1)]+
+ref2[q][\clip((p+1)//2+i, 0, width(ref2)-1)]\right)}
+\bsCODE{upref[q][p] = (upref[q][p]+128)\gg 8}
+\bsCODE{upref[q][p] = \clip(upref[q][p], 0, 2^\VideoDepth-1}
+\end{pseudo*}
+
+%\begin{informative}
+%While this filter may appear to be variable separable, the integer rounding and 
+%clipping processes prevent this being so. Note also that the clipping process for
+%filtering terms implies that the upconversion uses edge-extension at the array
+%edges, consistent with the edge-extension used in motion-compensation itself.
+%\end{informative}
+%
+%\subsubsection{Quarter- and eighth-pixel accurate motion vectors}
+%
+%If $\MotionVectorPrecision==2$ or $\MotionVectorPrecision==3$, upconverted values are derived by linear
+%interpolation from the half-pixel interpolation values $upref$, which is calculated as 
+%per Section \ref{halfpel}. Given coordinates $(u,v)$, their half-pixel part
+%is extracted by:
+%
+%\begin{eqnarray*}
+%hu & = & u \gg (\MotionVectorPrecision-1) \\
+%hv & = & v \gg (\MotionVectorPrecision-1) 
+%\end{eqnarray*}
+%
+%and their remainder (giving the residual subpixel accuracy) by
+%
+%\begin{eqnarray*}
+%ru & = & u-(hu\ll (\MotionVectorPrecision-1)) \\
+%rv & = & v-(hv\ll (\MotionVectorPrecision-1)) 
+%\end{eqnarray*}
+%
+%$ru$ and $rv$ satisfy $0\leq ru,rv <2^{\MotionVectorPrecision-1}$. Then define four weighting
+%values by:
+%
+%\begin{eqnarray*}
+%w00 & = & (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)\\
+%w01 & = & (2^{\MotionVectorPrecision-1}-rv)*ru\\
+%w10 & = & rv*(2^{\MotionVectorPrecision-1}-ru)\\
+%w11 & = & rv*ru
+%\end{eqnarray*}
+%
+%and also define the clipped coordinates that we shall use for interpolation by:
+%
+%\begin{eqnarray*}
+%cu & = \clip(hu, 0, width(upref)-1) \\
+%cu1 & = \clip(hu+1, 0, width(upref)-1) \\
+%cv & = \clip(hv, 0, width(upref)-1) \\
+%cv1 & = \clip(hv+1, 0, width(upref)-1)
+%\end{eqnarray*}
+%
+%The value returned is:
+%
+%(w00*upref[cv][cu]+w01*upref[cv][cu1]+w10*upref[cv1][cu]+w11*upref[cv1][cu1]+2^{\MotionVectorPrecision-2})\gg(\MotionVectorPrecision-1)
+%
+%\begin{informative}
+%Note that the remainder values $ru$, $rv$ are not determined from the clipped
+%half-pixel values $cu$, $cv$, $cu1$, and $cv1$. This ensures the remainder
+%values depend only on the motion vector, and hence are constant across
+%each block, and allows a block-wise implementation. If the clipped values 
+%had been used, blocks whose reference
+%block straddled the edge of a picture would use different remainders in
+%different parts of the block. See Section \ref{mcimplementation}.
+%\end{informative}
+%
+%\begin{informative}
+%\subsection{Implementation}
+%\label{mcimplementation}
+%[TBC]
+%
+%The motion compensation process is defined in this specification in
+%terms of the prediction determined for each pixel. Typically, an
+%implementation will motion compensate all pixels within a prediction
+%unit or a block together, as they share motion parameters and hence will
+%have a contiguous prediction data set in the reference frames.
+%
+%
+%The weighting matrix is then applied directly
+%to the prediction block as a whole.
+%
+%It is not necessary for the prediction buffer to consist of the whole video
+%component -- it could be a single row of blocks, with values being overwritten
+%successively.
+%
+%The process for a single video component is effectively:
+%
+%-- Starting with an empty prediction buffer,
+%pred(x,y) = 0, forall x,y
+%
+%for r = 0 to numrefs:
+%    -- upconvert the reference frame and clip the results
+%    ref'_r(x,y) = clip(upconvert(ref_r,x,y),0,2^{video_depth})
+%
+%    -- perform block prediction, OBMC weighting and reference weighting,
+%    -- accumumulating the results into the prediction buffer.
+%    foreach b in blocks:
+%        b'pred(x,y) = block_predict(b,x,y)
+%
+%        -- choosereference weight contribution
+%        W <- ...
+%
+%        for i = 0 to yblen:
+%            for j = 0 to xblen:
+%                -- accumulate predicted pixels into prediction buffer
+%                pred
+%
+%%\begin{lstlisting}
+%%    upconvertB_1d(f,r,x) = let $x' = x mod f$
+%%                           in $%
+%%    \lfloor\frac{(16-fx')r_{\frac{x-x'}{f}} + fx'r_{\frac{x+f-x'}{f}} + 8}{16}\rfloor%
+%%    $
+%%\end{lstlisting}
+%
+%
+%\annotate{df}{Contrasts to the rest of the
+%section that uses absolute pixel position (not vector)}
+%\begin{informative}
+%A note about global motion calculation.
+%
+%It is possible to calculate the entire global motion field using
+%approximately four additions per pixel.
+%
+%The global transformation may be expanded as:
+%
+%\begin{equation*}
+%\pmb{z}_{ref} = -\pmb{A}\left(\pmb{z}\pmb{z}^\text{T}\right)\pmb{c}
+%                + \left(\pmb{A} - \pmb{b}\pmb{c}^\text{T}\right)\pmb{z}
+%                + \pmb{b}
+%\end{equation*}
+%
+%Then $\pmb{z}_{ref} - \pmb{z}$ may be further expanded to give the individual
+%components of the motion vector:
+%
+%\begin{align*}
+%  v_x &= \alpha{}x^2 + \beta{}xy + \gamma{}y^2 + (\delta - 1)x + \epsilon{}y + b_1 \\
+%  v_y &= \zeta{}x^2 + \eta{}xy + \theta{}y^2 + \kappa{}x + (\mu - 1)y + b_2 \\
+%\end{align*}
+%where,
+%\begin{align*}
+%\alpha &= -a_{11}c_1 &
+%\beta &= -(a_{11}c_2 + a_{12}c_1) &
+%\gamma &= -a_{12}c_2 \\
+%\delta &= a_{11} - b_1c_1 &
+%\epsilon &= a_{12} - b_1c_2 &
+%\zeta &= -a_{21}c_1 \\
+%\eta &= -(a_{21}c_2 + a_{22}c_1) &
+%\theta &= -a_{22}c_2 &
+%\kappa &= a_{21} - b_2c_1 &
+%\mu &= a_{22} - b_2c_2
+%\end{align*}
+%
+%That is the components of the global motion vector are given by
+%two-dimensional quadratic functions.
+%
+%Given a two dimensional quadratic function:
+%
+%\begin{equation*}
+%z(x,y) = px^2 + qxy + ry^2 + sx + ty + u
+%\end{equation*}
+%
+%We can calculate z(y,x) for successive values of $x$ and $y$ by merely
+%incremeting the values for $z(y, x-1)$ or $z(y-1, x)$.  The following
+%algorithm for generating a two dimensional array containing the quadratic
+%values $z(y,x)$.
+%
+%\begin{verbatim}
+%quadratic(p,q,r,s,t,u):
+%    zed = array2D(ylength, xlength)
+%    g = 2*p
+%    h0 = s - p - q
+%    k = 2*r
+%    m0 = t - r
+%    m = m0 - k
+%    z0 = u - m0
+%    for y in range(ylength):
+%        h0 += q
+%        h = h0 - g
+%        m += k
+%        z0 += m
+%        z = z0 - h0
+%        for x in range(xlength):
+%            h += g
+%            z += h
+%            zed[y][x] = z
+%    return zed
+%\end{verbatim}
+%
+%
+%\end{informative}
