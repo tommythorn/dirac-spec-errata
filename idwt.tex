@@ -1,15 +1,455 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % - This chapter defines how the inverse discrete - %
-% - wavelet transform is done                     - % 
+% - wavelet transform is done                     - %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \label{idwt}
 
-\input{idwt-intro}
-\subsection{IDWT synthesis operation}\input{idwt-synthesis}
-\subsection{Removal of IDWT pad values}\input{idwt-padremoval}
-\subsection{Vertical and horizontal synthesis}\input{idwt-vhsynthesis}
-\subsection{Interleaving}\input{idwt-interleaving}
-\subsection{One-dimensional synthesis}\input{idwt-1dsynthesis}
-\subsection{Integer lifting}\input{idwt-lifting}
-\subsection{avaliable filters}\input{idwt-filters}
+This section defines the process $idwt(data)$ for reconstructing picture component data
+from decoded subband data $data$ using the Inverse Discrete Wavelet Transform (IDWT). $idwt()$
+can be invoked in the picture decoding process only after successful parsing of the
+subband coefficient data (Section \ref{transformdec}).
+
+The $idwt()$ process consists of two sub-processes:
+
+\begin{enumerate}
+\item Synthesis, which returns a pixel array from the subband wavelet
+coefficients: $pic=idwt\_synthesis(data)$ (Section \ref{idwtsynthesis})
+\item Pad-removal, which removes padding values from the synthesised pixel array $pic$ (Section \ref{paddingremoval})
+\end{enumerate}
+
+The output returned by this process is a two-dimensional array $pic$ of pixel data representing
+Y, U or V component data.
+
+\begin{informative}
+The IDWT can operate with a number of different wavelet filters, whose identity has
+been signalling in the transform data header. These allow trade-offs to be made
+between compression efficiency, implementation complexity and perceptual quality.
+
+Different filters are applicable in different scenarios. Shorter filters are generally more
+suitable for motion-compensated residual data, and longer filters for intra picture data.
+The default filter set includes a ``Fidelity" filter optimised for downconversion, so that a lower-resolution,
+but high-quality, proxy layer may be decoded for viewing.
+\end{informative}
+
+\subsection{IDWT synthesis operation}
+
+This section defines the process $idwt\_synthesis(pic, data)$ invoked by $idwt()$.
+
+This is an iterative procedure operating on four subbands at each
+iteration stage to produce a new subband. The procedure
+is:
+
+\begin{pseudo}{idwt\_synthesis}{data}
+\bsCODE{LL\_band = data[0][\LL]}
+\bsFOR{n=0}{\WaveletDepth-1}
+   \bsCODE{ LL\_band = vh\_synthesis(LL\_band, data[n][\HL], data[n][\LH], data[n][\HH])}{\ref{vhsynth}}
+\bsEND
+\bsRET{LL\_band}
+\end{pseudo}
+
+Note that at each stage, the input dimensions of $LL\_band$ will be the same as those of the
+other input bands, whereas the output dimensions are double those of the input bands.
+
+\subsection{Vertical and horizontal synthesis}
+\label{vhsynth}
+
+This section specifies the operation of the vertical and horizontal
+synthesis process $vh\_synthesis(LL\_data, HL\_data, LH\_data, HH\_data)$.
+
+$vh\_synthesis$ is repeatedly invoked by $idwt\_synthesis()$. It operates on four subband
+data arrays of identical dimensions to produce a new array $synth$, which is returned as the result of
+the process.
+
+{\bf Step 1.} $synth$ is initialised so that:
+\begin{eqnarray*}
+\width(synth) & = & 2*\width(LL\_data) \\
+\height(synth) & = & 2*\height(LL\_data)
+\end{eqnarray*}
+
+{\bf Step 2.} The data from the four arrays is interleaved as follows:
+
+\begin{pseudo*}
+\bsCODE{\hdots}
+\bsFOR{y=0}{(\height(synth)//2)-1}
+    \bsFOR{x=0}{(\width(synth)//2)-1}
+        \bsCODE{synth[2*y][2*x] = LL\_data[y][x]}
+        \bsCODE{synth[2*y][2*x+1] = HL\_data[y][x]}
+        \bsCODE{synth[2*y+1][2*x] = LH\_data[y][x]}
+        \bsCODE{synth[2*y+1][2*x+1] = HH\_data[y][x]}
+    \bsEND
+\bsEND
+\bsCODE{\hdots}
+\end{pseudo*}
+
+This enables in-place calculation during the inverse filter process.
+
+{\bf Step 3.} Data is next synthesised vertically by operating on each column
+of data using a one-dimensional filter, and then horizontally by operating
+on each row.
+
+\begin{pseudo*}
+\bsCODE{\hdots}
+\bsFOR{x=0}{\width(synth)-1}
+    \bsCODE{1d\_synthesis(\column(synth, x) )}{\ref{onedsynth}}
+\bsEND
+\bsFOR{y=0}{\height(synth)-1}
+    \bsCODE{1d\_synthesis(\row(synth, y) )}{\ref{onedsynth}}
+\bsEND
+\bsCODE{\hdots}
+\end{pseudo*}
+
+{\bf Step 4.} Finally, the synthesised subband data receives a bitshift to
+remove any accuracy bits. The shift value $filtershift()$ used is as determined in Section \ref{wltfilters}
+from the wavelet index $\WaveletIndex$.
+
+\begin{pseudo*}
+\bsCODE{\hdots}
+\bsCODE{shift = filtershift()}
+\bsFOR{y=0}{\height(synth)-1}
+    \bsFOR{x=0}{\width(synth)-1}
+        \bsCODE{synth[y][x] = synth[y][x]\gg shift}
+    \bsEND
+\bsEND
+\end{pseudo*}
+
+\begin{informative}
+Accuracy bits are added in the encoder by shifting up all coefficients in the 
+$\LL$ band prior to applying any filtering (this includes an initial shift of all 
+values in the component data). Adding a small shift before each decomposition
+is the most efficient way of providing additional resolution where it is needed:
+the result is that the shift varies with the level to which a subband belongs.
+
+Accuracy bits are required because the rounding stages in integer lifting
+introduce non-linearities that can aliase data between subbands. Quantising
+data in non-DC bands can then (for example) produce artefacts at DC 
+band frequencies. This increases bit rate and the perceptual impact of quantisation, 
+especially for 8-bit video. The accuracy bits have been computed so as to virtually
+eliminate these effects (with the exception of Haar0 which is included as it
+is suitable for low-delay low-complexity implementations, especially lossless coding).
+For example, Fidelity does not require a shift value since its filter gain is such
+as to add a bit of resolution with each level of decomposition.
+\end{informative}
+
+\subsection{One-dimensional synthesis}
+
+This section specifies the one-dimensional synthesis process
+$1d\_synthesis()$ applied to a 1-dimensional array of coefficients of
+even length, consisting
+of either a row or a column of a 2-dimensional integral data array.
+
+The one-dimensional synthesis process comprises the application of a
+number of reversible integer lifting filter operations. An integral lifting filter
+ is characterised by four elements:
+\begin{itemize}
+\item a set of taps $t_{-N}, \hdots,t_M$
+\item a scale factor $s$
+\item a parity (odd or even)
+\item whether it is an ``update`` or ``predict`` filter
+\end{itemize}
+
+An even lifting filtering operation modifies the even coefficients
+by the odd coefficients:
+
+\begin{eqnarray*}
+  A[2*n]& +=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Update)} \\
+  A[2*n]& -=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Predict)}
+\end{eqnarray*}
+
+An odd lifting filtering operation modifies the odd coefficients
+ by the even coefficients:
+
+\begin{eqnarray*}
+  A[2*n+1]& +=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)]+(1\ll (s-1)) \big) \gg s \mbox{ (Update)} \\
+  A[2*n+1]& -=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)] +(1\ll (s-1))\big) \gg s \mbox{ (Predict)} \\
+\end{eqnarray*}
+
+\begin{informative}
+Note that the distinction between update and predict filters is necessary
+because integer rounding is being used, and the filters are non-linear.
+A predict filter with taps $t_i$ is not equivalent to an update filter with taps $-t_i$.
+\end{informative}
+
+These formulae are deemed to be applied for all applicable $n$
+before the next filtering stage is applied and to use reflection at the array
+edges where the filter would otherwise overlap. In pseudo-code, two
+functions $lifteven(A, t_i, s)$ and $liftodd(A, t_i, s)$ are specified by:
+
+\begin{pseudo}{lifteven}{A,t_i, s,fsort}
+\bsFOR{n=0}{(\length(A)//2)-1}
+    \bsCODE{sum=0}
+    \bsFOR{i=-N}{M}
+        \bsCODE{pos=2*(n+i)-1}
+        \bsIF{pos<0}
+            \bsCODE{sum+=A[-pos]}
+        \bsELSEIF{pos\geq \length(A)}
+            \bsCODE{sum+=A[2*\length(A)-pos]}
+        \bsELSE
+            \bsCODE{sum+=A[pos]}
+        \bsEND
+    \bsEND
+    \bsCODE{sum+=(1\ll (s-1))}
+    \bsIF{fsort==\textit{PREDICT}}
+        \bsCODE{A[2*n]-=(sum\gg s)}
+    \bsELSE
+        \bsCODE{A[2*n]+=(sum\gg s)}
+\bsEND
+\end{pseudo}
+
+and
+
+\begin{pseudo}{liftodd}{A,t_i, s,fsort}
+\bsFOR{n=0}{(\length(A)//2)-1}
+    \bsCODE{sum=0}
+    \bsFOR{i=-N}{M}
+        \bsCODE{pos=2*(n+i)}
+        \bsIF{pos<0}
+            \bsCODE{sum+=A[-pos]}
+        \bsELSEIF{pos\geq \length(A)}
+            \bsCODE{sum+=A[2*\length(A)-pos]}
+        \bsELSE
+            \bsCODE{sum+=A[pos]}
+        \bsEND
+    \bsEND
+    \bsCODE{sum+=(1\ll (s-1))}
+    \bsIF{fsort==\textit{PREDICT}}
+        \bsCODE{A[2*n+1]-=(sum\gg s)}
+    \bsELSE
+        \bsCODE{A[2*n+1]+=(sum\gg s)}
+\bsEND\end{pseudo}
+
+$1d\_synthesis$ applies the sequence of lifting filters specified in Section \ref{wltfilters},
+invoking $lifteven$ for even parity filters and $liftodd$ for odd parity filters.
+
+\begin{informative}
+This specification defines the lifting process on the basis of lifting
+procedures applied to an entire row or column consecutively. It is
+possible to implement lifting filtering operations so that a filtering
+operation associated with one lifting filter is followed by a filtering
+operation associated with another lifting filter. I.e. the order of
+iteration is changed. In this case, the order in which filtering is
+applied to coefficients does affect the outcome of the process as even
+lifting operations may be followed by odd ones, and care must be taken
+that values are not modified in the wrong order. Nevertheless such an
+implementation may be more efficient, and complies with this
+specification if it produces identical results.
+\end{informative}
+
+\subsection{Filters and shift values}
+\label{wltfilters}
+
+The following the lifting filters and bitshift operations that
+apply for each value of $\WaveletIndex$ are specified in Tables \ref{filtertable0} to
+\ref{filtertable7}.
+
+\begin{informative}
+This specification contains an implementation of the Daubechies (9,7) filter 
+($\WaveletIndex==7$). Daubechies (9,7), like any other FIR biorthogonal wavelet, possesses a lifting
+implementation. However, to produce a perfect reconstruction filter, the lifting stages 
+require real-valued filter taps, and a final coefficient scaling stage. Any realisable implementation
+is therefore an approximation. The implementation specified here is fully integral, yet (other than omitting
+the final scaling stages), it is a very close approximation. These filters can therefore
+(unlike the JPEG2000 implementation) be used for lossless as well as lossy compression, whilst lossy
+compression performance is near-indentical to the real-valued filter. The integer lifting implementaiton
+also allows for much more efficient implementation.
+\end{informative}
+
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=2, t_0=1, t_1=1$ i.e. \\
+\quad $ A[2*n]     -=  (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
+2. Odd, Update, $s=4$, $t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
+\quad $ A[2*n+1]  +=  (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]-A[2*n+4]+8)\gg 4$
+\end{tabular}
+& 1 \\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==0$: Deslauriers-Debuc (9,3) lifting stages and shift values}\label{filtertable0}
+\end{table}
+
+\begin{table}[h!]
+
+\begin{tabular}{|l|l|}
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+
+\begin{tabular}{l}
+1. Even, Predict, $s=2, t_0=1, t_1=1$ i.e. \\
+\quad $ A[2*n]  -= (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
+2. Odd, Update, $s=1$, $t_0=1, t_1=1$ i.e. \\
+\quad $ A[2*n+1]  += (A[2*n]+A[2*n+2]+1)\gg 1$
+\end{tabular}
+& 1 \\ 
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==1$: LeGall (5,3) lifting stages and shift values}
+\end{table}
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=5, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
+\quad $ A[2*n]  -= (-A[2*n-3]+9*A[2*n-1]+9*A[2*n+1]+A[2*n+3]+16)\gg 5$ \\
+2. Odd, Update, $s=4, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
+\quad $ A[2*n+1]  += (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]+A[2*n+4]+8)\gg 4$
+\end{tabular}
+
+& 1 \\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==2$: Deslauriers-Debuc (13,5) lifting stages and shift values}
+\end{table}
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=1, t_1=1$ i.e. \\
+\quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
+2. Odd, Update, $s=0, t_0=1$ i.e. \\
+\quad $ A[2*n+1] += A[2*n]$
+\end{tabular}
+
+& 0 \\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==3$: Haar filter with no shift}
+\end{table}
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=1, t_1=1$ i.e. \\
+\quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
+2. Odd, Update, $s=0, t_0=1$ i.e. \\
+\quad $ A[2*n+1] += A[2*n]$
+\end{tabular}
+
+& 1 \\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==4$: Haar filter with single shift}
+\end{table}
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=1, t_1=1$ i.e. \\
+\quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
+2. Odd, Update, $s=0, t_0=1$ i.e. \\
+\quad $ A[2*n+1] += A[2*n]$
+\end{tabular}
+
+& 2\\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==5$: Haar filter with double shift}
+\end{table}
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=8, t_{-1}=-11, t_0=36, t_1=36, t_2=-11$ i.e. \\
+\quad $A[2*n] -=  (-11*A[2*n-3]+36*A[2*n-1]+36*A[2*n+1]-11*A[2*n+3]+128)\gg 8 $ \\
+2. Odd, Update, $s=8, t_{-1}=-22, t_0=84, t_1=84, t_2=-22$ i.e. \\
+\quad $ A[2*n+1] += (-22*A[2*n-2]+84*A[2*n]+84*A[2*n+2]-22*A[2*n+4]+128)\gg 8$ \\
+3. Even, Predict, $s=8, t_{-1}=-19, t_0=85, t_1=85, t_2=-19$ i.e. \\
+\quad $A[2*n] -=  (-19*A[2*n-3]+85*A[2*n-1]+85*A[2*n+1]-19*A[2*n+3]+128)\gg 8 $ \\
+4. Odd, Update, $s=8, t_{-1}=-8, t_0=41, t_1=41, t_2=-8$ i.e. \\
+\quad $ A[2*n+1] += (-8*A[2*n-2]+41*A[2*n]+41*A[2*n+2]-8*A[2*n+4]+128)\gg 8$
+\end{tabular}
+& 0 \\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==6$: Fidelity filter for improved downconversion and anti-aliasing}
+\end{table}
+
+\begin{table}[h!]
+\begin{tabular}{|l|l|}
+
+\hline
+{\bf Lifting steps} & $filtershift()$ \\
+\hline
+\begin{tabular}{l}
+1. Even, Predict, $s=12, t_0=1817, t_1=1817$ i.e. \\
+\quad $A[2*n] -=  (1817*A[2*n-1]+1817*A[2*n+1]+2048)\gg 12$ \\
+2. Odd, Predict, $s=12, t_0=3616, t_1=3616$ i.e. \\
+\quad $ A[2*n+1] -= (3616*A[2*n]+3616*A[2*n+2]+2048)\gg 12$ \\
+3. Even, Update, $s=12, t_0=217, t_1=217$ i.e. \\
+\quad $A[2*n] +=  (217*A[2*n-1]+217*A[2*n+1]+2048)\gg 12$ \\
+4. Odd, Update, $s=12, t_0=6497, t_1=6497$ i.e. \\
+\quad $ A[2*n+1] += (6497*A[2*n]+6497*A[2*n+2]+2048)\gg 12$
+\end{tabular}
+& 1 \\
+\hline
+
+\end{tabular}
+\caption{$\WaveletIndex==7$: Integer lifting approximation to Daubechies (9,7)}\label{filtertable7}
+\end{table}
+
+\subsection{Removal of IDWT pad values}
+
+This section defines the decoding process $idwt\_pad\_removal(pic, c)$. This
+is invoked subsequent to $idwt\_synthesis$.
+
+Subband data elements have been padded as per Section \ref{}.
+This ensures that the reconstructed data array $pic$ has dimensions divisible
+by $2^\WaveletDepth$.
+
+Values $width$ and $height$ are defined to be the appropriate dimensions
+of the component data:
+
+\begin{itemize}
+\item If $c=Y$, then
+\begin{eqnarray*}
+width & =& \LumaWidth \\
+height & =& \LumaHeight
+\end{eqnarray*}
+\item else if $c=U$ or $c=V$,
+\begin{eqnarray*}
+width & =& \ChromaWidth \\
+height & =& \ChromaHeight
+\end{eqnarray*}
+\end{itemize}
+
+All component data $pic[j][i]$ with
+
+\begin{itemize}
+\item $i\geq width$, or
+\item $j\geq height$
+\end{itemize}
+
+are discarded and $pic$ is resized to have width $width$ and height $height$.
+[Need a bit somewhere about width and height conventions for 2-d arrays]
