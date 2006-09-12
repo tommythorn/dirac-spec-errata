@@ -3,4 +3,167 @@
 % - for decoding a picture                    - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TBD
+\label{picturedec}
+
+This section specifies the process for decoding a picture from the Dirac stream. Picture decoding depends upon
+correctly parsing the Dirac bitstream, and decoding operations are dependent upon the parsing operations
+set out in Sections \ref{streamparsing}, \ref{motiondec} and \ref{transformdec}.
+
+This section does not specify how pictures are encoded, nor how pictures are presented for display, 
+which are outside the scope of this specification.
+
+\subsection{Introduction}
+
+Dirac supports both intra and inter picture coding, with forward and backward prediction. This means that
+pictures may be encoded in the stream in non-display order: reordering pictures will be required in order
+to display them correctly, and  decoded picture buffer will be necessary to store pictures while temporally 
+prior pictures are decoded. Note that the core Dirac specification does not encompass the operation of the
+decoded picture buffer: this is specified in conjunction with the level and profile values extracted from
+the stream (Section \ref{parseparameters}), in Appendix \ref{profilelevel}. 
+
+Decoded pictures may, however, be reference pictures, used for the prediction of subsequent pictures
+in the Dirac stream. Reference pictures are stored in a reference picture buffer $\RefBuffer$. The operation
+of $\RefBuffer$ does form part of the core Dirac specification, and the rules for management of the
+buffer are set out in Section \ref{refbuffer}.
+
+\subsection{Overall picture decoding process}
+\label{overallpicturedec}
+
+\subsubsection{Picture data initialisation}
+\label{picdataconventions}
+
+Picture data from the current picture being decoded is stored in the $\CurrentPicture$ state
+variable, which is a structure with indices $pic\_num$, $Y$, $U$ and $V$.
+
+
+The $init\_picture\_data()$ initialises the current picture data so that:
+\begin{itemize}
+\item $\CurrentPicture[pic\_num]=\PictureNumber$
+\item $\CurrentPicture[Y]$ is a 2-dimensional of width $\LumaWidth$ and height$\LumaHeight$, all values $\CurrentPicture[Y][y][x]$ set to 0
+\item $\CurrentPicture[U]$ and $CurrentPicture[V]$ are 2-dimensional arrays of width $\ChromaWidth$ and height $\ChromaHeight$, 
+all values $\CurrentPicture[U][y][x]$ and $\CurrentPicture[V][y][x]$ set to 0
+\end{itemize}
+
+\subsubsection{Initialisation}
+\label{picturedecodinginit}
+
+The process for decoding pictures within a Dirac sequence can commence 
+once an Access Unit header has been
+located and parsed, and the default parameters set. This is achieved by 
+searching for a Parse Info header within the sequence for which
+$is\_au()$ returns $\true$ and then initialising the default state parameters
+ by parsing the subsequent Access Unit header as per Section \ref{auheader}.
+
+At this point the reference picture buffer shall be initialised with no reference pictures.
+
+This initialisation process need only occur once within a sequence, since
+apart from the AU picture number, all AU headers within a sequence are
+identical. 
+
+\subsubsection{Decoding process}
+\label{picturedecprocess}
+
+The process for decoding a picture with picture number 
+$n$ in a Dirac sequence consists of:
+
+\begin{pseudo}{decode\_pic}{n}
+\bsCODE{seek\_picture\_parse(n)}{\ref{seeking}}
+\bsCODE{picture()}{\ref{picture}}
+\bsCODE{init\_picture\_data()}{\ref{picturedecodinginit}}
+\bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
+\bsIF{\ZeroResidual==\false}
+    \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
+    \bsCODE{\CurrentPicture[U]=idwt(\UTransform)}{\ref{idwt}}
+    \bsCODE{\CurrentPicture[V]=idwt(\VTransform)}{\ref{idwt}}
+\bsEND
+\bsIF{is\_inter()}
+    \bsCODE{ref1=get\_ref(\RefOneNum)}
+    \bsIF{num\_refs()==2}{\ref{parseinfo}}
+        \bsCODE{ref2=get\_ref(\RefTwoNum)}
+    \bsEND
+    \bsCODE{motion\_compensate(ref1[Y], ref2[Y],  \CurrentPicture[Y], c)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[U], ref2[U],  \CurrentPicture[U], c)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[V], ref2[V],  \CurrentPicture[V], c)}{\ref{motioncompensate}}
+\bsEND
+\bsCODE{\clip\_picture()}{\ref{pictureclip}}
+\bsIF{is\_ref()}
+    \bsCODE{ref\_buffer\_add()}{\ref{refbuffer}}
+\bsEND
+\end{pseudo}
+
+When randomly accessing a sequence, a picture may not be decodeable because reference pictures
+may not be available in the buffer. In this case the current picture may be discarded, although some
+decoders may be designed to produce an output. 
+
+A Dirac sequence shall be so constructed so that if
+pictures are decoding commences from the beginning of the stream and pictures are decoded in 
+stream order, there shall be no undecodeable pictures i.e. the reference pictures associated with
+any picture in the sequence stall have occurred prior to that picture in the sequence.
+
+Picture numbers within the stream may not be in numerical, and subsequent reordering may be
+required: the size of the decoded picture buffer required to perform any such reordering is specified
+as part of the application profile and level (Appendix \ref{profilelevel}).
+
+\subsection{Seeking in the Dirac stream}
+\label{seeking}
+
+The $seek\_picture\_parse(n)$ locates and parses a Parse Info header within the Dirac sequence for
+which $is\_picture()$ is $\true$ and $\PictureNumber==n$. If pictures are being decoded sequentially
+from the stream, there is no need to search for parse codes. The parse offset values may be used
+to make the seeking process greatly more efficient, so that only a single parse code need be located
+initially (Section \ref{parsecodes})
+
+\subsection{Reference picture buffer management}
+\label{refbuffer}
+
+This section specifies how the Dirac stream data is used to manage the reference 
+picture buffer $\RefBuffer$. The reference picture buffer has a maximum size of
+5 elements.
+
+The $ref\_picture\_remove()$ process operates as
+follows:
+
+\begin{pseudo}{ref\_picture\_remove}{}
+\bsFOR{i=0}{\length(\RetiredPictureList)-1}
+    \bsCODE{n=\RetiredPictureList[i]}
+    \bsFOR{k=0}{\length(\RefBuffer)-1}
+       \bsIF{\RefBuffer[k][pic\_number]==n}
+            \bsCODE{\text{delete } \RefBuffer[k]}   
+        \bsEND
+    \bsEND
+\bsEND
+\bsCODE{\RetiredPictureList=\emptyset}
+\end{pseudo}
+
+The $get\_ref(n)$ function returns the (first) reference picture in the buffer with 
+picture number $n$.  
+
+The $ref\_picture\_add()$ process for adding pictures to the reference picture
+buffer proceeds according to the following rules:
+
+{\bf Case 1.} If the reference picture buffer is not full i.e. has fewer than 5 elements,
+then add the $\CurrentPicture$ data to the end of the buffer. 
+
+{\bf Case 2.} If the reference picture is full i.e. it has 5 elements, then remove the
+first (i.e. oldest) element of the buffer $\RefBuffer[0]$, and set
+\[\RefBuffer[4]=\CurrentPicture\]
+ 
+\subsection{Clipping}
+\label{pictureclip}
+
+Picture data must be clipped to the video range prior to being output or being
+used as a reference:
+
+\begin{pseudo}{clip\_picture}{}
+\bsFOREACH{c}{Y,U,V}
+    \bsCODE{clip\_comp(\CurrentPicture[c])}
+\bsEND
+\end{pseudo}
+
+\begin{pseudo}{clip\_component}{data}
+\bsFOR{y=0}{\height(data)-1}
+    \bsFOR{x=0}{\width(data)-1}
+        \bsCODE{data = \clip(data[y][x], 0, 2^\VideoDepth-1)}
+     \bsEND
+\bsEND
+\end{pseudo}

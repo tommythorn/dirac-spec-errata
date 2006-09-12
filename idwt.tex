@@ -14,7 +14,9 @@ The $idwt()$ process consists of two sub-processes:
 
 \begin{enumerate}
 \item Synthesis, which returns a pixel array from the subband wavelet
-coefficients: $pic=idwt\_synthesis(data)$ (Section \ref{idwtsynthesis})
+coefficients: 
+
+$pic=idwt\_synthesis(data)$ (Section \ref{idwtsynthesis})
 \item Pad-removal, which removes padding values from the synthesised pixel array $pic$ (Section \ref{paddingremoval})
 \end{enumerate}
 
@@ -32,7 +34,23 @@ The default filter set includes a ``Fidelity" filter optimised for downconversio
 but high-quality, proxy layer may be decoded for viewing.
 \end{informative}
 
+Since wavelet filtering operates on both rows and columns of two-dimensional arrays independently
+it is useful to define operators $\row(a,k)$ and $\column(a,k)$ for extracting rows and columns
+with index $k$ from a 2-dimensional array $a$:
+
+If $b=\row(a,k)$ then $b[r]$ is a $reference to$ the value of $a[k][r]$. This means that modifying the
+value of $b[r]$ modifies the value of $a[k][r]$.
+
+If $b=\column(a,k)$ then $b[r]$ is a $reference to$ the value of $a[r][k]$. This means that modifying the
+value of $b[r]$ modifies the value of $a[r][k]$.
+
+\begin{informative}
+These definitions allow us to express the important feature that all filtering operations are specified
+as {\em in place} calculations, not involving data being copied at any stage.
+\end{informative}
+
 \subsection{IDWT synthesis operation}
+\label{idwtsynthesis}
 
 This section defines the process $idwt\_synthesis(pic, data)$ invoked by $idwt()$.
 
@@ -419,14 +437,15 @@ also allows for much more efficient implementation.
 \caption{$\WaveletIndex==7$: Integer lifting approximation to Daubechies (9,7)}\label{filtertable7}
 \end{table}
 
+\clearpage
 \subsection{Removal of IDWT pad values}
+\label{paddingremoval}
 
 This section defines the decoding process $idwt\_pad\_removal(pic, c)$. This
 is invoked subsequent to $idwt\_synthesis$.
 
-Subband data elements have been padded as per Section \ref{}.
-This ensures that the reconstructed data array $pic$ has dimensions divisible
-by $2^\WaveletDepth$.
+Subband data elements have been padded to ensure that the reconstructed 
+data array $pic$ has dimensions divisible by $2^\WaveletDepth$.
 
 Values $width$ and $height$ are defined to be the appropriate dimensions
 of the component data:
