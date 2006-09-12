@@ -4,22 +4,38 @@
 % so that they have a consistent style, which can
 % be varied at will.
 
+% Arithmetic decoding engine state variables %
+
 \newcommand{\true}{\text{\bf{True}}}
 \newcommand{\false}{\text{\bf{False}}}
 
+\newcommand\StateName{\textbf{state}}
+\newcommand\SeqStateName{\textbf{default\_state}}
+
+% How to use state macros:
+% To insert the raw variable index, type \VNickName
+% To insert the default/sequence state variable, type \SNickName
+% To inset the state variable, type \NickName
 
 \newcommand{\pdefine}[2]{%
     \label{#1}%
-    \expandafter\def\csname #1\endcsname{\text{state[#2]}}}
+    \expandafter\def\csname #1\endcsname{\text{\StateName[#2]}}}
 
 \newcommand{\sdefine}[2]{%
     \label{#1}%
-    \expandafter\def\csname S#1\endcsname{\text{seq\_state[#2]}}}
+    \expandafter\def\csname S#1\endcsname{\text{\SeqStateName[#2]}}}
 
 \newcommand{\kdefine}[2]{%
-    \expandafter\def\csname S#1\endcsname{\text{seq\_state[#2]}\index{#2}}
-    \expandafter\def\csname #1\endcsname{\text{state[#2]}\index{#2}}
+    \expandafter\def\csname S#1\endcsname{\text{\SeqStateName[#2]}\index{#2}}
+    \expandafter\def\csname #1\endcsname{\text{\StateName[#2]}\index{#2}}
+    \expandafter\def\csname V#1\endcsname{\text{#2}\index{#2}}
 }
+
+\kdefine{AHigh}{high}
+\kdefine{ALow}{low}
+\kdefine{ACode}{code}
+\kdefine{ABitsLeft}{bits\_left}
+\kdefine{AContexts}{contexts}
 
 \kdefine{RefBuffer}{ref\_buffer}
 \kdefine{ParseInfoPrefix}{parse\_info\_prefix}
@@ -27,7 +43,7 @@
 \kdefine{NextParseOffset}{next\_parse\_offset}
 \kdefine{PrevParseOffset}{previous\_parse\_offset}
 
-\kdefine{AUFrameNumber}{au\_frame\_number}
+\kdefine{AUPictureNumber}{au\_picture\_number}
 \kdefine{VersionMajor}{version\_major}
 \kdefine{VersionMinor}{version\_minor}
 \kdefine{Profile}{profile}
@@ -54,26 +70,23 @@
 \kdefine{BlocksY}{blocks\_y}
 
 \kdefine{ComponentHeight}{component\_height}
-\kdefine{UnusualChromaFormat}{unusual\_chroma\_format}
 \kdefine{ChromaFormatIndex}{chroma\_format\_index}
+\kdefine{ChromaFormat}{chroma\_format}
 \kdefine{CustomVideoDepth}{custom\_video\_depth}
 \kdefine{VideoDepth}{video\_depth}
 
-\kdefine{UnusualScanFormat}{unusual\_scan\_format}
 
 \kdefine{Interlaced}{interlaced}
-\kdefine{UnusualFieldDominance}{unusual\_field\_dominance}
 \kdefine{TopFieldFirst}{top\_field\_first}
-\kdefine{UnusualFieldInterleaving}{unusual\_field\_interleaving}
 \kdefine{SequentialFields}{sequential\_fields}
 \kdefine{CustomFrameRate}{custom\_frame\_rate}
 \kdefine{FrameRateIndex}{frame\_rate\_index}
-\kdefine{FrameRateNumerator}{frame\_rate\_numerator}
-\kdefine{FrameRateDenominator}{frame\_rate\_denominator}
+\kdefine{FrameRateNumerator}{frame\_rate\_numer}
+\kdefine{FrameRateDenominator}{frame\_rate\_denom}
 \kdefine{CustomAspectRatio}{custom\_aspect\_ratio}
 \kdefine{AspectRatioIndex}{aspect\_ratio\_index}
-\kdefine{AspectRatioNumerator}{aspect\_ratio\_numerator}
-\kdefine{AspectRatioDenominator}{aspect\_ratio\_denominator}
+\kdefine{AspectRatioNumerator}{aspect\_ratio\_numer}
+\kdefine{AspectRatioDenominator}{aspect\_ratio\_denom}
 
 \kdefine{CustomCleanArea}{custom\_clean\_area}
 \kdefine{CleanWidth}{clean\_width}
@@ -88,20 +101,20 @@
 \kdefine{ChromaOffset}{chroma\_offset}
 \kdefine{ChromaExcursion}{chroma\_excursion}
 
-\kdefine{UnusualColourSpec}{unusual\_colour\_spec}
+\kdefine{ColourSpec}{colour\_spec}
 \kdefine{ColourSpecIndex}{colour\_spec\_index}
-\kdefine{UnusualColourPrimaries}{unusual\_colour\_primaries}
+\kdefine{ColourPrimaries}{colour\_primaries}
 \kdefine{ColourPrimariesIndex}{colour\_primaries\_index}
-\kdefine{UnusualColourMatrix}{unusual\_colour\_matrix}
+\kdefine{ColourMatrix}{colour\_matrix}
 \kdefine{ColourMatrixIndex}{colour\_matrix\_index}
-\kdefine{UnusualTransferFunction}{unusual\_transfer\_function}
-\kdefine{TransferFunctionIndex}{transfer\_function\_index}
+\kdefine{TransferFunction}{transfer\_fn}
+\kdefine{TransferFunctionIndex}{transfer\_fn\_index}
 
-\kdefine{PictureNumberOffset}{picture\_number\_offset}
-\kdefine{RefOffsetA}{ref1\_offset}
-\kdefine{RefOffsetB}{ref2\_offset}
+\kdefine{PictureNumber}{picture\_number}
+\kdefine{RefOneNum}{ref1\_picture\_number}
+\kdefine{RefTwoNum}{ref2\_picture\_number}
 \kdefine{NumRetiredPictures}{num\_retired\_pictures}
-\kdefine{RetiredPictureOffset}{retired\_picture\_offset}
+\kdefine{RetiredPictureList}{retired\_picture\_list}
 
 \kdefine{BlockData}{block\_data}
 \kdefine{BlockDataLength}{block\_data\_length}
@@ -112,9 +125,8 @@
 \kdefine{LumaYBLen}{luma\_yblen}
 \kdefine{LumaXBSep}{luma\_xbsep}
 \kdefine{LumaYBSep}{luma\_ybsep}
-\kdefine{CustomMotionVectorPrecision}{custom\_motion\_vector\_precision}
 \kdefine{MotionVectorPrecision}{mv\_precision}
-\kdefine{MVWeightPrecision}{mv\_weight\_precision}
+\kdefine{RefsWeightPrecision}{refs\_weight\_precision}
 \kdefine{RefOneWeight}{ref1\_weight}
 \kdefine{RefTwoWeight}{ref2\_weight}
 \kdefine{PictureUsingGlobal}{using\_global}
@@ -122,38 +134,30 @@
 \kdefine{NumRefs}{num\_refs}
 
 \kdefine{CustomPicturePredictionMode}{custom\_picture\_prediction\_mode}
-\kdefine{PicturePredictionModeIndex}{picture\_prediction\_mode\_index}
+\kdefine{PicturePredictionModeIndex}{picture\_prediction\_mode}
 
 \kdefine{CustomReferenceWeights}{custom\_reference\_weights}
 \kdefine{PictureWeightBits}{picture\_weight\_bits}
 \kdefine{PictureWeightRefA}{picture\_weight\_ref1}
 \kdefine{PictureWeightRefB}{picture\_weight\_ref2}
 \kdefine{NonZeroPanTiltFlag}{nonzero\_pan\_tilt\_flag}
-\kdefine{GMpan}{pan}
-\kdefine{GMtilt}{tilt}
-\kdefine{NonZeroZRSFlag}{nonzero\_zoom\_rotation\_shear\_flag}
 \kdefine{ZRSexponent}{ZRS\_exponent}
-\kdefine{GMaTL}{a11}
-\kdefine{GMaTR}{a12}
-\kdefine{GMaBL}{a21}
-\kdefine{GMaBR}{a22}
 \kdefine{NonZeroPerspectiveFlag}{nonzero\_perspective\_flag}
 \kdefine{GMperspectiveExponent}{perspective\_exponent}
 \kdefine{GMperspectiveX}{perspective\_x}
 \kdefine{GMperspectiveY}{perspective\_y}
 
 \kdefine{ZeroResidual}{zero\_residual}
-\kdefine{UnusualWavelet}{unusual\_wavelet}
 \kdefine{WaveletIndex}{wavelet\_index}
+\kdefine{WaveletFilter}{wavelet\_filter}
 \kdefine{WaveletDepth}{wavelet\_depth}
 \kdefine{TransformDepth}{transform\_depth}
 \kdefine{YTransform}{y\_transform}
 \kdefine{UTransform}{u\_transform}
 \kdefine{VTransform}{v\_transform}
 \kdefine{SpatialPartitionFlag}{spatial\_partition\_flag}
-\kdefine{CustomPartition}{custom\_partition}
-\kdefine{CodeBlockWidth}{horizontal\_codeblock\_size}
-\kdefine{CodeBlockHeight}{vertical\_codeblock\_size}
+\kdefine{Codeblocks}{codeblocks}
+\kdefine{CodeblockMode}{codeblock\_mode}
 \kdefine{SubbandDataLength}{subband\_data\_length}% [level][band]
 \kdefine{QuantIndex}{quantiser\_index}
 \kdefine{CompressedSubbandData}{compressed\_subband\_data}%needed?
@@ -177,7 +181,6 @@
 \kdefine{PUChromaBDCResidual}{chroma2\_dc\_residual}
 \kdefine{PUChromaBDC}{chroma2\_dc}
 \kdefine{PUUsingGlobalResidue}{pu\_using\_global\_residual}
-\kdefine{PUUsingGlobal}{pu\_using\_global}
 \kdefine{PUvectorA}{ref1\_vector}
 \kdefine{PUvectorB}{ref2\_vector}
 \kdefine{MVhorzontalResidue}{horizontal\_residual}
@@ -189,17 +192,23 @@
 \kdefine{Codeblocks}{codeblocks}
 \kdefine{CodeblockMode}{codeblock\_mode}
 
+\kdefine{CurrentPicture}{current\_picture}
+\kdefine{RefBuffer}{ref\_buffer}
+
 \newcommand{\LL}{\textit{LL}}
 \newcommand{\LH}{\textit{LH}}
 \newcommand{\HL}{\textit{HL}}
 \newcommand{\HH}{\textit{HH}}
 
-\newcommand{\SingleQuantiser}{SINGLE\_QUANT}
-\newcommand{\MultipleQuantiser}{MULTI\_QUANT}
-\newcommand{\Intra}{INTRA}
-\newcommand{\RefOneAndTwo}{REF1ANDTWO}
-\newcommand{\RefOneOnly}{REF1ONLY}
-\newcommand{\RefTwoOnly}{REF2ONLY}
+\newcommand{\SingleQuantiser}{\text{SINGLE\_QUANT}}
+\newcommand{\MultipleQuantiser}{\text{MULTI\_QUANT}}
+\newcommand{\Intra}{\text{INTRA}}
+\newcommand{\Inter}{\text{INTER}}
+\newcommand{\RefOneAndTwo}{\text{REF1AND2}}
+\newcommand{\RefOneOnly}{\text{REF1ONLY}}
+\newcommand{\RefTwoOnly}{\text{REF2ONLY}}
+
+% Contexts:
 
 \newcommand{\SignZero}{\text{SIGN\_ZERO}}
 \newcommand{\SignPos}{\text{SIGN\_POS}}
@@ -229,57 +238,57 @@
 \newcommand{\QOffsetSign}{\text{Q\_OFFSET\_SIGN}}
 \newcommand{\TotalCoeffCtxs}{\text{TOTAL\_COEFF\_CTXs}}
 
-\newcommand{\SBSplitFollowOne}{SB\_F1}
-\newcommand{\SBSplitFollowTwo}{SB\_F2}
-\newcommand{\SBSplitData}{SB\_DATA}
+\newcommand{\SBSplitFollowOne}{\text{SB\_F1}}
+\newcommand{\SBSplitFollowTwo}{\text{SB\_F2}}
+\newcommand{\SBSplitData}{\text{SB\_DATA}}
 
-\newcommand{\PredModeOne}{PMODE\_REF1}
-\newcommand{\PredModeTwo}{PMODE\_REF2}
-\newcommand{\BlockGlobal}{GLOBAL\_BLOCK}
+\newcommand{\PredModeOne}{\text{PMODE\_REF1}}
+\newcommand{\PredModeTwo}{\text{PMODE\_REF2}}
+\newcommand{\BlockGlobal}{\text{GLOBAL\_BLOCK}}
 
-\newcommand{\RefOnexFollowOne}{REF1x\_F1}
-\newcommand{\RefOnexFollowTwo}{REF1x\_F2}
-\newcommand{\RefOnexFollowThree}{REF1x\_F3}
-\newcommand{\RefOnexFollowFour}{REF1x\_F4}
-\newcommand{\RefOnexFollowFivePlus}{REF1x\_F5+}
-\newcommand{\RefOnexData}{REF1x\_DATA}
-\newcommand{\RefOnexSign}{REF1x\_SIGN}
+\newcommand{\RefOnexFollowOne}{\text{REF1x\_F1}}
+\newcommand{\RefOnexFollowTwo}{\text{REF1x\_F2}}
+\newcommand{\RefOnexFollowThree}{\text{REF1x\_F3}}
+\newcommand{\RefOnexFollowFour}{\text{REF1x\_F4}}
+\newcommand{\RefOnexFollowFivePlus}{\text{REF1x\_F5+}}
+\newcommand{\RefOnexData}{\text{REF1x\_DATA}}
+\newcommand{\RefOnexSign}{\text{REF1x\_SIGN}}
 
-\newcommand{\RefOneyFollowOne}{REF1y\_F1}
-\newcommand{\RefOneyFollowTwo}{REF1y\_F2}
-\newcommand{\RefOneyFollowThree}{REF1y\_F3}
-\newcommand{\RefOneyFollowFour}{REF1y\_F4}
-\newcommand{\RefOneyFollowFivePlus}{REF1y\_F5+}
-\newcommand{\RefOneyData}{REF1y\_DATA}
-\newcommand{\RefOneySign}{REF1y\_SIGN}
+\newcommand{\RefOneyFollowOne}{\text{REF1y\_F1}}
+\newcommand{\RefOneyFollowTwo}{\text{REF1y\_F2}}
+\newcommand{\RefOneyFollowThree}{\text{REF1y\_F3}}
+\newcommand{\RefOneyFollowFour}{\text{REF1y\_F4}}
+\newcommand{\RefOneyFollowFivePlus}{\text{REF1y\_F5+}}
+\newcommand{\RefOneyData}{\text{REF1y\_DATA}}
+\newcommand{\RefOneySign}{\text{REF1y\_SIGN}}
 
-\newcommand{\RefTwoxFollowOne}{REF1x\_F1}
-\newcommand{\RefTwoxFollowTwo}{REF1x\_F2}
-\newcommand{\RefTwoxFollowThree}{REF1x\_F3}
-\newcommand{\RefTwoxFollowFour}{REF1x\_F4}
-\newcommand{\RefTwoxFollowFivePlus}{REF1x\_F5+}
-\newcommand{\RefTwoxData}{REF1x\_DATA}
-\newcommand{\RefTwoxSign}{REF1x\_SIGN}
+\newcommand{\RefTwoxFollowOne}{\text{REF1x\_F1}}
+\newcommand{\RefTwoxFollowTwo}{\text{REF1x\_F2}}
+\newcommand{\RefTwoxFollowThree}{\text{REF1x\_F3}}
+\newcommand{\RefTwoxFollowFour}{\text{REF1x\_F4}}
+\newcommand{\RefTwoxFollowFivePlus}{\text{REF1x\_F5+}}
+\newcommand{\RefTwoxData}{\text{REF1x\_DATA}}
+\newcommand{\RefTwoxSign}{\text{REF1x\_SIGN}}
 
-\newcommand{\RefTwoyFollowOne}{REF2y\_F1}
-\newcommand{\RefTwoyFollowTwo}{REF2y\_F2}
-\newcommand{\RefTwoyFollowThree}{REF2y\_F3}
-\newcommand{\RefTwoyFollowFour}{REF2y\_F4}
-\newcommand{\RefTwoyFollowFivePlus}{REF2y\_F5+}
-\newcommand{\RefTwoyData}{REF2y\_DATA}
-\newcommand{\RefTwoySign}{REF2y\_SIGN}
+\newcommand{\RefTwoyFollowOne}{\text{REF2y\_F1}}
+\newcommand{\RefTwoyFollowTwo}{\text{REF2y\_F2}}
+\newcommand{\RefTwoyFollowThree}{\text{REF2y\_F3}}
+\newcommand{\RefTwoyFollowFour}{\text{REF2y\_F4}}
+\newcommand{\RefTwoyFollowFivePlus}{\text{REF2y\_F5+}}
+\newcommand{\RefTwoyData}{\text{REF2y\_DATA}}
+\newcommand{\RefTwoySign}{\text{REF2y\_SIGN}}
 
-\newcommand{\YDCFollowOne}{YDC\_F1}
-\newcommand{\YDCFollowTwoPlus}{YDC\_F2+}
-\newcommand{\YDCData}{YDC\_DATA}
-\newcommand{\YDCSign}{YDC\_SIGN}
+\newcommand{\YDCFollowOne}{\text{YDC\_F1}}
+\newcommand{\YDCFollowTwoPlus}{\text{YDC\_F2+}}
+\newcommand{\YDCData}{\text{YDC\_DATA}}
+\newcommand{\YDCSign}{\text{YDC\_SIGN}}
 
-\newcommand{\UDCFollowOne}{UDC\_F1}
-\newcommand{\UDCFollowTwoPlus}{UDC\_F2+}
-\newcommand{\UDCData}{UDC\_DATA}
-\newcommand{\UDCSign}{UDC\_SIGN}
+\newcommand{\UDCFollowOne}{\text{UDC\_F1}}
+\newcommand{\UDCFollowTwoPlus}{\text{UDC\_F2+}}
+\newcommand{\UDCData}{\text{UDC\_DATA}}
+\newcommand{\UDCSign}{\text{UDC\_SIGN}}
 
-\newcommand{\VDCFollowOne}{VDC\_F1}
-\newcommand{\VDCFollowTwoPlus}{VDC\_F2+}
-\newcommand{\VDCData}{VDC\_DATA}
-\newcommand{\VDCSign}{VDC\_SIGN}
+\newcommand{\VDCFollowOne}{\text{VDC\_F1}}
+\newcommand{\VDCFollowTwoPlus}{\text{VDC\_F2+}}
+\newcommand{\VDCData}{\text{VDC\_DATA}}
+\newcommand{\VDCSign}{\text{VDC\_SIGN}}
