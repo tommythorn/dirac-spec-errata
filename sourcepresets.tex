@@ -1,0 +1,157 @@
+\label{sourceparamspresets}
+
+Source parameters are signalled using a range of preset indices into the following
+tables, as specified in Section \ref{auheader}. 
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SFrameRateNumerator$ & $\SFrameRateDenominator$ \\
+\hline
+1 & 24000 & 1001 \\
+\hline
+2 & 24 & 1 \\
+\hline
+3 & 25 & 1 \\
+\hline
+4 & 30000 & 1001 \\
+\hline
+5 & 30 & 1 \\
+\hline
+6 & 50 & 1 \\
+\hline
+7 & 60000 & 1001 \\
+\hline
+8 & 60 & 1 \\
+\hline
+\end{tabular}
+\caption{Available preset frame rate values}\label{frameratevalues}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SAspectRatioNumerator$ & $\SAspectRatioDenominator$ \\
+\hline
+1 (Square Pixels) & 1 & 1 \\
+\hline
+2 (525-line systems) & 10 & 11 \\
+\hline
+3 (625-line systems) & 12 & 11 \\
+\hline
+\end{tabular}
+\caption{Available preset aspect ratio values}\label{aspectratiovalues}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SLumaOffset$ & $\SLumaExcursion$ \\
+\hline
+1 (8 Bit Full Range) & 0 & 255 \\
+\hline
+2 (8 Bit Video) & 16 & 235 \\
+\hline
+3 (10 Bit Video) & 64 & 876 \\
+\hline
+\end{tabular}
+\caption{Luma signal range available presets}\label{lumasignalrangevalues}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SChromaOffset$ & $\SChromaExcursion$ \\
+\hline
+1 (8 Bit Full Range) & 128 & 255 \\
+\hline
+2 (8 Bit Video) & 128 & 224 \\
+\hline
+3 (10 Bit Video) & 512 & 896 \\
+\hline
+\end{tabular}
+\caption{Chroma signal range available presets}\label{chromasignalrangevalues}
+\end{table}
+
+\begin{informative}
+The only presets available cover a full 8-bit range or 8- or 10-bit SDI video ranges.
+If other video depths have been selected, custom signal range parameters
+should be signalled, or the resulting video may have an unintended appearance that
+affects video quality adversely on a display device.
+\end{informative}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|l|l|l|}
+\hline
+$index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & {\bf Transfer function}\\
+\hline
+0 & Custom, HDTV, PC \& Internet & 0 - ITU709 \& sRGB & 0 - HDTV/PC & 0 - TV \\ 
+\hline
+1 & NTSC                                    & 1 - SMPTE C           & 1 - SDTV      & 0 - TV \\
+\hline
+2 & PAL                                       & 2 - EBU Tech 3213   & 1 - SDTV      & 0 - TV \\
+\hline
+3 & D-Cinema                              & 3 - CIE XYZ             & 2 - YCgCo     & 3 - DCI \\
+\hline
+\end{tabular}
+\caption{Colour specification presets}\label{colourspecvalues}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+$index$ &  {\bf Primaries}      \\
+\hline
+0          &  ITU709 \& sRGB  \\ 
+\hline
+1          &  SMPTE C (as used for NTSC)          \\
+\hline
+2          &  EBU Tech 3213, as used for PAL   \\
+\hline
+3          & CIE XYZ              \\
+\hline
+\end{tabular}
+\caption{Colour primaries presets}\label{primariesvalues}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+$index$ &  {\bf Matrix}\\
+\hline
+0 & HDTV, PC \& Internet: $K_R=0.2126$, $K_B=0.0722$ \\ 
+\hline
+1 & SDTV: $K_R=0.299$, $K_B=0.114$ \\
+\hline
+2 & Reversible: YCgCo \\
+\hline
+\end{tabular}
+\caption{Colour matrix presets}\label{matrixvalues}
+\end{table}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+$index$ & {\bf Transfer function}\\
+\hline
+0 & TV \\ 
+\hline
+1 & Extended Gamut \\
+\hline
+2 & Linear\\
+\hline
+3 & DCI Gamma\\
+\hline
+\end{tabular}
+\caption{Transfer function presets}\label{transfervalues}
+\end{table}
+
+[Must explain all these presets]
