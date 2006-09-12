@@ -2,5 +2,1294 @@
 % - This chapter defines the bytestream structure - %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{bs-intro}
-\input{bs-syntax}
+\label{streamparsing}
+
+This section specifies the Dirac stream and stream parsing operations,
+excepting the decoding of wavelet coefficients and motion data,
+which are deferred to Sections \ref{transformdec} and \ref{motiondec}.
+The decoding operations for extracting decoded pictures from parsed
+data are specified in Section \ref{picturedec}.
+
+The stream parsing specification is augmented by the parse diagrams
+in Appending \ref{parsediagrams}, which summarise in graphical form
+the struture of the stream.
+
+\subsection{Introduction}
+
+A stream is a concatenation of Dirac sequences.
+A sequence is a concatenation of Access Units, comprised of Access Unit
+headers and a number of picture data units, together with data headers (``Parse Info")
+allowing for efficient navigation of the sequence.
+
+The essential difference between a stream and a sequence is that
+a sequence corresponds to a single video sequence, meaning a stream
+of images of constant video parameters (picture dimensions, aspect ratio,
+frame rate and so on as defined in Sections \ref{sequenceparameters} and \ref{sourceparameters}).
+Any change in video parameters necessitates that a sequence be terminated and a
+new sequence started.
+
+Default decoding parameters are computed based on the Access Unit header data.
+AU header data (excluding the AU picture number) is required to be constant throughout
+a sequence (Section \ref{auheader}): however the decoding parameters used for
+decoding pictures are {\em not} necessarily constant since they may be overridden within
+the picture data. 
+
+As a result, the parsing and decoding model used in this
+specification maintains two sets of state variables: the sequence or default state variable
+$\SeqStateName$, holding the defaults to be used
+throughout a sequence, and the state variable $\StateName$ holding
+the values to be used for decoding the current picture, which may override the defaults 
+for many variables. The picture
+state variable is re-intialised from the default settings before each picture is decoded.
+
+\begin{informative}
+The requirement that default decoding parameters are overridden 
+for each picture -- rather than, for example, changing
+defaults for all subsequent pictures -- potentially causes a little more overhead. However it
+greatly enhances random access: once the Access Unit header has been read, {\em any} picture
+within the Access Unit can be successfully parsed independently, and decoding may even be possible
+from a variety of points within the Access Unit. Since the AU data is constant throughout the sequence, 
+reading the AU header once allows any picture in the sequence to be parsed.
+\end{informative}
+
+\subsection{Stream}
+\label{stream}
+
+A stream is a concatenation of Dirac sequences. 
+The process for parsing a stream is to parse all sequences it contains.
+
+\subsubsection{Sequence}
+
+The data contained in a Dirac Sequence corresponds to a single video sequence with
+constant video parameters as defined in Sections \ref{sequenceparameters} and \ref{sourceparameters}. A sequence
+is preceded by a Parse Info header which indicates the beginning of the sequence
+with a parse code. A Dirac sequence can be excised from a Dirac stream and decoded entirely
+independently.
+
+\begin{pseudo}{video\_sequence}{}
+\bsCODE{parse\_info()}{\ref{parseinfo}}
+\bsWHILE {is\_access\_unit()}{\ref{parseinfo}}
+    \bsCODE{access\_unit()}{\ref{accessunit}}
+\bsEND
+\end{pseudo}
+
+\subsection{Parse Info header}
+\label{parseinfo}
+
+This section specifies the operation of the $parse\_info()$ process for parsing
+Parse Info header data. This header is byte-aligned. It occurs at the beginning
+of a sequence, at the end of a sequence, before an Access Unit header, 
+and before each set of picture data. It is used to navigate through the stream (Section \ref{picturedec}).
+The values of Parse Info parameters determine the type and format of the
+subsequent data structures, in particular indicating whether a picture is
+Intra or Inter coded, and if Inter how many references it has.
+
+\begin{pseudo}{parse\_info}{}
+\bsCODE{byte\_align()}
+\bsCODE{\ParseInfoPrefix=read\_uint\_lit(4)}
+\bsCODE{\ParseCode=read\_byte()}
+\bsCODE{\NextParseOffset=read\_uint\_lit(3)}
+\bsCODE{\PrevParseOffset=read\_uint\_lit(3)}
+\end{pseudo}
+
+The Parse Info parameters shall satisfy the following constraints:
+
+\begin{itemize}
+\item $\ParseInfoPrefix$ shall be set to be 0x42 0x42 0x43 0x44, which is ASCII for BBCD.
+\item $\ParseCode$ shall be one of the supported values set out in Table \ref{parsecodes}
+\item $\NextParseOffset$ shall be the number of bytes from the first byte of the current
+Parse Info header to the first byte of the next Parse Info header, if there is one. If there
+is no subsequent Parse Info header, it shall be be 0
+\item $\PrevParseOffset$ shall be the number of bytes from the first byte of the current
+Parse Info header to the first byte of the previous Parse Info header, if there is one. If there
+is no subsequent Parse Info header, it shall be be 0
+\end{itemize}
+
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|l|c|}
+\hline
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+0x00 & 0000 0000 & Access Unit header &--\\
+\hline
+0x0C & 0000 1100 & Intra Reference Picture & 0\\
+\hline
+0x08 & 0000 1000 & Intra Non Reference Picture & 0\\
+\hline
+0x0D & 0000 1101 & Inter Reference Picture & 1\\
+\hline
+0x0E & 0000 1110 & Inter Reference Picture & 2\\
+\hline
+0x09 & 0000 1001 & Inter Non Reference Picture & 1\\
+\hline
+0x10 & 0000 1010 & Inter Non Reference Picture & 2\\
+\hline
+0x10 & 0001 0000 & End of Sequence & -- \\
+\hline
+\end{tabular}
+\caption{Parse codes}\label{parsecodes}
+\end{table}
+
+A number of functions are defined based on the parse code value, considered
+as a bit-field, which shall be used to direct subsequent decoding operations. All are
+boolean, except for $num\_refs()$ which returns an integer:
+
+\begin{pseudo}{is\_AU}{}
+\bsRET{!(\ParseCode \&\text{0x18})}
+\end{pseudo}
+
+\begin{pseudo}{is\_picture}{}
+\bsRET{((\ParseCode \&\text{0x18})==\text{0x08})}
+\end{pseudo}
+
+\begin{pseudo}{is\_end\_of\_sequence}{}
+\bsRET{((\ParseCode \&\text{0x18})==\text{0x10})}
+\end{pseudo}
+
+\begin{pseudo}{is\_reference}{}
+\bsRET{((\ParseCode \&\text{0x04})==\text{0x04})}
+\end{pseudo}
+
+\begin{pseudo}{is\_non\_reference}{}
+\bsRET{((\ParseCode \&\text{0x04})==\text{0x00})}
+\end{pseudo}
+
+\begin{pseudo}{num\_refs}{}
+\bsRET{(\ParseCode \&\text{0x03})}
+\end{pseudo}
+
+\begin{pseudo}{is\_intra}{}
+\bsRET{(num\_refs()==0)}
+\end{pseudo}
+
+\begin{pseudo}{is\_inter}{}
+\bsRET{(num\_refs()>0)}
+\end{pseudo}
+
+\begin{informative}
+Next Parse Offset and Previous Parse Offset are added to the byte stream to simplify parsing.
+Next Parse Offset represents the offset in bytes from the start of the current Parse Info to the
+start of the next Parse Info. So counting forward Next Parse Offset bytes from the first byte
+(0x42=“B”) of the current Parse Info should yield a byte of value 0x42=“B” corresponding to
+the start of the next Parse Info. The Previous Parse Offset is the number of bytes backwards
+to the start of the previous Parse Info header. The Previous Parse Offset of the current Parse Info
+therefore equals the Next Parse Offset of the previous Parse Info.
+
+The 4 byte Parse Info Prefix is present to allow an application to find a point from which to
+start decoding. That is, the function of Parse Prefix Header is to synchronise the decoder with
+the byte stream. Parsing of the stream can start from any Access Unit Header,
+and successful decoding  once the reference buffer has converged (see Section \ref{picturedec}). 
+
+The decoder first needs to
+find a Parse Info structure. It should then check the Parse Code in the Parse Info. If the
+following parse unit is an Access Unit Header then the decoder can start decoding. If the
+it is a Picture then the decoder should skip forward by Next Parse Offset bytes (from
+the start of the Parse Info Prefix) to the next Parse Info. The decoder would continue skipping
+forward until it locates an Access Unit Header. Note that the decoder does not need to parse
+any intervening data in order to navigate through the stream to find an Access Unit Header. The
+Previous Parse Offset is provided to allow searching backwards through the byte stream.
+
+Any particular instance of the Parse Info Prefix in the byte stream may not, necessarily,
+indicate the start of a Parse Info structure. This is because other parts of the byte stream may,
+by chance, introduce these bytes into the byte stream. In particular, the use of arithmetic coding in Dirac
+means that it is impossible to directly avoid accidentally introducing the Parse Info Prefix.
+When encoding a bytestream it is not necessary to avoid accidentally introducing Parse Info
+Prefix sequences. They are present to allow synchronisation of the bytes stream with the
+decoder and this can be ensured, even in the presence of spurious Parse Info Prefixes, as
+follows. When the decoder finds a Parse Info Prefix it should skip forward by Next Parse
+Offset (or back by Previous Parse Offset) and check whether the next three bytes are a Parse
+Info Prefix. If so the decoder can be reasonably certain that it has found a genuine Parse Info
+Prefix. If it does not find another Parse Info Prefix it was probably unlucky enough to have
+found a spurious Parse Info Prefix. In this case it should search for the next Prefix and repeat
+the test.
+
+The probability of a spurious Parse Info Prefix is low: 1 in $2^{32}$ since the prefix is 4 bytes
+long. This is the probability of finding two Parse Info Prefix sequences separated by Next
+Parse Offset. The test outlined in the previous paragraph is, therefore, more than adequate in practice.
+For the paranoid the test may of course be extended.
+
+The test for two appropriately separated Parse Info Prefixes is, anyway, prudent in any
+channel subject to bit errors even in the absence of spurious Prefixes.
+
+This defintion of Dirac only includes three types of Parse code: the AU header, those for different picture
+ sorts, and that indicating the end of the sequence. It is envisaged that other codes may be introduced in future 
+to indicate data such as user data or extension data.
+\end{informative}
+
+\subsection{Access Units}
+\label{accessunit}
+
+This section specifies the operation of the $access\_unit()$ process for parsing an Access Unit.
+Access Units provide points at which the stream may be randomly accessed.
+Specifically, a stream may be successfully parsed from any Access Unit Header (Section \ref{auheader})
+without reference to prior data, and successfully decoded once the reference picture buffer has
+converged (Section \ref{picturedec}). 
+
+The Access Unit parsing process is given by:
+
+\begin{pseudo}{access\_unit}{}
+\bsCODE{access\_unit\_header()}{\ref{auheader}}
+\bsCODE{parse\_info()}{\ref{parseinfo}}
+\bsWHILE{is\_picture()==\true}{\ref{parseinfo}}
+    \bsCODE{picture()}{\ref{picture}}
+    \bsCODE{parse\_info()}{\ref{parseinfo}}
+\bsEND
+\end{pseudo}
+
+Each Access Unit begins with the Access Unit header. Picture data may be read from that point until
+the next Access Unit or until the end of the sequence/stream. Data is read into the default parameter
+set by parsing the Access Unit header (Section \ref{auheader}). 
+
+\subsection{Access Unit header}
+\label{auheader}
+
+This section specifies the structure of the Access Unit header. This Access Unit header is byte aligned.
+Parsing this header consists in
+reading the Access Unit parameters (parse, source and sequence parameters) and initialising 
+the default decoder parameters $\SeqStateName$ as a result of these. Access Unit parameters
+remain constant throughout a sequence, so in theory the AU header may be skipped after being read
+once.
+
+\begin{pseudo}{access\_unit\_header}{}
+\bsCODE{byte\_align()}
+\bsCODE{parse\_parameters()}{\ref{parseparameters}}
+\bsCODE{sequence\_parameters()}{\ref{sequenceparameters}}
+\bsCODE{source\_parameters()}{\ref{sourceparameters}}
+\end{pseudo}
+
+\begin{informative}
+Note that source parameters indicate whether the video sequence is interlaced or progressive.
+In particular a change from interlaced to progressive video, or vice-versa, necessitates that
+the Dirac sequence be terminated and a new sequence begun. 
+
+The source parameters are not used by the Dirac decoder. Source and sequence parameter values should
+be made available using appropriate interfaces and standards to any downstream video
+processing device or display, but their use and interpretation by other devices is not specified in this standard. 
+Neverthless, Appendix \ref{vidsys} specifies the video systems model that should be used for the interpretation
+of source and sequence parameters.
+\end{informative}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Access unit parse parameters}
+\label{parseparameters}
+
+This section specifes the structure of the Access Unit Parse Parameters, which is as follows:
+
+\begin{pseudo}{parse\_parameters}{}
+\bsCODE{\SAUPictureNumber=read\_uint\_lit(4)}
+\bsITEM{\SVersionMajor}{uint}{}
+\bsITEM{\SVersionMinor}{uint}{}
+\bsITEM{\SProfile}{uint}{}
+\bsITEM{\SLevel}{uint}{}
+\end{pseudo}
+
+Access Unit Parse parameter data, with the exception of $\SAUPictureNumber$ shall remain constant
+(byte-for-byte identical) for all instances of the Access Unit header within a Dirac sequence.
+
+\subsubsection{AU picture number}
+
+$\SAUPictureNumber$ shall be equal to the picture number of the immediately succeeding picture,
+if there is one.
+
+\subsubsection{Version number}
+
+The version number of the Dirac syntax specification (this document) shall be used by the 
+decoder to determine whether it can decode the sequence. It falls into two integer 
+parts, the major and minor version, written as $M.m$, where $M=\SVersionMajor$ and
+$m=\SVersionMinor$.
+ 
+The major version defines the version of the syntax with which the stream 
+complies. A decoder complies with a major version number if it can parse all bit 
+streams that comply with that version number. Such a compliant decoder must be able 
+to parse all previous versions too. Decoders that comply with a major version of the 
+specification may not be able to parse the bit stream corresponding to a later 
+specification. 
+
+Depending on the profile and level defined a decoder compliant with a given major 
+version number may still not be able to decode a bitstream. 
+
+All minor versions of the specification should be functionally compatible with earlier 
+minor versions with the same major version number. Later minor versions may 
+contain corrections, clarifications, and disambiguations; they must not contain new 
+features.
+
+\subsubsection{Profiles and levels}
+
+A profile determines a toolset that is sufficient to decode a sequence. A level determines
+decoder resources (picture and data buffers; computational resources) sufficient
+to decode a sequence. Applicable values of profile and level are specified in Appendix
+\ref{profilelevel}.
+
+\subsection{Access unit sequence parameters}
+\label{sequenceparameters}
+
+The AU sequence parameters consist of the video format, the
+image dimensions, the chroma format and the video depth.  AU sequence
+parameter data shall remain constant throughout a Dirac sequence.
+
+\begin{pseudo}{sequence\_parameters}{}
+\bsITEM{\SVideoFormat}{uint}{}
+\bsCODE{set\_format\_defaults()}{\ref{setformatdefaults}}
+\bsCODE{image\_dimensions()}{\ref{imagedimensions}}
+\bsCODE{chroma\_format()}{\ref{chromaformat}}
+\bsCODE{video\_depth()}{\ref{videodepth}}
+\end{pseudo}
+
+
+\subsubsection{Setting format defaults}
+\label{setformatdefaults}
+
+Default parameter values are set based on the value of $\SVideoFormat$, as specified
+in Appendix \ref{videoformatdefaults}. These cover sequence and source 
+parameters, but also decoding parameters such as wavelet transform depth and 
+motion compensation block sizes. For example, if $\SVideoFormat==4$, CIF
+defaults are set, with picture size equal to $252\times 288$, 4:2:0 chroma format, and
+$12\times 12$ luma blocks.
+
+Sequence and source parameters may be overridden by subsequent data in the AU header.
+For example, an image width of 360 may be encoded as per Section {imagedimensions},
+overriding the CIF format defaults. Decoding parameters may be overridden by data in individual pictures.
+
+\subsubsection{Custom image dimensions}
+\label{imagedimensions}
+
+If a flag is set, the image dimensions specified by the video format defaults may
+be overridden:
+
+\begin{pseudo}{image\_size}{}
+\bsITEM{custom\_dimensions\_flag}{bool}{}
+\bsIF{custom\_dimensions\_flag==\true}
+    \bsITEM{\SLumaWidth}{uint}{}
+    \bsITEM{\SLumaHeight}{uint}{}
+\bsEND
+\end{pseudo}
+
+\subsubsection{Chroma formats}
+\label{chromaformat}
+
+If a flag is set, the chroma format specified by the video format defaults is overridden.
+
+\begin{pseudo}{chroma\_format}{}
+\bsITEM{chroma\_format\_flag}{bool}{}
+\bsIF{chroma\_format\_flag==\true}
+     \bsITEM{\SChromaFormatIndex}{uint}{}
+\bsEND
+\bsCODE{chroma\_dimensions()}
+\end{pseudo}
+
+The supported chroma formats are specified in Table \ref{chromaformats}:
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\SChromaFormatIndex & {\bf Chroma format} \\
+\hline
+0 & 4:4:4 \\
+\hline
+1 & 4:2:2 \\
+\hline
+1 & 4:2:0 \\
+\hline
+\end{tabular}
+\caption{Supported chroma formats}\label{chromaformats}
+\end{table}
+
+Chroma dimensions are set according to the scaling implied by the chroma format:
+
+\begin{pseudo}{chroma\_dimensions}{}
+\bsIF{\SChromaFormatIndex==0}
+    \bsCODE{\SChromaWidth = \SLumaWidth}
+    \bsCODE{\SChromaHeight = \SLumaHeight}
+\bsELSEIF{\SChromaFormatIndex==1}
+    \bsCODE{\SChromaWidth = \SLumaWidth//2}
+    \bsCODE{\SChromaHeight = \SLumaHeight}
+\bsELSE
+    \bsCODE{\SChromaWidth = \SLumaWidth//2}
+    \bsCODE{\SChromaHeight = \SLumaHeight//2}
+\bsEND
+\end{pseudo}
+
+Utility functions returning the chroma subsampling factors are also defined:
+
+\begin{pseudo}{chroma\_h\_ratio}{}
+\bsIF{\SChromaFormatIndex==0}
+    \bsRET{1}
+\bsELSEIF{\SChromaFormatIndex==1}
+    \bsRET{2}
+\bsELSE
+    \bsRET{2}
+\bsEND
+\end{pseudo}
+
+\begin{pseudo}{chroma\_h\_ratio}{}
+\bsIF{\SChromaFormatIndex==0}
+    \bsRET{1}
+\bsELSEIF{\SChromaFormatIndex==1}
+    \bsRET{1}
+\bsELSE
+    \bsRET{2}
+\bsEND
+\end{pseudo}
+
+\subsubsection{Video depth}
+\label{videodepth}
+
+If a flag is set, the default video depth specified by the video format is overridden:
+
+\begin{pseudo}{video\_depth}{}
+\bsITEM{video\_depth\_flag}{bool}{}
+\bsIF{video\_depth\_flag==\true}
+    \bsITEM{\SVideoDepth}{uint}{}
+\bsEND
+\end{pseudo}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Access unit source parameters}
+\label{sourceparameters}
+
+The Access Unit source parameters consist of: the scan format, frame rate,
+aspect ratio, clean area, signal range and colour specification. These parameters
+have been grouped together as they directly influence how a downstream
+display device will display decoded pictures produced by a Dirac decoder.
+Access Unit source parameter data shall remain constant throughout a Dirac sequence.
+Default values are derived from the video format, as specified in Appendix \ref{videoformatdefaults}.
+
+Display and downstream processing falls outside the scope of this specification, and
+hence the interpretation of these parameters is not normatively defined, with
+the exception of frame rate (Section \ref{framerate}) which imposes 
+requirements on compliant decoders for a given level and profile (Appendix \ref{profilelevel}). 
+Appendix \ref{vidsys} describes how the source should be interpreted.
+Deviation from the description there will reduce video quality, perhaps
+significantly, and in embedding a Dirac decoder in a display or processing
+device manufacturers should take the greatest care in adhering to that 
+description.
+
+\begin{pseudo}{source\_parameters}{}
+\bsCODE{scan\_format()}{\ref{scanformat}}
+\bsCODE{frame\_rate()}{\ref{framerate}}
+\bsCODE{aspect\_ratio()}{\ref{aspectratio}}
+\bsCODE{clean\_area()}{\ref{cleanarea}}
+\bsCODE{signal\_range()}{\ref{signalrange}}
+\bsCODE{colour\_spec()}{\ref{colourspec}}
+\end{pseudo}
+
+\subsubsection{Scan format}
+\label{scanformat}
+
+Scan Format parameters are concerned with interlace. If $\SInterlaced=\true$, then the
+video should be displayed as interlaced video. The process for parsing the Scan Format parameters
+is as follows:
+
+\begin{pseudo}{scan\_format}{}
+\bsITEM{scan\_format\_flag}{bool}{}
+\bsIF{scan\_format\_flag==\true}
+    \bsITEM{\SInterlaced}{bool}{}
+    \bsIF{\SInterlaced}
+        \bsITEM{field\_dominance\_flag}{bool}{}
+        \bsIF{field\_dominance\_flag==\true}
+            \bsITEM{\STopFieldFirst}{bool}{}
+        \bsEND
+        \bsITEM{field\_interleaving\_flag}{bool}{}
+        \bsIF{field\_interleaving\_flag==\true}
+            \bsITEM{\SSequentialFields}{bool}{}
+        \bsEND
+    \bsEND
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+If we have an interlaced source the field lines can either be interleaved line by line 
+({\em pseudo-progressive} format) or interleaved field by field ({\em sequential field format}, 
+required for low delay and low resource coding). Pseudo-progressive format is set as default
+for all the interlaced video formats. The field interleaving flag indicates non-default field
+ interleaving, and the sequential fields 
+(Boolean) parameter indicates whether the fields are interleaved as pseudo-progressive or 
+sequential fields.
+
+Note that if the video stream is in sequential field format, then picture dimensions refer to
+fields rather than frames. Even picture numbers will in this case refer to even fields, and
+odd picture numbers to odd fields. In pseudo-progressive mode, picture dimensions are
+ frame dimensions.
+\end{informative}
+
+\begin{pseudo}{scan\_format}{}
+\bsITEM{scan\_format\_flag}{bool}{}
+\bsIF{scan\_format\_flag==\true}
+    \bsITEM{\SInterlaced}{bool}{}
+    \bsIF{\SInterlaced}
+        \bsITEM{field\_dominance\_flag}{bool}{}
+        \bsIF{field\_dominance\_flag==\true}
+            \bsITEM{\STopFieldFirst}{bool}{}
+        \bsEND
+        \bsITEM{field\_interleaving\_flag}{bool}{}
+        \bsIF{field\_interleaving\_flag==\true}
+            \bsITEM{\SSequentialFields}{bool}{}
+        \bsEND
+    \bsEND
+\bsEND
+\end{pseudo}
+
+\subsubsection{Frame rate}
+\label{framerate}
+
+The process for parsing Frame Rate parameters is as follows:
+
+\begin{pseudo}{frame\_rate}{}
+\bsITEM{frame\_rate\_flag}{bool}{}
+\bsIF{frame\_rate\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsIF{index == 0}
+        \bsITEM{\SFrameRateNumerator}{uint}{}
+        \bsITEM{\SFrameRateDenominator}{uint}{}
+    \bsELSE
+        \bsCODE{preset\_frame\_rate()}{uint}{}
+     \bsEND
+\bsEND
+\end{pseudo}
+
+The decoded value of $index$ shall fall in the range 0 to 8.
+
+$preset\_frame\_rate(index)$ sets frame rate values as specified in Table \ref{frameratevalues}
+(Appendix \ref{sourceparamspresets}).
+
+The true frame rate is $\dfrac{\SFrameRateNumerator}{\SFrameRateDenominator}$.
+
+Note that what is encoded is frame rate, not picture rate. If $\SSequentialFields=\true$
+then picture rate is twice the encoded frame rate. Supported frame rates in a given profile
+and level are specified in Appendix \ref{profilelevel}.
+
+\subsubsection{Aspect ratio}
+\label{aspectratio}
+
+The process for extracting aspect ratio parameters is as follows:
+
+\begin{pseudo}{aspect\_ratio}{}
+\bsITEM{aspect\_ratio\_flag}{bool}{}
+\bsIF{apect\_ratio\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsIF{index == 0}
+        \bsITEM{\SAspectRatioNumerator}{uint}{}
+        \bsITEM{\SAspectRatioDenominator}{uint}{}
+    \bsELSE
+        \bsCODE{preset\_aspect\_ratio(index)}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+The decoded value of $index$ shall fall in the range 0 to 3.
+
+$preset\_aspect\_ratio(index)$ sets aspect ratio values as specified in Table \ref{aspectratiovalues}
+(Appendix \ref{sourceparamspresets}).
+
+The true aspect ratio is $\dfrac{\SAspectRatioNumerator}{\SAspectRatioDenominator}$. 
+
+It is a pixel aspect ratio.
+
+\subsubsection{Clean area}
+\label{cleanarea}
+
+The process for extracting the clean area parameters is as follows:
+
+\begin{pseudo}{clean\_area}{}
+\bsITEM{clean\_area\_flag}{bool}{}
+\bsIF{clean\_area\_flag==\true}
+    \bsITEM{\SCleanWidth}{uint}{}
+    \bsITEM{\SCleanHeight}{uint}{}
+    \bsITEM{\SLeftOffset}{uint}{}
+    \bsITEM{\STopOffset}{uint}{}
+\bsEND
+\end{pseudo}
+
+The clean area determines the part of the picture that should be displayed. The
+following restrictions shall apply:
+
+\begin{itemize}
+\item $\CleanWidth+\LeftOffset\leq \SLumaWidth$
+\item $\CleanHeight+\TopOffset\leq \SLumaHeight$
+\end{itemize}
+
+\subsubsection{Signal range}
+\label{signalrange}
+
+Picture component data output by the Dirac decoder is in the range 0 to $2^\SVideoDepth-1$. 
+The signal range parameters determine how these data ranges should be
+adjusted prior to matrixing operations (Appendix \ref{signalranges}).
+
+The process for extracting the signal range parameters is as follows:
+
+\begin{pseudo}{signal\_range}{}
+\bsITEM{signal\_range\_flag}{bool}{}
+\bsIF{signal\_range\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsIF{index == 0}
+        \bsITEM{\SLumaOffset}{uint}{}
+        \bsITEM{\SLumaExcursion}{uint}{}
+        \bsITEM{\SChromaOffset}{uint}{}
+        \bsITEM{\SChromaExcursion}{uint}{}
+    \bsELSE
+        \bsCODE{preset\_signal\_ranges(index)}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+The decoded value of $index$ shall fall in the range 0 to 3.
+
+$preset\_signal\_ranges(index)$ sets signal range values as specified in Tables \ref{lumasignalrangevalues} and
+\ref{chromasignalrangevalues} (Appendix \ref{sourceparamspresets}).
+
+The offset and excursion values shall satisfy the following constraints:
+
+\begin{itemize}
+\item $0\leq\SLumaOffset<2^\SVideoDepth$
+\item $0\leq\SLumaExcursion<2^\SVideoDepth$
+\item $0\leq\SChromaOffset<2^\SVideoDepth$
+\item $0\leq\SChromaExcursion<2^\SVideoDepth$
+\end{itemize}
+
+\subsubsection{Colour specification}
+\label{colourspec}
+
+This section specifies the $colour\_spec()$ parsing process. The colour
+specification consists of primaries, matrix and transfer function. Defaults
+are available for all three collectively and individually. The process is:
+
+\begin{pseudo}{colour\_spec}{}
+\bsITEM{colour\_spec_flag}{bool}{}
+\bsIF{colour\_spec\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsCODE{preset\_colour\_specs(index)}
+    \bsIF{colour\_spec\_index == 0}
+        \bsCODE{colour\_primaries()}{\ref{colourprimaries}}
+        \bsCODE{colour\_matrix()}{\ref{colourmatrix}}
+        \bsCODE{transfer\_function()}{\ref{transferfunction}}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+$index$ shall fall in the range 0 to 3.
+
+$preset\_colour\_spec(index)$ sets the colour primaries, matrix and transfer function as specified 
+in Table \ref{colourspecvalues} (Appendix \ref{sourceparamspresets}).
+
+\paragraph{Colour primaries\\}
+\label{colourprimaries}
+
+The $colour\_primaries()$ process is as follows:
+
+\begin{pseudo}{colour\_primaries}{}
+\bsITEM{colour\_primaries\_flag}{bool}{}
+\bsIF{colour\_primaries\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsCODE{preset\_colour\_primaries(index)}
+\bsEND
+\end{pseudo}
+
+$index$ shall fall in the range 0 to 3. $preset\_colour\_primaries(index)$ sets the colour primaries as specified
+in Table \ref{primariesvalues} (Appendix \ref{sourceparamspresets}).
+
+\paragraph{Colour matrix\\}
+\label{colourmatrix}
+
+The $colour\_matrix()$ process is as follows:
+
+\begin{pseudo}{colour\_matrix}{}
+\bsITEM{colour\_matrix\_flag}{bool}{}
+\bsIF{colour\_matrix\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsCODE{preset\_colour\_matrices(index)}
+\bsEND
+\end{pseudo}
+
+$index$ shall fall in the range 0 to 2. $preset\_colour\_matrices(index)$ sets the colour matrix as specified
+in Table \ref{matrixvalues} (Appendix \ref{sourceparamspresets}).
+
+\paragraph{Transfer function\\}
+\label{transferfunction}
+
+The $transfer\_function()$ process is as follows:
+
+\begin{pseudo}{transfer\_function}{}
+\bsITEM{transfer\_function\_flag}{bool}{}
+\bsIF{transfer\_function\_flag==\true}
+    \bsITEM{index}{uint}{}
+    \bsCODE{preset\_transfer\_functions(index)}
+\bsEND
+\end{pseudo}
+
+$index$ shall fall in the range 0 to 3. $preset\_transfer\_functions(index)$ sets the transfer function as specified
+in Table \ref{transfervalues} (Appendix \ref{sourceparamspresets}).
+
+\subsection{Picture}
+\label{picture}
+
+This Section specifies the operation of the $picture()$ parsing process. The process for
+decoding and outputting pictures is specified in Section \ref{picturedec}.
+
+Picture data may be successfully parsed after parsing any Access Unit header
+within the same Dirac sequence. The parsing process is:
+
+\begin{pseudo}{picture}{}
+\bsCODE{init\_decode\_params()}{\ref{initdecodeparams}}
+\bsCODE{picture\_header()}{\ref{pictureheader}}
+\bsIF{is\_inter()}{\ref{parseinfo}}
+    \bsCODE{picture\_prediction()}{\ref{pictureprediction}}
+\bsEND
+\bsCODE{wavelet\_transform()}{\ref{wavelettransform}}
+\end{pseudo}
+
+\subsubsection{Initialising decoding parameters}
+\label{initdecodeparams}
+
+The default parameters are used to initialise the decoder state prior to 
+decoding each picture:
+
+\begin{pseudo}{init\_decode\_params}{}
+\bsFOREACH{var}{\args(\SeqStateName)}
+    \bsCODE{\StateName[var]=\SeqStateName[var]}
+\bsEND
+\end{pseudo}
+
+State variables and default state variables are listed in the index.
+
+\subsubsection{Picture header}
+\label{pictureheader}
+
+The picture header is byte aligned and follows a Parse Info header with a picture parse code.
+The process for parsing the picture header is as follows:
+
+\begin{pseudo}{picture\_header}{}
+\bsCODE{bytealign()}
+\bsCODE{\PictureNumber=read\_byte\_lit(4)}
+\bsIF{is\_inter()}{\ref{parseinfo}}
+    \bsCODE{reference\_picture\_numbers()}
+\bsEND
+\bsCODE{retired\_picture\_list()}
+\end{pseudo}
+
+Picture numbers are not required to be unique within a sequence.
+\begin{comment}
+, since there are
+only a finite number of them, and at some point the picture numbers will wrap round $2^{32}$.
+However, a stream is required to be so constructed that:
+
+\begin{itemize}
+\item the decoded picture buffer mandated in the relevant profile and level shall be sufficient
+to reorder the output picture numbers into a continous stream of integers $ \hdots, n, n+1, n+2, \hdots$
+modulo $2^{32}$
+\item decoding from any AU header 
+\end{itemize}
+\end{comment}
+
+Reference picture numbers are encoded differentially with respect to the
+picture number:
+
+\begin{pseudo}{reference\_picture\_numbers}{}
+\bsCODE{\RefOneNum=(\PictureNumber+read\_sint())\%2^{32}}
+\bsIF{num\_refs() == 2}{\ref{parseinfo}}
+    \bsCODE{\RefTwoNum=(\PictureNumber+read\_sint())\%2^{32}}
+\bsEND
+\end{pseudo}
+
+
+The retired picture list is a list of pictures to be removed from the reference picture
+buffer before the current picture is decoded. The rules for the use of the retired
+picture list are specified in Section \ref{refbuffer}.
+The list of retired picture numbers is also encoded differentially with respect to the
+picture number:
+
+\begin{pseudo}{retired\_picture\_list}{}
+\bsITEM{num\_retired\_pictures}{uint}{}
+\bsFOR{i = 0}{num\_retired\_pictures - 1}
+    \bsCODE{\RetiredPictureList[i]=(\PictureNumber+read\_sint())\% 2^{32}}
+\bsEND
+\end{pseudo}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Picture prediction}
+\label{pictureprediction}
+
+This section specifies the $picture\_prediction()$ process for parsing picture prediction data.
+The process consists of two parts: extracting picture prediction parameters and
+decoding and extracting motion vector fields for motion compensation, as follows:
+
+\begin{pseudo}{picture\_prediction}{}
+\bsCODE{picture\_prediction\_parameters()}{\ref{picpredparams}}
+\bsCODE{block\_data()}{\ref{motiondec}}
+\end{pseudo}
+
+The decoding and generation of block motion vector fields is specified in Section \ref{motiondec}. 
+The remainder of this section is concerned
+with the overall structure of the picture prediction data and the process for parsing and setting picture
+prediction parameters, including global motion parameters.
+
+The two elements of the picture prediction process correspond to two elements of the Dirac stream,
+the picture prediction parameters and the block motion data. Global motion parameters
+are used to construct a global motion vector field, and block motion data is used to provide
+motion vectors block-by-block. Both elements may not be present, depending upon flags
+signalled within the stream. Both elements are byte-aligned within the stream.
+
+\subsubsection{Picture prediction parameters}
+\label{picpredparams}
+
+Picture prediction parameters consist of metadata required for successful parsing of the
+motion data and for performing motion compensation. It includes data indicating whether
+and how global motion is used, the size of blocks, and the weightings used for reference
+pictures in motion compensation (Section \ref{motioncompensate}).
+
+\begin{pseudo}{picture\_prediction\_parameters}{}
+\bsCODE{block\_parameters()}{\ref{blockparameters}}
+\bsCODE{motion\_vector\_precision()}{\ref{mvprecision}}
+\bsCODE{global\_motion()}{\ref{globalmotion}}
+\bsCODE{picture\_prediction\_mode()}{\ref{picpredmode}}
+\bsCODE{reference\_picture\_weights()}{\ref{refpicweights}}
+\end{pseudo}
+
+\subsubsection{Block parameters}
+\label{blockparameters}
+
+This Section specifies the operation of the $block\_parameters()$ process for
+setting the block parameters, consisting of the state variables
+$\LumaXBlen$, $\LumaYBlen$, $\LumaXBsep$, and $\LumaYBsep$
+defining luma blocks, and $\ChromaXBlen$, $\ChromaYBlen$, $\ChromaXBsep$,
+and $\ChromaYBsep$ defining chroma blocks. 
+
+Before this process is invoked, default block parameters are set by the video
+format encoded in the Access Unit header (Section \ref{auheader}). These may
+be temporarily overridden for the current picture if a flag is set, either by
+a preset or by explicit signalling:
+
+\begin{pseudo}{block\_parameters}{}
+\bsITEM{block\_params\_flag}{bool}{}
+\bsIF{block\_params\_flag}
+    \bsITEM{index}{uint}
+    \bsIF{index == 0}
+        \bsITEM{\LumaXBLen}{uint}{}
+        \bsITEM{\LumaYBLen}{uint}{}
+        \bsITEM{\LumaXBSep}{uint}{}
+        \bsITEM{\LumaYBSep}{uint}{}
+    \bsELSE
+       \bsCODE{preset\_block\_params(index)}
+    \bsEND
+\bsEND
+\bsCODE{chroma\_block\_params()}{\ref{chromablockparams}}
+\end{pseudo}
+
+$index$ shall fall in the range 0 to 4. $preset\_block\_params(index)$ sets the transfer function as specified
+in Table \ref{blockparamsvalues} (note that chroma block parameter values are computed from luma values
+in Section \ref{chromablockparams}).
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+             & \multicolumn{4}{|c|}{{\bf Block parameters}}\\
+\hline
+$index$  & \LumaXBlen & \LumaYBlen & \LumaXBsep & \LumaYBsep \\
+\hline
+1 & 8 & 8 & 4 & 4 \\
+\hline
+2 & 12 & 12 & 8 & 8\\
+\hline
+3 & 16 & 16 & 12 & 12\\
+\hline
+4 & 24 & 24 & 16 & 16\\
+\hline
+\end{tabular}
+\caption{Luma block parameter presets}\label{blockparamsvalues}
+\end{table}
+
+Block parameters shall satisfy the following constraints:
+
+\begin{enumerate}
+\item $\LumaXBlen$, $\LumaYBlen$, $\LumaXBsep$, and $\LumaYBsep$ shall all be positive
+multiples of 4
+\item $\LumaXBlen\geq\LumaXBsep$ and $\LumaYBlen\geq\LumaYBsep$
+\item $\LumaXBlen-\LumaXBsep$ and $\LumaYBlen-\LumaYBsep$ shall be
+powers of 2 other than 1
+\item $\ChromaXBlen-\ChromaXBsep$ and $\ChromaYBlen-\ChromaYBsep$ shall be
+powers of 2 other than 1
+\end{enumerate}
+
+\begin{informative}
+Note that these requirements do not preclude length from equalling separation, i.e.
+motion compensation blocks are not overlapped. This may improve quality at higher
+bitrates.
+\begin{comment}
+[NB: software currently crashes in this case!]
+\end{comment}
+\end{informative}
+
+\subsubsection{Setting chroma block parameters}
+\label{chromablockparams}
+
+This section specifies the operation of the $chroma\_block\_params()$ process, which
+determines chroma block dimensions from luma block dimensions. Chroma block parameters
+are equal to the corresponding luma block parameters scaled according to the chroma
+vertical and horizontal subsampling ratios. In this way chroma blocks and luma blocks are
+co-located in the video picture.
+
+\begin{pseudo}{chroma\_block\_params()}{}
+\bsCODE{\ChromaXBlen=\LumaXBlen//chroma\_h\_ratio()}
+\bsCODE{\ChromaYBlen=\LumaYBlen//chroma\_v\_ratio()}
+\bsCODE{\ChromaXBsep=\LumaXBsep//chroma\_h\_ratio()}
+\bsCODE{\ChromaYBsep=\LumaYBsep//chroma\_v\_ratio()}
+\end{pseudo}
+
+[Note that all the stuff about recomputing the chroma block lengths is now redundant since
+we allow non-overlapping blocks as well]
+
+\subsubsection{Motion vector precision}
+\label{mvprecision}
+
+This section specifies the $motion\_vector\_precision()$ process for setting
+the precision (number of sub-pixel accuracy bits) used for motion compensation.
+
+\begin{pseudo}{motion\_vector\_precision}{}
+\bsITEM{motion\_vector\_precision\_flag}{bool}
+\bsIF{motion\_vector\_precision\_flag==\true}
+    \bsITEM{\MotionVectorPrecision}{uint}
+\bsEND
+\end{pseudo}
+
+$\MotionVectorPrecision$ shall lie in the range 0 (pixel-accurate) to 3 (1/8th-pixel accurate).
+
+\subsubsection{Global motion}
+\label{globalmotion}
+
+[Say something about global motion data structures?]
+
+Global motion parameters are encoded if a flag is set. Up to two sets are encoded,
+depending upon the number of references:
+
+\begin{pseudo}{global\_motion}{}
+\bsITEM{\PictureUsingGlobal}{bool}{}
+\bsIF{\PictureUsingGlobal==\true}
+    \bsCODE{global\_motion\_parameters(\GlobalParams[1])}
+    \bsIF{num\_refs() == 2}
+        \bsCODE{global\_motion\_parameters(\GlobalParams[2])}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+\begin{comment}
+[NB: there is now no $global\_motion\_only$ flag, since we will in practice always have to
+signal block modes]
+\end{comment}
+
+Global motion parameters $\GlobalParams$ consist of three elements: 
+
+\begin{itemize}
+\item an integer pan/tilt vector 
+\begin{equation*}
+{\bf b}=\left(
+\begin{array}{c} b_0 \\ 
+b_1
+\end{array}\right)
+\end{equation*}
+\item an integer matrix element 
+\begin{equation*}
+{\bf A}=\left( 
+\begin{array}{cc}
+ A_{0,0} & A_{0,1} \\
+ A_{1,0} & A_{1,1} 
+\end{array}\right)
+\end{equation*}
+capturing zoom, rotation and shear, together with a scaling exponent
+\item an integer perspective element 
+\begin{equation*}
+{\bf c}=\left(
+\begin{array}{c} c_0 \\ 
+c_1
+\end{array}
+\right)
+\end{equation*}
+ capturing the effect of non-orthogonal projection onto the image plane, together 
+with a scaling exponent
+\end{itemize}
+
+Their interpretion and the process for generating a global motion vector field is specified in Section \ref{globalmv}. 
+These elements are parsed in turn:
+
+\begin{pseudo}{global\_motion\_parameters}{gparams}
+\bsCODE{pan\_tilt(gparams)}
+\bsCODE{zoom\_rotate\_shear(gparams)}
+\bsCODE{perspective(gparams)}
+\end{pseudo}
+
+The $pan\_tilt()$ process  extracts horizontal and vertical translation elements:
+
+\begin{pseudo}{pan\_tilt}{gparams}
+\bsCODE{gparams.{\bf b}={\mathbf{0}} }
+\bsITEM{nonzero\_pan\_tilt\_flag}{bool}{}
+\bsIF{nonzero\_pan\_tilt\_flag==\true}
+    \bsITEM{gparams.{\bf b}_0}{sint}{}
+    \bsITEM{gparams.{\bf b}_1}{sint}{}
+\bsEND
+\end{pseudo}
+
+The $zoom\_rotate\_shear()$ process extracts a linear matrix element:
+
+\begin{pseudo}{zoom\_rotation\_shear}{gparams}
+\bsITEM{nontrivial\_zrs\_flag}{bool}{}
+\bsIF{nontrivial\_zrs\_flag==\true}
+    \bsITEM{gparams[ZRS\_exp]}{uint}{}
+    \bsITEM{gparams.{\bf A}_{0,0}}{sint}{}
+    \bsITEM{gparams.{\bf A}_{0,1}}{sint}{}
+    \bsITEM{gparams.{\bf A}_{1,0}}{sint}{}
+    \bsITEM{gparams.{\bf A}_{1,1}}{sint}{}
+\bsELSE
+    \bsCODE{gparams[ZRS\_exp]=0}
+    \bsCODE{gparams.{\bf A}=\left(\begin{array}{cc} 1 & 0 \\ 0 & 1 \end{array}\right)}
+\bsEND
+\end{pseudo}
+
+The $perspective()$ process extracts horizontal and vertical perspective
+elements:
+
+\begin{pseudo}{perspective}{gparams}
+\bsITEM{nonzero\_perspective\_flag}{bool}{}
+\bsIF{nonzero\_perspective\_flag==\true}
+    \bsITEM{gparams[perspective\_exp]}{uint}{}
+    \bsITEM{gparams.{\bf c}_0}{sint}{}
+    \bsITEM{gparams.{\bf c}_1}{sint}{}
+\bsELSE
+    \bsCODE{gparams[perspective\_exp]=0}
+    \bsCODE{gparams.{\bf c}={\mathbf{0}} }
+\bsEND
+\end{pseudo}
+
+\subsubsection{Picture prediction mode}
+\label{picpredmode}
+
+The picture prediction mode encodes alternative methods of motion compensation.
+
+\begin{pseudo}{picture\_prediction\_mode}{}
+\bsITEM{pic\_pred\_mode\_flag}{bool}
+\bsIF{pic\_pred\_mode\_flag==\true}
+    \bsITEM{\PicturePredictionModeIndex}{uint}
+\bsELSE
+    \bsCODE{\PicturePredictionModeIndex=0}
+\end{pseudo}
+
+$\PicturePredictionModeIndex$ shall be 0.
+\begin{comment}
+[Express this better. Do we want this is a video format default? Maybe.]
+\end{comment}
+
+\subsubsection{Reference picture weight values}
+\label{refpicweights}
+
+Alternative reference picture weight values may be defined to override the
+video format defaults:
+
+\begin{pseudo}{reference\_picture\_weights}{}
+\bsITEM{non\_default\_weights\_flag}{bool}
+\bsIF{non\_default\_weights\_flag==\true}
+    \bsITEM{\RefsWeightPrecision}{uint}
+    \bsITEM{\RefOneWeight}{sint}
+    \bsIF{\textit{num\_refs} == 2}
+        \bsITEM{\RefTwoWeight}{sint}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+For bi-directional prediction modes, reference 1 data will be weighted by 
+
+$\dfrac{\RefOneWeight}{2^\RefsWeightPrecision}$
+
+and reference 2 data by
+
+$\dfrac{\RefTwoWeight}{2^\RefsWeightPrecision}$ 
+
+(Section \ref{pixelpredict}). 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Wavelet transform}
+\label{wavelettransform}
+The $wavelet\_tranform()$ function parses metadata determining the wavelet
+transform (including filters, wavelet depth, and code block structures)
+together with the transformed wavelet coefficients.
+
+Decoded wavelet transform coefficient data is stored in the state
+variables $\YTransform$, $\UTransform$ and $\VTransform$ for subsequent
+processing using the inverse wavelet transform (Section \ref{idwt}).
+
+\begin{pseudo}{wavelet\_transform}{}
+\bsCODE{\ZeroResidual = \false}
+\bsIF{is\_inter()}{\ref{parseinfo}}
+    \bsITEM{\ZeroResidual}{bool}
+\bsEND
+
+\bsIF{\ZeroResidual = \false}
+    \bsCODE{transform\_parameters()}{\ref{transformparameters}}
+    \bsCODE{\ComponentWidth = \LumaWidth}
+    \bsCODE{\ComponentHeight = \LumaHeight}
+    \bsCODE{\YTransform = transform\_data()}{\ref{transformdata}}
+
+    \bsCODE{\ComponentWidth = \ChromaWidth}
+    \bsCODE{\ComponentHeight = \ChromaHeight}
+    \bsCODE{\UTransform = transform\_data()}{\ref{transformdata}}
+    \bsCODE{\VTransform = transform\_data()}{\ref{transformdata}}
+\end{pseudo}
+
+If $\ZeroResidual=\true$ then all component pixels will be set to zero prior to
+motion compensation (Section \ref{picturedec}).
+
+Wavelet coefficients have been encoded using entropy coding, and their
+decoding is specified in Section \ref{transformdec}. The remainder of this
+section specifies the decoding of transform parameters.
+
+\subsubsection{Wavelet transform parameters}
+\label{transformparameters}
+
+The wavelet transform parameters encode the filter to be used, the depth of filtering
+and how subbands are spatially partitioned:
+
+\begin{pseudo}{transform\_parameters}{state}
+\bsCODE{wavelet\_filter()}{\ref{wltfilter}}
+\bsCODE{wavelet\_depth()}{\ref{wltdepth}}
+\bsCODE{spatial\_partition()}{\ref{spatialpartition}}
+\end{pseudo}
+
+\paragraph{Wavelet filters\newline}
+\label{wltfilter}
+
+A variety of preset wavelet filters are available, encoded as a 
+values of $\WaveletIndex$, which is an index into
+Table \ref{wltfilterpresets}. Default wavelet filters
+are the Deslauriers-Debuc (9,3) filter for intra pictures
+and the LeGall (5,3) filter for inter pictures. If a flag is
+set, other presets may be used. Their interpretation and lifting 
+implementations are specified in Section \ref{wltfilters}. 
+
+\begin{pseudo}{wavelet\_filter}{}
+\bsITEM{non\_default\_wavelet\_flag}{bool}
+\bsIF{non\_default\_wavelet\_flag==\true}
+    \bsITEM{\WaveletIndex}{uint}
+\bsELSE
+    \bsIF{is\_intra()==\true}
+        \bsCODE{\WaveletIndex=\SWaveletIndex[\Intra]}
+    \bsELSE
+        \bsCODE{\WaveletIndex=\SWaveletIndex[\Inter]}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+$\WaveletIndex$ shall lie in the range 0 to 7. 
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+\WaveletIndex & {\bf Filter} \\
+\hline
+0 & Deslauriers-Debuc (9,3) \\
+\hline
+1 & LeGall (5,3) \\
+\hline
+2 & Deslauriers-Debuc (13,5) \\
+\hline
+3 & Haar with no shift \\
+\hline
+4 & Haar with single shift per level\\
+\hline
+5 & Haar with double shift per level\\
+\hline
+6 & Fidelity filter \\
+\hline
+7 & Daubechies (9,7) integer approximation \\
+\hline
+\end{tabular}
+\caption{Wavelet filter presets}\label{wltfilterpresets}
+\end{table}
+
+\begin{informative}
+For consistency, the filter nomenclature $(m, n)$ refers to the length of the analysis low-pass
+and high-pass filters in the conventional prefiltering (i.e. before subsampling) 
+model of wavelet filtering. They do not reflect the length of lifting filters, which
+operate in the subsampled domain: see Section \ref{wltfilters}. Deslauriers-Debuc
+filters are normally referred to in terms of the number of vanishing moments of their
+synthesis filters, so the (9,3) and (13,5) filters may be referred to in the literature
+as (2,2) and (4,2) filters respectively.
+\end{informative}
+
+\subsubsection{Wavelet depth}
+\label{wltdepth}
+
+The wavelet depth determines the number of times the vertical and horizontal
+wavelet filters may be applied. The $wavelet\_depth()$ parsing process is as
+follows:
+
+\begin{pseudo}{wavelet\_depth}{}
+\bsITEM{non\_default\_wavelet\_depth\_flag}{bool}
+\bsIF{non\_default\_wavelet\_depth\_flag==\true}
+    \bsITEM{\WaveletDepth}{uint}
+\bsEND
+\end{pseudo}
+
+Allowable $\WaveletDepth$ values are determined by the level and profile 
+(Appendix \ref{profilelevel}). The wavelet depth determines the number of 
+subbands and the the dimensions of the subband data array (Section \ref{wltinit}).
+
+\subsubsection{Spatial partition of wavelet data}
+\label{spatialpartition}
+
+Each subband may be partitioned into a number of code blocks. The number of codeblocks
+to be used for subbands at level $level$ is encoded in $\Codeblocks[level][v]$ and
+$\Codeblocks[level][h]$ respectively. 
+
+\begin{pseudo}{spatial\_partition}{}
+\bsITEM{spatial\_partition\_flag}{bool}
+\bsIF{spatial\_partition\_flag==\true}
+    \bsITEM{nondefault\_partition\_flag}{bool}
+    \bsIF{nondefault\_partition\_flag==\true}
+        \bsCODE{depth = \WaveletDepth}
+        \bsFOR{level=0}{depth}
+            \bsITEM{\Codeblocks[level][h]}{uint}
+            \bsITEM{\Codeblocks[level][v]}{uint}
+        \bsEND
+    \bsEND
+    \bsITEM{index}{uint}
+    \bsCODE{\CodeblockMode=codeblock\_mode(index)}
+\bsELSE
+    \bsIF{is\_intra()==\true}
+        \bsCODE{\Codeblocks=\SCodeblocks[\Intra]}
+    \bsELSE
+        \bsCODE{\Codeblocks=\SCodeblocks[\Inter]}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+$index$ shall lie in the range 0 to 2, and $codeblock\_mode$ sets the codeblock mode
+according to Table \ref{codeblockmodes}.
+
+The maximum number of codeblocks vertically shall be less than or equal
+$subband\_height(level)//4$ and the number of codeblocks horizontally shall be less than
+or equal to $subband\_width(level)//4$ (subband dimensions as specified in Section {subbandwidthheight}).
+
+\begin{comment}
+[To do: Tim suggests having 0 as a terminator meaning: values are the same from here on]
+\end{comment}
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+$index$ & $\CodeblockMode$ \\
+\hline
+0 & \SingleQuantiser \\
+\hline
+1 & \MultipleQuantiser \\
+\hline
+2 & Undefined \\
+\hline
+\end{tabular}
+\caption{Codeblock modes}\label{codeblockmodes}
+\end{table}

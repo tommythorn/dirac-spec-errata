@@ -3,17 +3,10 @@
 % - are decoded                                   - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TO DO: Need a section here about subband numbering and decoding the whole 
-% set of subbands
-
-\newcommand{\LL}{\textit{LL}}
-\newcommand{\LH}{\textit{LH}}
-\newcommand{\HL}{\textit{HL}}
-\newcommand{\HH}{\textit{HH}}
-
 \label{transformdec}
 
-% Do intro
+This section specifies how wavelet transform coefficients are parsed.
+
 
 \subsection{Decoded subband data conventions}
 \label{wltdecodeconventions}
@@ -22,8 +15,7 @@
 
 \label{wltinit}
 
-The $transform\_data()$ process begins with an initialisation process, 
-$initialise\_wavelet\_data()$, which returns a structure which will
+This section specifies the $initialise\_wavelet\_data()$ process, which returns a structure which will
 contain the decoded wavelet coefficients for the component. 
 
 For the purposes of this specification, this is a four-dimensional array $data$,
@@ -34,7 +26,11 @@ $band = data[level][orientation]$
 Valid levels are integers from in the range 0 to \TransformDepth inclusive. 
 Level 0 consists of a single subband with orientation \LL. 
 All other levels consist of 3 subbands of orientation \LH, \HL, 
-and \HH (orientations are described in Section ??). 
+and \HH. The orientations correspond to either low- or high-pass filtering
+horizontally and vertically: so the \LH band consists of coefficients derived
+from horizontal low-pass filtering and vertical high-pass filtering. The subbands
+partition the spatial frequency domain by orientation and level as illustrated
+in Figure \ref{fig:orientlevel}.
 
 Individual subband coefficients are signed integers accessed by vertical and 
 horizontal coordinates within the subband:
@@ -48,6 +44,65 @@ are as defined in Section
 being performed on a copy of the component data which has been padded (if necessary) so that its
 dimensions are a multiple of $2^{\TransformDepth}$.
 
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(25,35)
+
+%Main Grid
+\multiput(0,0)(16,0){3}%
+  {\line(0,1){32}}
+\multiput(0,0)(0,16){3}%
+  {\line(1,0){32}}
+
+%Second Grid
+\put(0,24){\line(1,0){16}}
+\put(8,16){\line(0,1){16}}
+
+%Third Grid
+\put(0,28){\line(1,0){8}}
+\put(4,24){\line(0,1){8}}
+
+%Fourth Grid
+\put(0,30){\line(1,0){4}}
+\put(2,28){\line(0,1){4}}
+
+
+%Put Levels
+
+\put(24,34){Level 4}
+\put(23,36){\vector(0,-1){3}}
+
+\put(13,34){Level 3}
+\put(12,36){\vector(0,-1){3}}
+
+\put(7,34){2}
+\put(6,36){\vector(0,-1){3}}
+
+\put(4,34){1}
+\put(3,36){\vector(0,-1){3}}
+
+%Put decomposition numbers
+\put(23,24){4-HL}
+\put(7,8){4-LH}
+\put(23,8){4-HH}
+\put(11,28){3-HL}
+\put(3,20){3-LH}
+\put(11,20){3-HH}
+\put(5,30){2-HL}
+\put(1,26){2-LH}
+\put(5,26){2-HH}
+\put(2.2,31){\tiny 1-HL}
+\put(0.2,29){\tiny 1-LH}
+\put(2.2,29){\tiny 1-HH}
+\put(0.2,31){\tiny 0-LL}
+
+  
+\end{picture}
+\caption{Subband decomposition of the spatial frequency domain showing subband 
+numbering, for a 4-level wavelet decomposition}\label{fig:orientlevel}
+
+\end{figure}
 
 \subsubsection{Dimensions of wavelet subbands}
 \label{subbandwidthheight}
@@ -135,7 +190,7 @@ The overall $transform\_data()$ decoding process is as follows:
     \bsCODE{subband\_decode(data, level, orient)}{\ref{subbanddecodeprocess}}
   \bsEND
 \bsEND
-\bsCODE{byte\_align()}{[Correct?]}
+\bsCODE{byte\_align()}
 \bsRET{data}
 \end{pseudo}
 
@@ -196,11 +251,7 @@ subband is {\bf not} byte-aligned.
 Data within a subband is divided into code blocks,
 representing rectangular blocks of coefficients. The numbers of codeblocks
 in each subband are determined in decoding the transform header, as specified
-in Section \ref{transformheader} [NB: Tim's spec is wrong in that the limit on
-the number of code blocks depends on the *chroma* dimensions ie so that the
-chroma code blocks size is >=4. His call to $subband\_width/height$ doesn't first 
-set the component dimensions to be the chroma dimensions. Could just make this a 
-matter of compliancy rather than setting the numbers].
+in Section \ref{spatialpartition}.
 
 The overall subband decoding process loops over all the code blocks after initialising the
 arithmetic decoding engine, and setting quantisers. There is a different code block decoding
@@ -214,13 +265,13 @@ process for Intra DC bands, since values are coded using spatial prediction.
 \bsELSE
     \bsCODE{parent = \emptyset}
 \bsEND
-\bsFOR{y=0}{\Codeblocks[level][vertical]-1}
-    \bsFOR{x=0}{\Codeblocks[level][horizontal]-1}
+\bsFOR{y=0}{\Codeblocks[level][v]-1}
+    \bsFOR{x=0}{\Codeblocks[level][h]-1}
         \bsCODE{codeblock(band,parent,orient,quant\_index,y,x)}{\ref{codeblocks}}
     \bsEND
 \bsEND
 
-\bsIF{IsIntra() \text{and} level==0}
+\bsIF{is\_intra() \text{ and } level==0}
     \bsCODE{intra\_dc\_prediction(band)}{\ref{intradcprediction}}
 \bsEND
 \end{pseudo*}
@@ -233,9 +284,11 @@ process for Intra DC bands, since values are coded using spatial prediction.
 This section defines the operation of the 
 $codeblock(band,parent,orient,quant\_index,y,x)$ function, which decodes a 
 codeblock in position $(x,y)$ and populates it with reconstructed 
-wavelet coefficients (figure ??).
+wavelet coefficients.
 
+\begin{comment}
 [Include a figure here]
+\end{comment}
 
 \paragraph{Codeblock dimensions\newline}
 
@@ -287,13 +340,10 @@ is returned.
 \paragraph{Block quantiser offset\newline}
 \label{blockquantidx}
 
-If single quantisers per subband are used, the codeblock quantiser is set to the 
-subband quantiser. Otherwise, the codeblock quantiser is encoded in the stream
-differentially. I.e. $\CodeblockMode=\SingleQuantiser$ then $quant\_offset()$
-returns $0$.
+If $\CodeblockMode=\SingleQuantiser$,  $quant\_offset()$ shall return 0.
 
 If $\CodeblockMode=\MultipleQuantiser$ then the quantiser index offset
-is decoded from the stream: $read\_sinta(quant\_contexts())$ is returned, where
+is decoded from the stream -- $read\_sinta(quant\_contexts())$ is returned, where
 $quant\_contexts()$ returns the context set:
 
 \begin{itemize}
@@ -307,6 +357,8 @@ $quant\_contexts()$ returns the context set:
 
 This section defines the operation of the $intra\_dc\_prediction(band)$ function
 for reconstructing values within Intra picture DC bands using spatial prediction.
+Intra DC values are derived by spatial prediction using the mean of the
+three values to the left, top-left and above a coefficient (if available).
 
 \begin{pseudo}{intra\_dc\_prediction}{band}
 
@@ -334,7 +386,9 @@ for reconstructing values within Intra picture DC bands using spatial prediction
 \bsEND
 \end{pseudo}
 
+\begin{comment}
 [NB: this agrees with the code, but shouldn't it be (prediction+(N//2))//N ?]
+\end{comment}
 
 \subsection{Subband coefficient decoding process}
 
@@ -460,87 +514,87 @@ for all coefficients.
 
 % Zero parent, zero neighbour, zero sign prediction
 \hline
-0 & \true & 0 &  follow & \ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                            \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
-  &   &   &  data & \CoeffData \\ \cline{4-5}
-  &   &   &  sign & \SignZero \\
+0 & \true & 0 &  Follow & [\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                            \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &   &  Data & \CoeffData \\ \cline{4-5}
+  &   &   &  Sign & \SignZero \\
 
 % Zero parent, zero neighbour, -ve sign prediction
 \hline
-0 & \true & $<0$ &  follow & \ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
-  &   &    &  data & \CoeffData \\ \cline{4-5}
-  &   &    &  sign & \SignNeg \\
+0 & \true & $<0$ &  Follow & [\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &    &  Data & \CoeffData \\ \cline{4-5}
+  &   &    &  Sign & \SignNeg \\
 
 % Zero parent, zero neighbour, +ve sign  prediction
 \hline
-0 & \true & $>0$ &  follow & \ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
-  &   &    &  data & \CoeffData \\ \cline{4-5}
-  &   &    &  sign & \SignPos \\
+0 & \true & $>0$ &  Follow & [\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &    &  Data & \CoeffData \\ \cline{4-5}
+  &   &    &  Sign & \SignPos \\
 
 % Zero parent, non-zero neighbour, zero sign prediction
 \hline
-0 & \false & 0 &  follow & \ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                             \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
-  &   &   &  data & \CoeffData \\ \cline{4-5}
-  &   &   &  sign & \SignZero \\
+0 & \false & 0 &  Follow & [\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                             \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &   &  Data & \CoeffData \\ \cline{4-5}
+  &   &   &  Sign & \SignZero \\
 
 % Zero parent, non-zero neighbour, -ve sign prediction
 \hline
-0 & \false & $<0$ &  follow & \ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
-  &        &    &  data & \CoeffData \\ \cline{4-5}
-  &        &    &  sign & \SignNeg \\
+0 & \false & $<0$ &  Follow & [\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &        &    &  Data & \CoeffData \\ \cline{4-5}
+  &        &    &  Sign & \SignNeg \\
 
 % Zero parent, non-zero neighbour, +ve sign prediction
 \hline
-0 & \false & $>0$ &  follow & \ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
-                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus \\ \cline{4-5}
-  &        &      &  data & \CoeffData \\ \cline{4-5}
-  &        &      &  sign & \SignPos \\
+0 & \false & $>0$ &  Follow & [\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &        &      &  Data & \CoeffData \\ \cline{4-5}
+  &        &      &  Sign & \SignPos \\
 
 % Non-zero parent, zero neighbour, zero sign prediction
 \hline
-$\neq 0$ &  \true & 0 &  follow & \NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
-& &      &  data & \CoeffData \\ \cline{4-5}
-& &      &  sign & \SignZero \\
+$\neq 0$ &  \true & 0 & Follow & [\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  Data & \CoeffData \\ \cline{4-5}
+& &      &  Sign & \SignZero \\
 
 % Non-zero parent, zero neighbour, -ve sign prediction
 \hline
-$\neq 0$ & \true & $<0$ &  follow & \NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
-& &      &  data & \CoeffData \\ \cline{4-5}
-& &      &  sign & \SignNeg \\
+$\neq 0$ & \true & $<0$ &  Follow & [\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  Data & \CoeffData \\ \cline{4-5}
+& &      &  Sign & \SignNeg \\
 
 % Non-zero parent, zero neighbour, +ve sign prediction
 \hline
-$\neq 0$ & \true & $>0$ &  follow & \NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
-& &      &  data & \CoeffData \\ \cline{4-5}
-& &      &  sign & \SignPos \\
+$\neq 0$ & \true & $>0$ &  Follow & [\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  Data & \CoeffData \\ \cline{4-5}
+& &      &  Sign & \SignPos \\
 
 % Non-zero parent, non-zero neighbour, zero sign prediction
 \hline
-$\neq 0$ & \false & 0 &  follow & \NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
-& &      &  data & \CoeffData \\ \cline{4-5}
-& &      &  sign & \SignZero \\
+$\neq 0$ & \false & 0 &  Follow & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  Data & \CoeffData \\ \cline{4-5}
+& &      &  Sign & \SignZero \\
 
 % Zero parent, non-zero neighbour, -ve sign prediction
 \hline
-$\neq 0$ & \false & $<0$ &  follow & \NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                       \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
-& &      &  data & \CoeffData \\ \cline{4-5}
-& &      &  sign & \SignNeg \\
+$\neq 0$ & \false & $<0$ &  Follow & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                       \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  Data & \CoeffData \\ \cline{4-5}
+& &      &  Sign & \SignNeg \\
 
 % Zero parent, non-zero neighbour, +ve sign prediction
 \hline
-$\neq 0$ & \false  & $>0$ &  follow & \NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
-                                        \NPFollowFour,\NPFollowFive,\NPFollowSixPlus \\ \cline{4-5}
-& &      &  data & \CoeffData \\ \cline{4-5}
-& &      &  sign & \SignPos \\
+$\neq 0$ & \false  & $>0$ &  Follow & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                        \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  Data & \CoeffData \\ \cline{4-5}
+& &      &  Sign & \SignPos \\
 \hline
 
 \end{tabular}
