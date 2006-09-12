@@ -1,0 +1,938 @@
+\label{parsediagrams}
+% Stream
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(20,12)
+\put(0,5){\vector(1,0){5}}
+\put(10,5){\oval(10,4.7)\put(-2,-0.5){Sequence}}
+\put(15,5){\vector(1,0){5}}
+\put(2.5,5){\line(0,1){5}}
+\put(17.5,5){\line(0,1){5}}
+\put(17.5,10){\vector(-1,0){10}}
+\put(2.5,10){\line(1,0){10}}
+\end{picture}
+\caption{Stream}\label{fig:stream}
+\end{figure}
+
+% Sequence
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(45,12)
+
+\put(0,3){\vector(1,0){5}}
+\put(10,3){\oval(10,4.7)\put(-1.75,0.5){Parse} \put(-1.25,-1){Info}}
+\put(15,3){\vector(1,0){5}}
+\put(25,3){\oval(10,4.7)\put(-1.75,0.5){Access}\put(-1.3,-1){Unit}}
+\put(30,3){\vector(1,0){10}}
+\put(17.5,3){\line(0,1){5}}
+\put(32.5,3){\line(0,1){5}}
+\put(32.5,8){\vector(-1,0){10}}
+\put(17.5,8){\line(1,0){10}}
+
+\end{picture}
+\caption{Sequence}\label{fig:sequence}
+\end{figure}
+
+% Parse info header
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(45,8)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,.5){Parse Info}\put(-2,-1){Prefix}}
+\put(11,3){\vector(1,0){2}}
+\put(17,3){\oval(8,4.7)\put(-2,.5){Parse} \put(-2,-1){Code}}
+\put(21,3){\vector(1,0){2}}
+\put(27,3){\oval(8,4.7)\put(-2,.5){Next Parse} \put(-2,-1){Offset}}
+\put(31,3){\vector(1,0){2}}
+\put(37,3){\oval(8,4.7)\put(-2,.5){Previous} \put(-2,-1){Parse Offset}}
+\put(41,3){\vector(1,0){3}}
+\end{picture}
+\caption{Parse Info}\label{fig:parseinfo}
+\end{figure}
+
+% AU
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(50,8)
+\put(0,3){\vector(1,0){4}}
+\put(8,3){\oval(8,4.7) \put(-2.1,.5){Access Unit}\put(-1.65,-1){Header}}
+\put(12,3){\vector(1,0){2}}
+\put(18,3){\oval(8,4.7)\put(-1.6,.5){Parse} \put(-1.2,-1){Info}}
+\put(22,3){\vector(1,0){4}}
+\put(30,3){\oval(8,4.7)\put(-2,-.5){Picture}}
+\put(34,3){\vector(1,0){2}}
+\put(40,3){\oval(8,4.7)\put(-1.6,.5){Parse} \put(-1.2,-1){Info}}
+\put(44,3){\vector(1,0){4}}
+\put(46,3){\line(0,1){5}}
+\put(24,3){\line(0,1){5}}
+\put(35,8){\line(-1,0){11}}
+\put(46,8){\vector(-1,0){11}}
+
+\end{picture}
+\caption{Access Unit}\label{fig:accessunit}
+\end{figure}
+
+%\clearpage
+
+% AU header
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,8)
+\put(0,3){\vector(1,0){4}}
+\put(8,3){\oval(8,4.7) \put(-2,.5){Parse}\put(-2.2,-1){Parameters}}
+\put(12,3){\vector(1,0){4}}
+\put(20,3){\oval(8,4.7)\put(-2,.5){Sequence} \put(-2.1,-1){Parameters}}
+\put(24,3){\vector(1,0){4}}
+\put(32,3){\oval(8,4.7)\put(-2,.5){Source} \put(-2.4,-1){Parameters}}
+\put(36,3){\vector(1,0){4}}
+\end{picture}
+\caption{Access Unit header}\label{fig:auheader}
+\end{figure}
+
+
+%% AU parse params
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(45,5)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1.){Access Unit}\put(-2,-0.50){Picture}\put(-2,-2){Number}}
+\put(11,3){\vector(1,0){2}}
+\put(17,3){\oval(8,4.7)\put(-2,.5){Version} \put(-2,-1){Number}}
+\put(21,3){\vector(1,0){2}}
+\put(27,3){\oval(8,4.7)\put(-2,-.5){Profile}} 
+\put(31,3){\vector(1,0){2}}
+\put(37,3){\oval(8,4.7)\put(-2,-.5){Level}}
+\put(41,3){\vector(1,0){3}}
+\end{picture}
+\caption{Access Unit Parse Parameters}\label{fig:parseparameters}
+\end{figure}
+
+
+% AU sequence params
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(45,8)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,.5){Video}\put(-2,-1){Format}}
+\put(11,3){\vector(1,0){2}}
+\put(17,3){\oval(8,4.7)\put(-2,.5){Image} \put(-2,-1){Dimensions}}
+\put(21,3){\vector(1,0){2}}
+\put(27,3){\oval(8,4.7)\put(-2,.5){Chroma} \put(-2,-1){Format}}
+\put(31,3){\vector(1,0){2}}
+\put(37,3){\oval(8,4.7)\put(-2,.5){Video} \put(-2,-1){Depth}}
+\put(41,3){\vector(1,0){3}}
+\end{picture}
+\caption{Sequence Parameters}\label{fig:sequenceparameters}
+\end{figure}
+
+
+% Setting image dimensions
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(35,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Custom}\put(-2,-.5){Dimensions} \put(-2,-2){Flag}}
+\put(12,3){\line(0,1){5}}
+\put(12,8){\vector(1,0){1}}
+\put(17,8){\oval(8,4.7)\put(-2,.5){Luma} \put(-2,-1){Width}}
+\put(21,8){\vector(1,0){2}}
+\put(27,8){\oval(8,4.7)\put(-2,.5){Luma} \put(-2,-1){Height}}
+\put(32,3){\line(0,1){5}}
+\put(31,8){\vector(1,0){1}}
+\put(11,3){\vector(1,0){24}}
+\end{picture}
+\caption{Image dimensions}\label{fig:imagedimensions}
+\end{figure}
+
+% Chroma formats
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Chroma}\put(-2,-.5){Format} \put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Chroma}\put(-2,-.5){Format} \put(-2,-2){Index}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Chroma formats}\label{fig:chromaformats}
+\end{figure}
+
+%\clearpage
+
+% Video depth
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Video}\put(-2,-.5){Depth} \put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Video}\put(-2,-.5){Depth} \put(-2,-2){Value}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Video Depth}\label{fig:videodepth}
+\end{figure}
+
+% AU source parameters
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,14)
+\put(0,11){\vector(1,0){4}}
+\put(8,11){\oval(8,4.7) \put(-2,.5){Scan}\put(-2,-1){Format}}
+\put(12,11){\vector(1,0){4}}
+\put(20,11){\oval(8,4.7)\put(-2,.5){Frame} \put(-2,-1){Rate}}
+\put(24,11){\vector(1,0){4}}
+\put(32,11){\oval(8,4.7)\put(-2,.5){Aspect} \put(-2,-1){Ratio}}
+\put(36,11){\vector(1,0){4}}
+\put(40,11){\line(0,-1){4}}
+\put(40,7){\vector(-1,0){17.5}} 
+\put(22.5,7){\line(-1,0){17.5}}
+\put(5,7){\line(0,-1){4}}
+\put(5,3){\vector(1,0){4}}
+\put(13,3){\oval(8,4.7) \put(-2,.5){Clean}\put(-2,-1){Area}}
+\put(17,3){\vector(1,0){4}}
+\put(25,3){\oval(8,4.7)\put(-2,.5){Signal} \put(-2,-1){Range}}
+\put(29,3){\vector(1,0){4}}
+\put(37,3){\oval(8,4.7)\put(-2,.5){Colour} \put(-2,-1){Specification}}
+\put(41,3){\vector(1,0){4}}
+
+\end{picture}
+\caption{Access Unit Source Parameters}\label{fig:sourceparameters}
+\end{figure}
+
+% Scan format
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Scan}\put(-2,-.5){Format} \put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,-0.5){Interlace}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Scan Format}\label{fig:scanformat}
+\end{figure}
+
+% Interlace
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,15)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,0.5){Interlaced}\put(-2,-1){Source}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){38}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Field}\put(-2,-.5){Dominance} \put(-2,-2){Flag}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){10}}
+\put(20,8){\line(0,1){5}}
+\put(20,13){\vector(1,0){1}}
+\put(24.5,13){\oval(7,4.7)\put(-2,1){Top}\put(-2,-.5){Field} \put(-2,-2){First}}
+\put(28,13){\line(1,0){1}}
+\put(29,13){\vector(0,-1){5}}
+\put(33.5,8){\oval(7,4.7)\put(-2,1){Field}\put(-2,-.5){Interleaving} \put(-2,-2){Flag}}
+\put(37,8){\line(1,0){1}}
+\put(38,8){\vector(1,0){10}}
+\put(38,8){\line(0,1){5}}
+\put(38,13){\vector(1,0){1}}
+\put(42.5,13){\oval(7,4.7)\put(-2,0.5){Sequential} \put(-2,-1){Fields}}
+\put(46,13){\line(1,0){1}}
+\put(47,13){\vector(0,-1){5}}
+\put(48,8){\line(0,-1){5}}
+\end{picture}
+\caption{Interlace}\label{fig:interlace}
+\end{figure}
+
+\clearpage
+% frame rate
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,15)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Frame}\put(-2,-.5){Rate} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){35}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Frame}\put(-2,-.5){Rate} \put(-2,-2){Index}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){22}}
+\put(20,8){\line(0,1){5}}
+\put(20,13){\vector(1,0){1}}
+\put(24.5,13){\oval(7,4.7)\put(-2.5,1){Frame}\put(-2.5,-.5){Rate} \put(-2.5,-2){Numerator}}
+
+\put(28,13){\vector(1,0){2}}
+\put(33.5,13){\oval(7,4.7)\put(-2.5,0.5){Frame Rate}\put(-3,-1){Denominator}}
+\put(37,13){\line(1,0){1}}
+\put(38,13){\vector(0,-1){5}}
+
+\put(42,8){\line(0,-1){5}}
+\end{picture}
+\caption{Frame Rate}\label{fig:framerate}
+\end{figure}
+
+% Aspect ratio
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,15)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Aspect}\put(-2,-.5){Ratio} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){35}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Aspect}\put(-2,-.5){Ratio} \put(-2,-2){Index}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){22}}
+\put(20,8){\line(0,1){5}}
+\put(20,13){\vector(1,0){1}}
+\put(24.5,13){\oval(7,4.7)\put(-2.5,1){Aspect}\put(-2.5,-.5){Ratio} \put(-2.5,-2){Numerator}}
+
+\put(28,13){\vector(1,0){2}}
+\put(33.5,13){\oval(7,4.7)\put(-2.5,0.5){Aspect Ratio}\put(-3,-1){Denominator}}
+\put(37,13){\vector(1,0){1}}
+\put(38,13){\line(0,-1){5}}
+
+\put(42,8){\line(0,-1){5}}
+\end{picture}
+\caption{Aspect Ratio}\label{fig:aspectratio}
+\end{figure}
+
+% Clean area
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,15)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Clean}\put(-2,-.5){Area} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){38}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,0.5){Clean} \put(-2,-1){Width}}
+\put(19,8){\vector(1,0){2}}
+\put(24.5,8){\oval(7,4.7)\put(-2,0.5){Clean} \put(-2,-1){Height}}
+\put(28,8){\vector(1,0){2}}
+\put(33.5,8){\oval(7,4.7)\put(-2,0.5){Left} \put(-2,-1){Offset}}
+\put(37,8){\vector(1,0){2}}
+\put(42.5,8){\oval(7,4.7)\put(-2,0.5){Top} \put(-2,-1){Offset}}
+\put(46,8){\vector(1,0){2}}
+\put(48,8){\line(0,-1){5}}
+\end{picture}
+\caption{Clean Area}\label{fig:cleanarea}
+\end{figure}
+
+% Signal range
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,26)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Signal}\put(-2,-.5){Range} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){35}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Signal}\put(-2,-.5){Range} \put(-2,-2){Index}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){23}}
+\put(20,8){\line(0,1){14}}
+\put(20,22){\vector(1,0){1}}
+\put(24.5,22){\oval(7,4.7)\put(-2,.5){Luma}\put(-2,-1){Offset}}
+\put(28,22){\vector(1,0){2}}
+\put(33.5,22){\oval(7,4.7)\put(-2,0.5){Luma}\put(-2,-1){Excursion}}
+\put(37,22){\line(1,0){1}}
+\put(38,22){\vector(0,-1){4.5}}
+\put(38,17.5){\vector(-1,0){8}}
+\put(30,17.5){\line(-1,0){8}}
+\put(22,17.5){\line(0,-1){4.5}}
+\put(22,13){\vector(1,0){3}}
+\put(20,8){\line(0,1){5}}
+\put(28.5,13){\oval(7,4.7)\put(-2,.5){Chroma}\put(-2,-1){Offset}}
+\put(32,13){\vector(1,0){2}}
+\put(37.5,13){\oval(7,4.7)\put(-2,0.5){Chroma}\put(-2,-1){Excursion}}
+\put(41,13){\vector(1,0){1}}
+\put(42,13){\line(0,-1){5}}
+\put(43,8){\line(0,-1){5}}
+\end{picture}
+\caption{Signal Range}\label{fig:signalrange}
+\end{figure}
+
+% Colour specification
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,25)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Colour}\put(-2,-.5){Spec} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){35}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Colour}\put(-2,-.5){Spec} \put(-2,-2){Index}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){23}}
+\put(20,8){\line(0,1){14}}
+\put(20,22){\vector(1,0){1}}
+\put(24.5,22){\oval(7,4.7)\put(-2,.5){Colour}\put(-2,-1){Primaries}}
+
+\put(28,22){\vector(1,0){2}}
+\put(33.5,22){\oval(7,4.7)\put(-2,0.5){Colour}\put(-2,-1){Matrix}}
+\put(37,22){\line(1,0){1}}
+\put(38,22){\vector(0,-1){4.5}}
+\put(38,17.5){\vector(-1,0){8}}
+\put(30,17.5){\line(-1,0){6}}
+\put(24,17.5){\line(0,-1){4.5}}
+\put(24,13){\vector(1,0){5.5}}
+\put(20,8){\line(0,1){5}}
+\put(33,13){\oval(7,4.7)\put(-2,.5){Transfer}\put(-2,-1){Function}}
+\put(36.5,13){\vector(1,0){5.5}}
+\put(42,13){\line(0,-1){5}}
+\put(43,8){\line(0,-1){5}}
+\end{picture}
+\caption{Colour Specification}\label{fig:colourspec}
+\end{figure}
+\clearpage
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Colour}\put(-2,-.5){Primaries} \put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Colour}\put(-2,-.5){Primaries} \put(-2,-2){Index}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Colour Primaries}\label{fig:colourprimaries}
+\end{figure}
+
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Colour}\put(-2,-.5){Matrix} \put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Colour}\put(-2,-.5){Matrix} \put(-2,-2){Index}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Colour Matrix}\label{fig:colourmatrix}
+\end{figure}
+
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Transfer}\put(-2,-.5){Function} \put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Transfer}\put(-2,-.5){Function} \put(-2,-2){Index}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Transfer Function}\label{fig:transferfunction}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Picture
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,.5){Picture}\put(-2,-1){Header} }
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,.5){Picture}\put(-2,-1){Prediction}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\put(32,3){\oval(8,4.7)\put(-2,.5){Wavelet}\put(-2,-1){Transform}}
+\put(36,3){\vector(1,0){3}}
+\end{picture}
+\caption{Picture}\label{fig:picture}
+\end{figure}
+
+\clearpage
+
+% Picture header
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Picture}\put(-2,-.5){Number} }
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Reference}\put(-2,-.5){Picture}\put(-2,-2){Numbers}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\put(32,3){\oval(8,4.7)\put(-2,1){Retired}\put(-2,-.5){Picture} \put(-2,-2){List}}
+\put(36,3){\vector(1,0){3}}
+
+\end{picture}
+\caption{Picture header}\label{fig:pictureheader}
+\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Reference 1}\put(-2,-.5){Picture}\put(-2,-2){Offset} }
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Reference 2}\put(-2,-.5){Picture}\put(-2,-2){Offset}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Reference Picture Numbers}\label{fig:refpicturenumbers}
+\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,.5){List}\put(-2,-1){Length}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(14,8){\line(0,1){4}}
+\put(24,12){\vector(-1,0){5}}
+\put(19,12){\line(-1,0){5}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Retired}\put(-2,-.5){Picture}\put(-2,-2){Offset}}
+\put(24,8){\line(0,1){4}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Retired Picture List}\label{fig:retiredpicturelist}
+\end{figure}
+
+% Picture prediction
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,8)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2.5,1){Picture} \put(-2.5,-.5){Prediction} \put(-2.5,-2){Parameters}}
+\put(11,3){\vector(1,0){5}}
+\put(20,3){\oval(8,4.7)\put(-2,0.5){Block} \put(-2,-1){Data}}
+\put(24,3){\vector(1,0){5}}
+\end{picture}
+\caption{Picture Prediction}\label{fig:pictureprediction}
+\end{figure}
+
+% Picture prediction parameters
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(51,8)
+\put(0,3){\vector(1,0){2.5}}
+\put(6,3){\oval(7,4.7) \put(-2,.5){Block}\put(-2,-1){Parameters}}
+\put(9.5,3){\vector(1,0){2}}
+\put(15,3){\oval(7,4.7)\put(-2,1){Motion} \put(-2,-.5){Vector}\put(-2,-2){Precision}}
+\put(18.5,3){\vector(1,0){2}}
+\put(24,3){\oval(7,4.7)\put(-2,.5){Global} \put(-2,-1){Motion}}
+\put(27.5,3){\vector(1,0){2}}
+\put(33,3){\oval(7,4.7)\put(-2,1){Picture} \put(-2,-.5){Prediction}\put(-2,-2){Mode}}
+\put(36.5,3){\vector(1,0){2}}
+\put(42,3){\oval(7,4.7)\put(-2,.5){Picture} \put(-2,-1){Weights}}
+\put(45.5,3){\vector(1,0){3}}
+\end{picture}
+\caption{Picture prediction parameters}\label{fig:picpredparams}
+\end{figure}
+
+% Block parameters
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,25)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Block}\put(-2,-.5){Parameters} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){35}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Block}\put(-2,-.5){Parameters} \put(-2,-2){Index}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){23}}
+\put(20,8){\line(0,1){14}}
+\put(20,22){\vector(1,0){1}}
+\put(24.5,22){\oval(7,4.7)\put(-2,1){Luma}\put(-2,-.5){Block} \put(-2,-2){Width}}
+
+\put(28,22){\vector(1,0){2}}
+\put(33.5,22){\oval(7,4.7)\put(-2,1){Luma}\put(-2,-.5){Block } \put(-2,-2){Height}}
+\put(37,22){\line(1,0){1}}
+\put(38,22){\vector(0,-1){4.5}}
+\put(38,17.5){\vector(-1,0){8}}
+\put(30,17.5){\line(-1,0){8}}
+\put(22,17.5){\line(0,-1){4.5}}
+\put(22,13){\vector(1,0){3}}
+\put(20,8){\line(0,1){5}}
+\put(28.5,13){\oval(7,4.7)\put(-2.5,1){Horizontal}\put(-2.5,-.5){Luma Block}\put(-2.5,-2){Separation}}
+
+\put(32,13){\vector(1,0){2}}
+\put(37.5,13){\oval(7,4.7)\put(-2.5,1){Vertical}\put(-2.5,-.5){Luma Block}\put(-2.5,-2){Separation}}
+\put(41,13){\vector(1,0){1}}
+\put(42,13){\line(0,-1){5}}
+\put(43,8){\line(0,-1){5}}
+
+\end{picture}
+\caption{Block Parameters}\label{fig:blockparameters}
+\end{figure}
+
+%Motion vector precision
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){M-Vector}\put(-2,-.5){Precision}\put(-2,-2){Flag}}
+\put(11,3){\line(1,0){2}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){M-Vector}\put(-2,-.5){Precision}\put(-2,-2){Bits}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\put(13,3){\vector(1,0){15}}
+\end{picture}
+\caption{Motion Vector Precision}\label{fig:motionvectorprecision}
+\end{figure}
+
+% Global motion
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(35,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2.5,1){Using}\put(-2.5,-.5){Global} \put(-2.5,-2){Motion Flag}}
+\put(12,3){\line(0,1){5}}
+\put(12,8){\vector(1,0){2}}
+\put(13,8){\line(0,1){4}}
+\put(13,12){\line(1,0){5}}
+\put(23,12){\vector(-1,0){5}}
+\put(18,8){\oval(8,4.7)\put(-2.5,1){Global}\put(-2.5,-.5){Motion} \put(-2.5,-2){Parameters}}
+\put(23,8){\line(0,1){4}}
+\put(24,3){\line(0,1){5}}
+\put(22,8){\vector(1,0){2}}
+\put(11,3){\vector(1,0){24}}
+\end{picture}
+\caption{Global Motion}\label{fig:globalmotion}
+\end{figure}
+
+% Global motion parameters
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,10)
+\put(0,3){\vector(1,0){4}}
+\put(8,3){\oval(8,4.7) \put(-2,-.5){Pan/Tilt}}
+\put(12,3){\vector(1,0){4}}
+\put(20,3){\oval(8,4.7)\put(-2,1){Zoom} \put(-2,-.5){Rotation}\put(-2,-2){Shear} }
+\put(24,3){\vector(1,0){4}}
+\put(32,3){\oval(8,4.7)\put(-2,-.5){Perspective}}
+\put(36,3){\vector(1,0){4}}
+\end{picture}
+\caption{Global Motion Parameters}\label{fig:globalmotionparameters}
+\end{figure}
+
+% Pan/tilt
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(35,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Non-Zero}\put(-2,-.5){Pan/Tilt} \put(-2,-2){Flag}}
+\put(12,3){\line(0,1){5}}
+\put(12,8){\vector(1,0){1}}
+\put(17,8){\oval(8,4.7)\put(-2,.5){Horizontal} \put(-2,-1){Pan}}
+\put(21,8){\vector(1,0){2}}
+\put(27,8){\oval(8,4.7)\put(-2,.5){Vertical} \put(-2,-1){Tilt}}
+\put(32,3){\line(0,1){5}}
+\put(31,8){\vector(1,0){1}}
+\put(11,3){\vector(1,0){24}}
+\end{picture}
+\caption{Pan/tilt}\label{fig:pantilt}
+\end{figure}
+
+% Zoom, rotation and shear matrix
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,20)
+\put(0,3){\vector(1,0){2}}
+\put(6.5,3){\oval(9,4.7) \put(-3,1){Non-Trivial}\put(-3,-.5){Zoom, Rotation} \put(-3,-2){and Shear}}
+\put(11,3){\line(1,0){1}}
+\put(12,3){\vector(1,0){35}}
+\put(12,3){\line(0,1){14}}
+\put(12,17){\vector(1,0){1}}
+\put(17.5,17){\oval(9,4.7)\put(-3,1){Zoom, Rotation}\put(-3,-.5){and Shear} \put(-3,-2){Exponent}}
+\put(22,17){\vector(1,0){2}}
+\put(27.5,17){\oval(7,4.7)\put(-1,-0.5){$A_{11}$}}
+
+\put(31,17){\vector(1,0){2}}
+\put(36.5,17){\oval(7,4.7)\put(-1,-0.5){$A_{12}$}}
+\put(40,17){\line(1,0){2}}
+\put(42,17){\vector(0,-1){4.5}}
+\put(42,12.5){\vector(-1,0){10}}
+\put(32,12.5){\line(-1,0){10}}
+\put(22,12.5){\line(0,-1){4.5}}
+\put(22,8){\vector(1,0){3}}
+\put(28.5,8){\oval(7,4.7)\put(-1,-0.5){$A_{21}$}}
+\put(32,8){\vector(1,0){2}}
+\put(37.5,8){\oval(7,4.7)\put(-1,-0.5){$A_{22}$}}
+\put(41,8){\vector(1,0){1}}
+\put(42,8){\line(0,-1){5}}
+\end{picture}
+\caption{Zoom, Rotation and Shear}\label{fig:zoomrotationshear}
+\end{figure}
+
+% Perspective
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(45,15)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Non-zero}\put(-2,-.5){Perspective} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){38}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,0.5){Perspective} \put(-2,-1){Exponent}}
+\put(19,8){\vector(1,0){2}}
+\put(24.5,8){\oval(7,4.7)\put(-2,0.5){Horizontal} \put(-2,-1){Perspective}}
+\put(28,8){\vector(1,0){2}}
+\put(33.5,8){\oval(7,4.7)\put(-2,0.5){Vertical} \put(-2,-1){Perspective}}
+\put(37,8){\vector(1,0){2}}
+\put(39,8){\line(0,-1){5}}
+\end{picture}
+\caption{Perpective}\label{fig:perpective}
+\end{figure}
+
+\clearpage
+
+% Picture prediction mode
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(33,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2,1){Picture}\put(-2,-.5){Prediction} \put(-2,-2){Mode Flag}}
+\put(11,3){\vector(1,0){18}}
+
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2.5,1){Picture}\put(-2.5,-.5){Prediction} \put(-2.5,-2){Mode Index}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\end{picture}
+\caption{Picture Prediction Mode}\label{fig:picturepredictionmode}
+\end{figure}
+
+% Reference picture weights
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(35,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7) \put(-2,1){Non-default}\put(-2,-.5){Weights} \put(-2,-2){Flag}}
+\put(12,3){\line(0,1){5}}
+\put(12,8){\vector(1,0){1}}
+\put(17,8){\oval(8,4.7)\put(-2,1){Reference}\put(-2,-.5){Weights} \put(-2,-2){Precision}}
+\put(21,8){\vector(1,0){2}}
+\put(22,8){\line(0,1){4}}
+\put(22,12){\line(1,0){5}}
+\put(32,12){\vector(-1,0){5}}
+\put(27,8){\oval(8,4.7)\put(-2,.5){Reference}\put(-2,-1){Weight}}
+\put(32,8){\line(0,1){4}}
+\put(33,3){\line(0,1){5}}
+\put(31,8){\vector(1,0){2}}
+\put(11,3){\vector(1,0){24}}
+\end{picture}
+\caption{Reference Picture Weights}\label{fig:referencepictureweights}
+\end{figure}
+
+% Wavelet transform
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(51,8)
+\put(0,3){\vector(1,0){12}}
+
+\put(1,3){\line(0,1){4}}
+\put(1,7){\vector(1,0){1}}
+\put(5.5,7){\oval(7,4.7) \put(-2,.5){Zero}\put(-2,-1){Residual}}
+\put(9,7){\vector(1,0){1}}
+\put(10,3){\line(0,1){4}}
+
+\put(15.5,3){\oval(7,4.7)\put(-2,.5){Transform} \put(-2,-1){Parameters}}
+\put(19,3){\vector(1,0){2}}
+\put(24.5,3){\oval(7,4.7)\put(-2,1){Y} \put(-2,-.5){Transform}\put(-2,-2){Data}}
+\put(28,3){\vector(1,0){2}}
+\put(33.5,3){\oval(7,4.7)\put(-2,1){U} \put(-2,-.5){Transform}\put(-2,-2){Data}}
+\put(37,3){\vector(1,0){2}}
+\put(42.5,3){\oval(7,4.7)\put(-2,1){V} \put(-2,-.5){Transform}\put(-2,-2){Data}}
+\put(46,3){\vector(1,0){2}}
+\put(11,3){\line(0,1){4}}
+\put(11,7){\vector(1,0){18.5}}
+\put(29.5,7){\line(1,0){17}}
+\put(46.5,7){\line(0,-1){4}}
+\end{picture}
+\caption{Wavelet Transform}\label{fig:wavelettransform}
+\end{figure}
+
+% Transform parameters
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,10)
+\put(0,3){\vector(1,0){4}}
+\put(8,3){\oval(8,4.7) \put(-2,.5){Wavelet}\put(-2,-1){Filter}}
+\put(12,3){\vector(1,0){4}}
+\put(20,3){\oval(8,4.7)\put(-2,.5){Wavelet}\put(-2,-1){Depth}}
+\put(24,3){\vector(1,0){4}}
+\put(32,3){\oval(8,4.7)\put(-2,.5){Spatial}\put(-2,-1){Partition}}
+\put(36,3){\vector(1,0){4}}
+\end{picture}
+\caption{Transform Parameters}\label{fig:transformparameters}
+\end{figure}
+
+% Wavelet filter
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2,1){Non-default}\put(-2,-.5){Wavelet} \put(-2,-2){Flag}}
+\put(11,3){\vector(1,0){18}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,.5){Wavelet}\put(-2,-1){Index}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\end{picture}
+\caption{Wavelet Filter}\label{fig:waveletfilter}
+\end{figure}
+
+% Wavelet depth
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2.5,1){Non-default}\put(-2.5,-.5){Wavelet} \put(-2.5,-2){Depth Flag}}
+\put(11,3){\vector(1,0){18}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,.5){Transform}\put(-2,-1){Depth}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\end{picture}
+\caption{Wavelet Depth}\label{waveletdepth}
+\end{figure}
+
+% Spatial partition
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(43,18)
+\put(0,3){\vector(1,0){3}}
+\put(6.5,3){\oval(7,4.7) \put(-2,1){Spatial}\put(-2,-.5){Partition} \put(-2,-2){Flag}}
+\put(10,3){\line(1,0){1}}
+\put(11,3){\vector(1,0){32}}
+\put(11,3){\line(0,1){5}}
+\put(11,8){\vector(1,0){1}}
+\put(15.5,8){\oval(7,4.7)\put(-2,1){Non-default}\put(-2,-.5){Partition} \put(-2,-2){Flag}}
+\put(19,8){\line(1,0){1}}
+\put(20,8){\vector(1,0){12}}
+\put(20,8){\line(0,1){5}}
+\put(20,13){\vector(1,0){2}}
+\put(25.5,13){\oval(7,4.7)\put(-2.5,1){Number}\put(-2.5,-.5){of} \put(-2.5,-2){Codeblocks}}
+\put(29,13){\vector(1,0){2}}
+\put(21,13){\line(0,1){4}}
+\put(21,17){\line(1,0){4}}
+\put(30,17){\vector(-1,0){5}}
+\put(30,17){\line(0,-1){4}}
+\put(31,13){\line(0,-1){5}}
+\put(35.5,8){\oval(7,4.7)\put(-2,.5){Codeblock}\put(-2,-1){Mode}}
+\put(39,8){\vector(1,0){2}}
+\put(41,8){\line(0,-1){5}}
+\end{picture}
+\caption{Spatial Partition}\label{fig:spatialpartition}
+\end{figure}
+
+% Block motion data stuff
+
+% Transform data
+%\setlength{\unitlength}{1em}
+%\begin{figure}[!h]
+%\centering
+%\begin{picture}(20,12)
+%\put(0,5){\vector(1,0){5}}
+%\put(10,5){\oval(10,4.7)\put(-2,-0.5){Subband}}
+%\put(15,5){\vector(1,0){5}}
+%\put(2.5,5){\line(0,1){5}}
+%\put(17.5,5){\line(0,1){5}}
+%\put(17.5,10){\vector(-1,0){10}}
+%\put(2.5,10){\line(1,0){10}}
+%\end{picture}
+%\caption{Transform Data}\label{fig:transformdata}
+%\end{figure}
