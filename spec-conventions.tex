@@ -2,12 +2,396 @@
 % - This chapter defines specification         - %
 % - conventions                                - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
+This section is a bit of a jumble and needs reorganising
+\end{comment}
 
-\input{conv-intro}
-\subsection{Pictorial representation}\input{conv-parse-diagrams}
-\subsection{Pseudocode}\input{conv-pseudocode}
-\subsection{The syntax of the pseudocode}\input{conv-pseudocode-syntax}
-\subsection{Reading data}\input{conv-bs-reading}
-\subsection{Byte alignment}\input{conv-bs-bytealign}
-\subsection{Default parameters}\input{conv-bs-defaults}
-\subsection{Numbering of parse diagrams}\input{conv-parse-diagnums}
+\subsection{State machine decoder representation}
+
+This specification uses a state-machine model to express parsing and
+decoding operations. The state of the decoder/parser is stored in the
+global variable $\StateName$, and individual variable values are accessed
+by means of named tokens, e.g. $\StateName[var\_name]$ (i.e. they
+are {\em maps} as defined in Section \ref{datatypes}). All the individual
+variables are therefore also globally accessible from all decoder functions.
+
+A default state variable, $\SeqStateName$ is also defined, which is
+initialised on accessing the stream. State values revert to the default
+state values on beginning to parse each picture, as described in 
+Section \ref{streamparsing}.
+
+The parsing and decoding operations are specified in terms of modifying
+the decoder state. Decoder state variables may not directly correspond
+to elements of the stream, but are calculated from them taking into
+account the decoder state as a whole. For example, a state variable value 
+may be differentially encoded with respect to another value, with the
+difference, not the variable itself, encoded in the stream. 
+
+The stream structure itself is summarised in parse diagrams, which 
+are presented in Appendix \ref{parsediagrams}. The parsing process
+is defined by means of pseudocode and/or mathematical formulae. The
+conventions for these elements are described in the succeeding sections.
+In the event of any conflict between the parse diagrams and the specified
+parsing processes, the latter shall be deemed to be correct.
+
+\subsection{Numbers and arithmetic operations}
+\label{mathnotation}
+
+\subsubsection{Numbers}
+\label{numbers}
+
+The prefix b indicates that the following value is to be interpreted as a binary
+natural number (non-negative integer). 
+
+{\bf Example} The value b1110100 is equal to the decimal value 116. 
+
+The prefix 0x indicates the following value is to be interpreted as a hexadecimal (base 16)
+natural number. 
+
+{\bf Example} The value 0x7A is equal to the decimal value 122. 
+
+\subsubsection{Arithmetic operations}
+\label{arithoperations}
+
+All arithmetic defined by this specification is exact: the entire 
+specification can be implemented using only integer and logical operations.
+All operations are to be implemented with sufficiently large integers so 
+that overflow cannot occur.
+
+The following arithmetic operators are defined on numerical values:
+
+\paragraph*{Absolute value} $|a|=\left\lbrace\begin{array}{l} a \text{ if $a\geq 0$}\\ 
+                                                                                   -a \text{ otherwise} \end{array}\right.$.
+
+\paragraph*{Addition} The sum of $a$ and $b$ is represented by $a+b$.
+
+\paragraph*{Subtraction} $a$ minus $b$ is represented by $a-b$.
+
+\paragraph*{Multiplication} $a$ times $b$ is represented, for clarity, by $a*b$.
+
+\paragraph*{Real division} The real number value of $a$ divided by $b$ is represented by $a/b$ or $\frac{a}{b}$.
+
+\paragraph*{Exponentiation} For integers $a, b$, $b>00$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
+
+\paragraph*{Ceiling} $\lceil a \rceil$, the smallest integer greater than or equal to a real number $a$
+
+\paragraph*{Floor} $\lfloor a \rfloor$, the smallest integer greater than or equal to a real number $a$
+
+\paragraph*{Maximum} $\max(a,b)$ returns the largest of $a$ and $b$.
+
+\paragraph*{Minimum} $\min(a,b)$ returns the smallest of values $a$ and $b$.
+
+\paragraph*{Clip} $\clip(a,b,t)$ clips the value $a$ to the range defined by $b$ and $t$:
+\[\clip(a,b,t)=\min(\max(a,b),t)\]
+
+\paragraph*{Integer division} Integer division is defined for $a$ and $b$ integer values, $b>0$ by
+
+\[a//b= \left\lfloor \dfrac{a}{b} \right\rfloor\]
+
+(i.e. always round down).
+
+\paragraph*{Remainder} For integers $a,b$, with $b>0$, $a\%b$ is equal to $a-(a//b)*b$. $a\%b$ always lies between 0 and $b-1$.
+
+\paragraph*{Shift down} For integers $a,b$, with $b\geq 0$, $a\gg b$ is $a//2^b$.
+
+\paragraph*{Shift down} For integers $a,b$, with $b\geq 0$, $a\ll b$ is $a*2^b$.
+
+\paragraph*{Mean} Given a set  $S=\{s_0, s_1, \hdots, s_{n-1}$ of integer values, the integer mean $\mean(S)$ is defined
+to be
+
+\[\left( s_0+s_1+\hdots +s_{n-1}+(n//2)\right //n)\]
+
+\paragraph*{Median} Given a set $S=\{s_0, s_1, \hdots, s_{n-1}$ of integer values the median $\median(S)$ 
+returns the middle value. If $t_0\leq t_1\leq \hdots \leq t_{n-1}$ are the values $s_i$ placed in ascending order, this
+is 
+
+$t_{(n-1)/2}$ 
+
+if $n$ is odd and
+
+$(t_{(n-2)/2}+t_{n/2})//2$ if $n$ is even.
+
+The following bitwise operations are defined on non-negative integer values:
+\paragraph*{\&} Logical AND is applied between the corresponding bits in the binary representation of two numbers, e.g.
+$13\&6$ is $\text{b1101}\&\text{b110}$, which equals $\text{b100}$, or 4.
+
+\paragraph*{$\mathbf{|}$} Logical OR is applied between the corresponding bits in the binary representation of two numbers, e.g.
+$13|6$ is $\text{b1101}\text{|}\text{b110}$, which equals $\text{b1111}$, or 15.
+
+\paragraph*{\Large$\hat\quad$} Logical XOR is applied between the corresponding bits in the binary representation of two numbers, e.g.
+$13\hat\quad 6$ is $\text{b1101}\hat\quad\text{b110}$, which equals $\text{b1011}$, or 11.
+
+These operations are also defined on boolean values, interpreted as single-bit integers, 
+where 0 is interpreted as $\false$ and 1 as $\true$ and vice-versa. Logical NOT is 
+not defined bitwise, to avoid ambiguity concerning leading zeroes).
+
+
+\subsection{Pseudocode}
+\label{pseudocode}
+
+The bulk of the normative specification is defined by means of pseudocode. 
+The syntax used is an amalgam of Python and Basic. It is not intended
+to be executable code, but rather both precise and descriptive. 
+Iin particular, all the arithmetic functions and
+operations defined in the preceding section may be applied to variables within
+a pseudocode process.
+
+\subsubsection{Processes}
+\label{functionsprocesses}
+
+Decoding and parsing operations are specified by means of processes
+ -- a series of operations acting on input data and global variable data. 
+A process can also be a function, which means it returns a value, but
+it need not do so. So a process
+taking in variables $in1$ and $in2$ looks like:
+
+\begin{pseudo}{foo}{in1, in2}
+\bsCODE{op1(in1)}
+\bsCODE{op2(in2)}
+\bsCODE{\hdots}
+\end{pseudo}
+
+whilst a function process looks like
+
+\begin{pseudo}{bar}{in1, in2}
+\bsCODE{op1(in1)}
+\bsCODE{foo(in1,in2)}{\ref{functionsprocesses}}
+\bsCODE{\hdots}
+\bsRET{out1}
+\end{pseudo}
+
+The right-hand column in the pseudocode representation contains a cross-reference to the 
+section in the specification containing the definition of other processes used at that line.
+
+Note well: all input variables are deemed to passed {\em by reference} in this
+specification. This means that any modification to a variable value that
+occurs within a process also applies to that variable within the calling process
+{\em even if it has a different name} in the calling process. One way to understand
+this is to envisage variable names as labels for pointers to workspace memory.
+
+For example, if we define $foo$ and $bar$ by
+
+\begin{pseudo}{foo}{}
+\bsCODE{num=0}
+\bsCODE{bar(num)}
+\bsCODE{\StateName[var\_name]=num}
+\end{pseudo}
+
+and 
+
+\begin{pseudo}{bar}{val}
+\bsCODE{val=val+1}
+\end{pseudo}
+
+then at the end of $foo$, $\StateName[var\_name]$ has been set to 1.
+
+If a process is particularly complex, it may be broken into a number of steps with 
+intermediate discussion. This is signalled by appending  and prepending ``$\hdots$" to
+the parts of the pseudocode specification:
+
+\begin{pseudo}{foo}{}
+\bsCODE{op1()}
+\bsCODE{\hdots}
+\end{pseudo}
+
+[text]
+
+\begin{pseudo*}
+\bsCODE{\hdots}
+\bsCODE{op2()}
+\bsCODE{\hdots}
+\end{pseudo*}
+
+[text]
+
+\begin{pseudo*}
+\bsCODE{\hdots}
+\bsCODE{op3()}
+\end{pseudo*}
+
+Note that the intervening text may define or modify variables used in the succeeding
+pseudocode, and must be considered as a normative part of the specification of the process.
+This is done as it is sometimes much more clear to split up a long and complicated process
+into a number of steps.
+
+\subsubsection{Variables and data types}
+\label{datatypes}
+
+The only global variables are the state variables encapsulated in $\StateName$
+and $\SeqStateName$. If a variable is not declared as an input to
+the process and is not a state variable, then it is local to the function.
+
+The following basic types are defined:
+
+\paragraph*{Boolean} A boolean variable has two possible states, $\true$ and $\false$.
+
+\paragraph*{Unsigned integer} A non-negative ($\geq 0$) whole number, of arbitrary size.
+
+\paragraph*{Integer} A whole number, of arbitrary size.
+
+\paragraph*{Set} A collection of variables or values, with no particular indexing. The usual
+set-theoretic operations such as $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
+and so on apply.
+
+\paragraph*{Map}
+
+A map is a set accessed by token names. For example
+$p[Y]$, $p[U]$, $p[V]$ might give the value of the different video components
+(Y, U and V) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
+so that $\args(p)=\{Y,U,V\}$.
+
+\paragraph*{Array} 
+
+A list is a set with an integer index or indices. All arrays are indexed from 0. 
+Elements of a 1-dimensional array $a$ are accessed by $a[n]$ for $n$ in the
+range 0 to $\length(a)-1$. Elements of a 2-dimensional array are accessed by
+$a[n][m]$ for $0\leq m\leq\width(a)-1$ and $0\leq n\leq\height(a)-1$.
+
+A 1-dimensional array can be explicitly defined by the syntax $a=[u, v, w, \hdots]$.
+Then $a[0]=u$, 
+$a[1]=v$ and so on.
+
+These basic variable types may be combined. For example, picture data may be considered
+to be a map of arrays $pic$, where $pic[Y]$ is a 2-dimensional array storing luma data,
+and $pic[U]$ and $pic[V]$ are two-dimensional arrays storing chroma data.
+
+Variables within processes are not explicitly declared, and their type is determined from
+context or defined in the surrounding description.
+
+Assignment between variables $a$ and $b$ is denoted by $a=b$, and is a copy
+operation between the data contained within $b$ to $a$. 
+
+It is to be distinguished from
+the boolean identity operator $a==b$ (Section \ref{booleanops}).
+
+Occasionally the notation $a={\bf 0}$ will be used for an array of integer values:
+it means set all elements of the matrix to 0.
+
+For integer variables, assignment can be combined with arithmetic and bit-wise
+operations in the usual programming manner: for example, 
+\[x+=y\]
+means $x=x+y$, and
+\[x |= \text{0x4B}\]
+means $x=x|0x4B$.
+
+\subsubsection{Control flow}
+\label{controlflow}
+
+The pseudocode comprises a series of statements, linked by functions and
+flow control statements such as if, while, and for.
+
+The statements do not have a termination character, unlike the ; in C
+for example.  Blocks of statements are indicated by indentation:
+indenting in begins a block, indenting out ends one.
+
+Statements that expect a block (and hence a following indentation) end
+in a colon.
+
+\paragraph*{if}
+
+The if control evaluates a boolean or boolean function, and if true, passes the 
+flow to the block of following statement or block of statements. If the control
+evaluates as false, then there is an option to include one or more else if
+controls which offer alternative responses if some other condition is
+true.  If none of the preceding controls evaluate to true, then there is
+the option to include an else control which catches remaining cases.
+
+\begin{pseudo*}
+\bsIF{control1}
+    \bsCODE{block1}
+\bsELSEIF{control2}
+    \bsCODE{block2}
+\bsELSEIF{control3}
+    \bsCODE{block3}
+\bsELSE
+    \bsCODE{block4}
+\bsEND
+\end{pseudo*}
+
+The if and else if conditions are evaluated in the order in which they
+are presented. In particular, if $control1$ or $control2$ is true in
+the preceding example, $block3$ will not be executed
+even if $control3$ is true; neither will $block4$.
+
+\paragraph*{for}
+
+The for control repeats a loop over an integer range of values. For example,
+
+\begin{pseudo*}
+\bsFOR{i=0}{n-1}
+    \bsCODE{foo(i)}
+\bsEND
+\end{pseudo*}
+
+calls $foo()$ with value $i$, as $i$ steps through from 0 to $n-1$ inclusive.
+
+
+\paragraph*{for each} The for each control loops over the elements in
+a list:
+
+\begin{pseudo*}
+\bsFOREACH{c}{Y,U,V}
+    \bsCODE{block}
+\bsEND
+\end{pseudo*}
+
+\paragraph*{for such that} The for such that control loops over elements in
+a set which satisfy some condition:
+
+\begin{pseudo*}
+\bsFORSUCH{a\in A}{control}
+    \bsCODE{block}
+\bsEND
+\end{pseudo*}
+
+This may only be used when the order in which elements are processed is 
+immaterial.
+
+\paragraph*{while}
+
+The while control repeats a loop so long as a switch variable is true. 
+When it is false, the loop breaks to the next statement(s) outside the block.
+
+\begin{pseudo*}
+\bsWHILE{condition}
+    \bsCODE{block1}
+\bsEND
+\bsCODE{block2}
+\end{pseudo*}
+
+\subsubsection{Logical (boolean) operations}
+\label{booleanops}
+
+A logical operator takes a variable or pair of variables as arguments and
+returns the boolean values $\true$ or $\false$.
+
+The following logical operators are defined:
+
+\paragraph*{$==$} Test of equality of two variables. $a==b$ is $\true$ if and
+only if the value of $a$ equals the value of $b$. 
+
+\paragraph*{$<$}	Less than
+
+\paragraph*{$\leq$} Less than or equal to
+
+\paragraph*{$>$}	Greater than
+
+\paragraph*{$>=$} Greater than or equal to
+
+\paragraph*{$!$} Not. $!a$ is $\true$ for a boolean value $a$ if and only if $a$ is $\false$
+
+\paragraph*{$!=$} not equal to. $a!=b$ is equivalent to $!(a==b)$
+
+When used in pseudocode conditions, the words ``and" and ``or" are used to denote logical AND
+and logical (inclusive) OR between boolean values, for example:
+
+\begin{pseudo*}
+\bsIF{condition1 \text{ and } condition2 }
+    \bsCODE{\hdots}
+\bsEND
+\end{pseudo*}
+
+\paragraph*{Majority} Given a set $S=s_0, \hdots, s_{n-1}$ of boolean values, $\majority(S)$ 
+returns $\mean(S)$ where the elements of $S$ are intepreted as $0$ if $\false$ and 1 if $\true$.
+So if the number of $\true$ values is greater than or equal to the number of $\false$ values, $\majority(S)$ returns
+$\true$, otherwise it returns $\false$.
