@@ -5,28 +5,13 @@
 
 \label{arithdecoding}
 
-% Arithmetic decoding engine state variables %
-
-\newcommand{\adefine}[2]{%
-    \label{#1}%
-    \expandafter\def\csname #1\endcsname{\text{stateA[#2]}}}
-
-\adefine{AHigh}{high}
-\adefine{ALow}{low}
-\adefine{ACode}{code}
-\adefine{ABitsLeft}{bits\_left}
-\adefine{AContexts}{contexts}
-
-\adefine{ArithState}{}
-
 This section describes the arithmetic decoding engine and
 processes for using it to extract data from the Dirac stream.
 
 The arithmetic decoding engine consists of two elements: 
 
 \begin{itemize}
-\item a global state
-structure variable $\ArithState$ representing the state of the arithmetic 
+\item a collection of state variables representing the state of the arithmetic 
 decoder (Section \ref{initarith})
 \item a set of functions for extracting values from the decoder 
 and updating the decoder state (Section \ref{extractarith})
@@ -35,20 +20,20 @@ and updating the decoder state (Section \ref{extractarith})
 \subsection{State and contexts}
 \label{arithcontexts}
 
-The global arithmetic decoder state $\ArithState$ consists of the following variables:
+The arithmetic decoder state consists of the following decoder state variables:
 
 \begin{itemize}
 \item $\ALow$, an integer representing the beginning of the current coding interval
 \item $\AHigh$, an integer representing the end of the current coding interval
-\item $\ACode$, an integer within the interval determined from the encoded bitstream
+\item $\ACode$, an integer within the interval from $\ALow$ to $\AHigh$, determined from the encoded bitstream
 \item $\ABitsLeft$, a decrementing count of the number of bits yet to be read in
-\item $\AContexts$, an array of all contexts used in the Dirac decoder
+\item $\AContexts$, a map of all the contexts used in the Dirac decoder
 \end{itemize}
 
 A context $context$ is an integer array consisting of two positive values,
 $context[0]$, and $context[1]$, representing counts of values $0$ and $1$
 respectively. Contexts are accessed by decoding functions
-via the indices defined in Section ??.
+via the indices defined in Section \ref{contextindices}.
 
 \subsubsection{Rescaling contexts}
 \label{rescalecontext}
@@ -145,7 +130,7 @@ $shift\_all\_bits()$ expands the interval between $\ALow$ and $\AHigh$
 until the msbs (bit 15) differ and the interval no longer
 straddles the half-way point 0x8000.
 
-\begin{pseudo}{shift\_all\_bits()}{}
+\begin{pseudo}{shift\_all\_bits}{}
 \bsWHILE{ \AHigh\&\text{0x8000})==\text{0x0} \&\& (\ALow\&\text{0x8000})==\text{0x0}}
   \bsCODE{shift\_bit\_in()}
 \bsEND
@@ -178,22 +163,22 @@ state has maximum information.
 \bsCODE{shift\_all\_bits()}{\ref{arithshiftin}}
 \bsCODE{context=\AContexts[context\_index]}
 \bsCODE{weight = context[0] + context[1]}
-\bsCODE{scaler = (0x10000+weight//2)//weight}
+\bsCODE{scaler = (\text{0x10000}+weight//2)//weight}
 \bsCODE{probability0 = context[0]*scaler}
 \bsCODE{count = code-low+1}
 \bsCODE{range = high-low+1}
-\bsCODE{range\_x\_prob = (range * probability0)>>16}
-\bsIF{ count > range\_x\_prob }
+\bsCODE{range\_times\_prob = (range * probability0)>>16}
+\bsIF{ count > range\_times\_prob }
   \bsCODE{value = \true}
-  \bsCODE{low = low + range\_x\_prob}
+  \bsCODE{low = low + range\_times\_prob}
   \bsCODE{context[1] += 1}
 \bsELSE
   \bsCODE{value = False}
-  \bsCODE{high = low + range\_x\_prob - 1}
+  \bsCODE{high = low + range\_times\_prob - 1}
   \bsCODE{context[0] += 1}
 \bsEND
 \bsIF{ (context[0] + context[1]) > 255 }
-  \bsCODE{rescale\_context(context)}{\ref{rescalecontext}}
+  \bsCODE{rescale\_context(\AContexts[context\_index])}{\ref{rescalecontext}}
 \bsEND
 \bsRET{value}
 \end{pseudo}
@@ -224,7 +209,7 @@ A choice of context depends upon whether the bit is a data bit, follow bit, or s
 position of the bit within the binarisation: $context\_set$ consists of three parts -
 \begin{itemize}
 \item an array of follow contexts, $context\_set[follow]$ (indexed from 0 to 
-$len(context\_set[follow])$
+$\length(context\_set[follow])-1$)
 \item a single data context $context\_set[data]$ 
 \item a sign context $context\_set[sign]$ (ignored for unsigned integer decoding)
 \end{itemize}
@@ -273,3 +258,78 @@ $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 \bsRET{value}
 \end{pseudo}
 
+\subsection{Context indices}
+\label{contextindices}
+
+The following is a list of all the context indices used in Dirac arithmetic decoding operations:
+
+%\begin{tabular}{l}
+\SignZero\\
+\SignPos\\
+\SignNeg\\
+\ZPZNFollowOne\\
+\ZPNNFollowOne\\
+\ZPFollowTwo\\
+\ZPFollowThree\\
+\ZPFollowFour\\
+\ZPFollowFive\\
+\ZPFollowSixPlus\\
+\NPZNFollowOne\\
+\NPNNFollowOne\\
+\NPFollowTwo\\
+\NPFollowThree\\
+\NPFollowFour\\
+\NPFollowFive\\
+\NPFollowSixPlus\\
+\CoeffData\\
+\ZeroCodeblock\\
+\QOffsetFollow\\
+\QOffsetInfo\\
+\QOffsetSign\\
+\SBSplitFollowOne\\
+\SBSplitFollowTwo\\
+\SBSplitData\\
+\PredModeOne\\
+\PredModeTwo\\
+\BlockGlobal\\
+\RefOnexFollowOne\\
+\RefOnexFollowTwo\\
+\RefOnexFollowThree\\
+\RefOnexFollowFour\\
+\RefOnexFollowFivePlus\\
+\RefOnexData\\
+\RefOnexSign\\
+\RefOneyFollowOne\\
+\RefOneyFollowTwo\\
+\RefOneyFollowThree\\
+\RefOneyFollowFour\\
+\RefOneyFollowFivePlus\\
+\RefOneyData\\
+\RefOneySign\\
+\RefTwoxFollowOne\\
+\RefTwoxFollowTwo\\
+\RefTwoxFollowThree\\
+\RefTwoxFollowFour\\
+\RefTwoxFollowFivePlus\\
+\RefTwoxData\\
+\RefTwoxSign\\
+\RefTwoyFollowOne\\
+\RefTwoyFollowTwo\\
+\RefTwoyFollowThree\\
+\RefTwoyFollowFour\\
+\RefTwoyFollowFivePlus\\
+\RefTwoyData\\
+\RefTwoySign\\
+\YDCFollowOne\\
+\YDCFollowTwoPlus\\
+\YDCData\\
+\YDCSign\\
+\UDCFollowOne\\
+\UDCFollowTwoPlus\\
+\UDCData\\
+\UDCSign\\
+\VDCFollowOne\\
+\VDCFollowTwoPlus\\
+\VDCData\\
+\VDCSign
+%\end{tabular}

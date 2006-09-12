@@ -6,8 +6,8 @@
 Data is encoded in the Dirac bitstream in three basic ways: fixed-length
 bit-wise and byte-wise encodings; variable-length codes; and arithmetic encoding.
 
-This section defines how data bits are to be extracted from the bitstream and how
-sequences of bits are to be interpreted as values of various types using fundamental
+This section defines how data bits are extracted from the bitstream and how
+sequences of bits are interpreted as values of various types using fundamental
 data-reading functions, covering encodings of the first two sorts. The extraction
 of arithmetic-encoded data is defined in Section \ref{arithdecoding}.
 
@@ -28,41 +28,44 @@ start of an access unit, $\NextBit$ is set to 7.
 
 The $read\_byte()$ function --
 \begin{itemize}
-\item sets $\NextBit$ to 7 and then
-\item returns the next byte in the Dirac stream
+\item returns $\CurrentByte$ if $\NextBit==7$ 
+\item sets $\NextBit=7$ and returns the next byte in the Dirac stream otherwise
 \end{itemize}
 
 The $read\_bit()$ function is defined by
 
 \begin{pseudo}{read\_bit}{}
-\bsIF{\NextBit < 0}
+\bsIF{\NextBit == 7}
 \bsCODE{\CurrentByte = read\_byte()}
 \bsEND
 \bsCODE{bit = ( \CurrentByte \gg \NextBit ) \& 1 }
 \bsCODE{\NextBit -= 1}
+\bsIF{\NextBit<0}
+    \bsCODE{\NextBit == 7}
+\bsEND
 \bsRET{bit}
 \end{pseudo}
 
 The $byte\_align()$ function discards data in the current byte and begins data access
-at the next byte, unless input is already at the beginning of a byte. This is used to 
-ensure that a whole number of bytes are read before
-beginning reading a new stream element.
+at the next byte, unless input is already at the beginning of a byte: 
 
 \begin{pseudo}{byte\_align}{}
-\bsIF{\NextBit != 7}
-\bsCODE{\CurrentByte = read\_byte()}
-\bsEND
+\bsCODE{\NextBit = 7}
 \end{pseudo}
+
+This is used to ensure that a whole number of bytes are read before
+beginning reading a new stream element.
 
 \subsection{Fixed-length code formats}
 \subsubsection{Bool}
 
-The $read\_bool()$ function returns -
+The $read\_bool()$ function returns --
 \begin{itemize}
 \item $\true$ if $read\_bit()$ is $1$
 \item $\false$ if $read\_bit()$ is $0$
 \end{itemize}
 
+\begin{comment}
 \subsubsection{n-bit literal}
 An $n$-bit number in literal format shall be decoded by extracting $n$ bits
 in order, using the $read\_bit()$ function (Section \ref{bitpacking})
@@ -72,6 +75,7 @@ interpreted according to the conventions of the type to which it is
 deemed to belong.
 
 [Is this used anywhere??] 
+\end{comment}
 
 \subsubsection{$n$-byte unsigned integer literal}
 A single byte may be interpreted as an unsigned integer value from 0 to 255.
@@ -87,8 +91,6 @@ An $n$-byte number in literal format shall be decoded by the recipe:
 \bsRET{val}
 \end{pseudo}
 
-[Is this correct in terms of the software?]
-
 \subsection{Variable-length code formats}
 \label{vlc}
 Variable-length codes are used in two ways in the Dirac stream. The first
@@ -101,11 +103,11 @@ This section defines the unsigned interleaved exp-Golomb data format and the ope
 of the $read\_uint()$ function. 
 
 Unsigned interleaved exp-Golomb data is decoded to produce unsigned
- integer values.The format consists of two interleaved parts, which are interleaved
-in the encoding, and each code is an odd number, $2K+1$ bits, in length.
+ integer values.The format consists of two interleaved parts, 
+and each code is an odd number, $2K+1$ bits, in length.
 
-The $K+1$ bits in the even positions (counting from zero) are the "follow" bits, and 
-the $K$ bits in the odd positions are the "data" bits $b_i$ which are used to construct
+The $K+1$ bits in the even positions (counting from zero) are the ``follow" bits, and 
+the $K$ bits in the odd positions are the ``data" bits $b_i$ which are used to construct
 the decoded value itself. A follow bit value of $0$ indicates a subsequent data bit,
 whereas a follow bit value of $1$ terminates the code:
 \begin{equation*}
@@ -113,13 +115,13 @@ whereas a follow bit value of $1$ terminates the code:
 \end{equation*}
 
 The data bits $b_{K-1}, b_{K-2}, \hdots, b_0$ are the binary representation 
- of the first $K$ bits of the $K+1$-bit number 
+ of the first $K$ bits of the $(K+1)$-bit number 
 $N+1$, where $N$ is the number to be decoded:
 \begin{equation*}
 N+1=1 b_{K-1} b_{K-2}\hdots b_0 \text{(base $2$)}
 \end{equation*}
 
-A table of encodings of the first 10 values is shown in figure \ref{uegolcodings}.
+A table of encodings of the first 10 values is shown in Figure \ref{uegolcodings}.
 
 \begin{figure}[h]
 \centering
@@ -142,14 +144,14 @@ Bit sequence & Decoded value \\
 values to unsigned integers \label{uegolcodings}}
 \end{figure}
 
-Although apparently complex, this code has a very simple decoding loop. The 
-$read\_uint()$ function returns an unsigned integer value and is defined by the recipe:
+Although apparently complex, the interleaving ensures that the code has a very simple decoding loop. 
+The $read\_uint()$ function returns an unsigned integer value and is defined by the recipe:
 
 \begin{pseudo}{read\_uint}{}
 \bsCODE{value = 1}
 \bsWHILE{read\_bool()== \false}
   \bsCODE{value \ll = 1}
-  \bsIF{read\_bool()}
+  \bsIF{read\_bool()==\true}
     \bsCODE{value += 1}
   \bsEND
 \bsEND
@@ -162,7 +164,7 @@ $read\_uint()$ function returns an unsigned integer value and is defined by the 
 \begin{informative}
 Conventional exp-Golomb coding places all follow bits at the beginning as a prefix. This is
 easier to read, but requires that a count of the prefix length be maintained. Values can only
-be decoded in two loops - the prefix followed by the data bits. Interleaved exp-golomb 
+be decoded in two loops -- the prefix followed by the data bits. Interleaved exp-Golomb 
 coding allows values to be decoded in a single loop, without the need for a length count.
 \end{informative}
 
@@ -174,7 +176,7 @@ of the $read\_sint()$ function.
 
 The code for the signed interleaved exp-Golomb data format consists of the
 unsigned interleaved exp-Golomb code for the magnitude, followed by a sign bit
-for non-zero values (figure \ref{segolcodings}).
+for non-zero values (Figure \ref{segolcodings}).
 
 \begin{figure}[h]
 \centering
@@ -200,7 +202,7 @@ The decoding operation is as follows.
 
 \begin{pseudo}{read\_sint}{}
 \bsCODE{value = read\_uint()}
-\bsIF{read\_bool()}
+\bsIF{read\_bool()==\true}
   \bsCODE{value = -value}
 \bsEND
 \bsRET{value}
