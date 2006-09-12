@@ -2,19 +2,14 @@
 % -       Introductions       - %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% TO DO: separate off the introduction too
-
-\section{Abstract}\input{abstract}
-\section{Introduction}
-\subsection{Purpose}\input{intro-purpose}
-\subsection{Scope}\input{intro-scope}
-\subsection{Document structure}\input{intro-docstruct}
+\section{Introduction}\input{intro}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % - Main body of the document - %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\clearpage
-%\part{Dirac concepts}\input{dirac-concepts}
+%\part{Dirac concepts}
+\input{dirac-concepts}
 \clearpage
 \part{Stream access}\input{stream-access}
 \clearpage
@@ -28,26 +23,35 @@
 
 %TO DO: separate off the appendices also
 
-%\appendix
+
+\appendix
 %\section{Arithmetic Encoding}\input{arith-encoder}
 %\section{Comments on coders}\input{coder-intro}
 %\section{Subband inverse quantizer values}\input{ref-quantization-lut}
-%\clearpage
-%\section{Default video parameters}\input{ref-default-videoparams}
-%
-%\clearpage
-%\section{Video systems model}\input{vidsys}
-%\subsection{Colour}\input{vidsys-colour}
-%\subsection{Frame rate}\input{vidsys-framerate}
-%\subsection{Aspect ratios and clean area}\input{vidsys-aspect}
-%\subsection{Signal range}\input{vidsys-sigrange}
-%\subsection{Colour primaries}\input{vidsys-colourprimaries}
-%\subsection{Colour matrix}\input{vidsys-colourmatrix}
-%\subsection{Transfer charactaristics}\input{vidsys-transfer}
 
-%\clearpage
-%\section{genralized decoder}\input{gendec}
+\clearpage
+\section{Parse diagrams}\input{parsediagrams}
 
+\clearpage
+\section{Video systems model and source parameters}
+\input{vidsys}
+\label{vidsys}
+\begin{informative*}
+\subsection{Colour}\input{vidsys-colour}
+\subsection{Frame rate}\input{vidsys-framerate}
+\subsection{Aspect ratios and clean area}\input{vidsys-aspect}
+\subsection{Signal range}\input{vidsys-sigrange}
+\subsection{Colour primaries}\input{vidsys-colourprimaries}
+\subsection{Colour matrix}\input{vidsys-colourmatrix}
+\subsection{Transfer charactaristics}\input{vidsys-transfer}
+\end{informative*}
+\subsection{Source parameter presets}\input{sourcepresets}
+
+\clearpage
+\section{Video format defaults}\input{ref-default-videoparams}
+
+\clearpage
+\section{Profiles and levels}\label{profilelevel}
 %\clearpage
 %\section{References}
 %\annotate{shas}{I hope we do not have any references - it would be nice
