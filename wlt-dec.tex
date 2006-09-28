@@ -184,13 +184,13 @@ The overall $transform\_data()$ decoding process is as follows:
 
 \begin{pseudo}{transform\_data}{}
 \bsCODE{data=initialise\_wavelet\_data()}{\ref{wltinit}}
-\bsCODE{subband\_decode(data, 0, \LL)}{\ref{subbanddecodeprocess}}    
+\bsCODE{subband(data, 0, \LL)}{\ref{subbanddecodeprocess}}    
 \bsFOR{level=1}{\TransformDepth}
   \bsFOREACH{orient}{\LH,\HL,\HH}
-    \bsCODE{subband\_decode(data, level, orient)}{\ref{subbanddecodeprocess}}
+    \bsCODE{byte\_align()}
+    \bsCODE{subband(data, level, orient)}{\ref{subbanddecodeprocess}}
   \bsEND
 \bsEND
-\bsCODE{byte\_align()}
 \bsRET{data}
 \end{pseudo}
 
@@ -198,22 +198,22 @@ The overall $transform\_data()$ decoding process is as follows:
 
 \label{subbanddecodeprocess}
 
-This section specifies the process $subband\_decode(level,orient)$ for coefficients
+This section specifies the process $subband(level,orient)$ for coefficients
 within a subband at level $level$ ($0$ to \TransformDepth) and of orientation $orient$
 (\LL, \LH, \HL, or \HH). 
 
 \subsubsection{Subband header and codeblock loop}
 
-This section specifies the operation of the $subband\_decode(data, level, orient)$
+This section specifies the operation of the $subband(data, level, orient)$
 function for decoding a subband at level $level$ and of orientation $orient$.
 
 \paragraph{Initialisation\newline}
 
-The $subband\_decode()$ process begins by reading a length code. If this length is
+The $subband()$ process begins by reading a length code. If this length is
 zero, then the subband is deemed to be skipped and all coefficients are set to zero
 before the process exits:
 
-\begin{pseudo}{subband\_decode}{data, level, orient}
+\begin{pseudo}{subband}{data, level, orient}
 \bsITEM{length}{unsigned}
 \bsIF{length == 0}
   \bsFOR{y=0}{subband\_height(level)-1}
@@ -231,15 +231,14 @@ setting up arithmetic decoding, initialising the coefficient count, reading
 the quantisation index and byte-aligning the subsequent read operations.
 
 \begin{pseudo*}
-\bsCODE{\hdots}
 \bsIF{length>0}
     \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
     \bsCODE{\CoefficientCount=0}
     \bsCODE{vol=subband\_height(level)*subband\_width(level)}
     \bsCODE{\CoefficientReset=max(min(vol//32, 800), 25)}
     \bsCODE{quant\_index = read\_uint()}
-    \bsCODE{byte\_align()}
 \bsEND
+\bsCODE{byte\_align()}
 \bsCODE{\hdots}
 \end{pseudo*}
 
@@ -258,7 +257,6 @@ arithmetic decoding engine, and setting quantisers. There is a different code bl
 process for Intra DC bands, since values are coded using spatial prediction.
 
 \begin{pseudo*}
-\bsCODE{\hdots}
 \bsCODE{band = data[level][orient]}
 \bsIF{level>1}
 \bsCODE{parent = data[level-1][orient]}
@@ -274,6 +272,7 @@ process for Intra DC bands, since values are coded using spatial prediction.
 \bsIF{is\_intra() \text{ and } level==0}
     \bsCODE{intra\_dc\_prediction(band)}{\ref{intradcprediction}}
 \bsEND
+\bsCODE{flush\_arith()}{\ref{inputraith}}
 \end{pseudo*}
 
 
@@ -385,10 +384,6 @@ three values to the left, top-left and above a coefficient (if available).
   \bsEND
 \bsEND
 \end{pseudo}
-
-\begin{comment}
-[NB: this agrees with the code, but shouldn't it be (prediction+(N//2))//N ?]
-\end{comment}
 
 \subsection{Subband coefficient decoding process}
 

@@ -92,11 +92,26 @@ bounds of this block of data have been exceeded:
 \bsEND
 \end{pseudo}
 
+Since the length of arithmetically coded data elements is given in bytes within the Dirac
+stream, there may be bits left unread when all values have been extracted. The $flush\_arith()$
+function reads all unread data, and aligns data input with the beginning of the byte 
+after the arithmetically coded data i.e. at the end of the
+data chunk. $flush\_arith()$ is always called at the end of decoding an arithmetically encoded
+data element.
+
+\begin{pseudo}{flush\_arith()}{}
+\bsWHILE{\ABitsLeft>0}
+    \bsCODE{read\_bit()}
+    \bsCODE{\ABitsLeft-=1}
+\bsEND
+\end{pseudo}
+
 \begin{informative}
 The Dirac arithmetic decoding engine uses 16 bit words, and so no more than 16
 additional bits can be read beyond the end of the block. Hence it is sufficient
 to read in the entire block of data and pad the end with two zero bytes to
-avoid a branch condition with each input bit.
+avoid a branch condition with each input bit. If this approach is taken, the
+$flush\_arith()$ operation at the end of decoding is superfluous.
 \end{informative}
 
 \subsection{Decoder functions}

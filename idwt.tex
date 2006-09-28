@@ -88,7 +88,6 @@ the process.
 {\bf Step 2.} The data from the four arrays is interleaved as follows:
 
 \begin{pseudo*}
-\bsCODE{\hdots}
 \bsFOR{y=0}{(\height(synth)//2)-1}
     \bsFOR{x=0}{(\width(synth)//2)-1}
         \bsCODE{synth[2*y][2*x] = LL\_data[y][x]}
@@ -107,7 +106,6 @@ of data using a one-dimensional filter, and then horizontally by operating
 on each row.
 
 \begin{pseudo*}
-\bsCODE{\hdots}
 \bsFOR{x=0}{\width(synth)-1}
     \bsCODE{1d\_synthesis(\column(synth, x) )}{\ref{onedsynth}}
 \bsEND
@@ -122,7 +120,6 @@ remove any accuracy bits. The shift value $filtershift()$ used is as determined 
 from the wavelet index $\WaveletIndex$.
 
 \begin{pseudo*}
-\bsCODE{\hdots}
 \bsCODE{shift = filtershift()}
 \bsFOR{y=0}{\height(synth)-1}
     \bsFOR{x=0}{\width(synth)-1}
@@ -199,11 +196,11 @@ functions $lifteven(A, t_i, s)$ and $liftodd(A, t_i, s)$ are specified by:
     \bsFOR{i=-N}{M}
         \bsCODE{pos=2*(n+i)-1}
         \bsIF{pos<0}
-            \bsCODE{sum+=A[-pos]}
+            \bsCODE{sum+=t_i*A[-pos]}
         \bsELSEIF{pos\geq \length(A)}
-            \bsCODE{sum+=A[2*\length(A)-pos]}
+            \bsCODE{sum+=t_i*A[2*\length(A)-pos]}
         \bsELSE
-            \bsCODE{sum+=A[pos]}
+            \bsCODE{sum+=t_i*A[pos]}
         \bsEND
     \bsEND
     \bsCODE{sum+=(1\ll (s-1))}
@@ -222,11 +219,11 @@ and
     \bsFOR{i=-N}{M}
         \bsCODE{pos=2*(n+i)}
         \bsIF{pos<0}
-            \bsCODE{sum+=A[-pos]}
+            \bsCODE{sum+=t_i*A[-pos]}
         \bsELSEIF{pos\geq \length(A)}
-            \bsCODE{sum+=A[2*\length(A)-pos]}
+            \bsCODE{sum+=t_i*A[2*\length(A)-pos]}
         \bsELSE
-            \bsCODE{sum+=A[pos]}
+            \bsCODE{sum+=t_i*A[pos]}
         \bsEND
     \bsEND
     \bsCODE{sum+=(1\ll (s-1))}
@@ -398,14 +395,12 @@ also allows for much more efficient implementation.
 {\bf Lifting steps} & $filtershift()$ \\
 \hline
 \begin{tabular}{l}
-1. Even, Predict, $s=8, t_{-1}=-11, t_0=36, t_1=36, t_2=-11$ i.e. \\
-\quad $A[2*n] -=  (-11*A[2*n-3]+36*A[2*n-1]+36*A[2*n+1]-11*A[2*n+3]+128)\gg 8 $ \\
-2. Odd, Update, $s=8, t_{-1}=-22, t_0=84, t_1=84, t_2=-22$ i.e. \\
-\quad $ A[2*n+1] += (-22*A[2*n-2]+84*A[2*n]+84*A[2*n+2]-22*A[2*n+4]+128)\gg 8$ \\
-3. Even, Predict, $s=8, t_{-1}=-19, t_0=85, t_1=85, t_2=-19$ i.e. \\
-\quad $A[2*n] -=  (-19*A[2*n-3]+85*A[2*n-1]+85*A[2*n+1]-19*A[2*n+3]+128)\gg 8 $ \\
-4. Odd, Update, $s=8, t_{-1}=-8, t_0=41, t_1=41, t_2=-8$ i.e. \\
-\quad $ A[2*n+1] += (-8*A[2*n-2]+41*A[2*n]+41*A[2*n+2]-8*A[2*n+4]+128)\gg 8$
+1. Odd, Update, $s=8, t_{-3}=-2, t_{-2}=10, t_{-1}=-25, t_0=81, t_1=81, t_2=-25, t_3=10, t_4=-2$ i.e. \\
+$ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+6])\\
+                                             & &       -25*(A[2*n-2]+A[2*n+4])+81*(A[2*n]+A[2*n+2])+128)\gg 8 \end{array}$ \\
+1. Even, Predict,  $s=8, t_{-3}=-8, t_{-2}=21, t_{-1}=-46, t_0=161, t_1=161, t_2=-46, t_3=21, t_4=-8$ i.e. \\
+ $ \begin{array}{rcl}A[2*n]  & += & (-8*(A[2*n-7]+A[2*n+7])+21*(A[2*n-5]+A[2*n+5]) \\
+                                          & &      -46*(A[2*n-3]+A[2*n+3])+161*(A[2*n-1]+A[2*n+1])+128)\gg 8 \end{array}$ 
 \end{tabular}
 & 0 \\
 \hline

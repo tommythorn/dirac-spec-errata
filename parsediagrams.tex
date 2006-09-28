@@ -1,4 +1,7 @@
 \label{parsediagrams}
+
+\subsection{Core syntax}
+
 % Stream
 
 \setlength{\unitlength}{1em}
@@ -726,19 +729,19 @@
 \put(12,17){\vector(1,0){1}}
 \put(17.5,17){\oval(9,4.7)\put(-3,1){Zoom, Rotation}\put(-3,-.5){and Shear} \put(-3,-2){Exponent}}
 \put(22,17){\vector(1,0){2}}
-\put(27.5,17){\oval(7,4.7)\put(-1,-0.5){$A_{11}$}}
+\put(27.5,17){\oval(7,4.7)\put(-1,-0.5){$A_{0,0}$}}
 
 \put(31,17){\vector(1,0){2}}
-\put(36.5,17){\oval(7,4.7)\put(-1,-0.5){$A_{12}$}}
+\put(36.5,17){\oval(7,4.7)\put(-1,-0.5){$A_{0,1}$}}
 \put(40,17){\line(1,0){2}}
 \put(42,17){\vector(0,-1){4.5}}
 \put(42,12.5){\vector(-1,0){10}}
 \put(32,12.5){\line(-1,0){10}}
 \put(22,12.5){\line(0,-1){4.5}}
 \put(22,8){\vector(1,0){3}}
-\put(28.5,8){\oval(7,4.7)\put(-1,-0.5){$A_{21}$}}
+\put(28.5,8){\oval(7,4.7)\put(-1,-0.5){$A_{1,0}$}}
 \put(32,8){\vector(1,0){2}}
-\put(37.5,8){\oval(7,4.7)\put(-1,-0.5){$A_{22}$}}
+\put(37.5,8){\oval(7,4.7)\put(-1,-0.5){$A_{1,1}$}}
 \put(41,8){\vector(1,0){1}}
 \put(42,8){\line(0,-1){5}}
 \end{picture}
@@ -920,19 +923,237 @@
 \end{figure}
 
 % Block motion data stuff
+%%%%%%%%%%%%%
+
+% Block data
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(31,15)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2,.5){Block Data} \put(-2,-1.5){Length}}
+\put(11,3){\vector(1,0){4}}
+\put(19,3){\oval(8,4.7)\put(-2,-.5){Superblock}}
+\put(23,3){\vector(1,0){4}}
+\put(25,3){\line(0,1){5}}
+\put(25,8){\vector(-1,0){6}}
+\put(19,8){\line(-1,0){6}}
+\put(13,8){\line(0,-1){5}}
+\end{picture}
+\caption{Block Date}\label{fig:blockdata}
+\end{figure}
+
+% Superblock
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(33,15)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2,.5){SB Split}\put(-2,-1.5){Residual}}
+\put(11,3){\vector(1,0){4}}
+\put(19,3){\oval(8,4.7)\put(-2,-0.5){Block} }
+\put(23,3){\vector(1,0){4}}
+\put(25,3){\line(0,1){5}}
+\put(25,8){\vector(-1,0){6}}
+\put(19,8){\line(-1,0){6}}
+\put(13,8){\line(0,-1){5}}
+\end{picture}
+\caption{Superblock}\label{fig:superblock}
+\end{figure}
+
+% Block
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,15)
+\put(0,3){\vector(1,0){2}}
+
+\put(6,3){\oval(8,4.7)\put(-2,.5){Block}\put(-2,-1.5){Mode}}
+\put(10,3){\vector(1,0){3}}
+
+
+\put(17,3){\oval(8,4.7)\put(-2,.5){Block Global}\put(-2,-1.5){Residue}}
+\put(21,3){\vector(1,0){3}}
+\put(22,3){\line(0,1){5}}
+\put(22,8){\line(-1,0){6}}
+\put(12,8){\vector(1,0){5}}
+\put(12,8){\line(0,-1){5}}
+
+\put(28,3){\oval(8,4.7)\put(-2,.5){Block}\put(-2,-1.5){Vectors}}
+\put(32,3){\vector(1,0){3}}
+\put(33,3){\line(0,1){5}}
+\put(33,8){\line(-1,0){6}}
+\put(23,8){\vector(1,0){5}}
+\put(23,8){\line(0,-1){5}}
+
+\put(11,3){\line(0,1){10}}
+\put(11,13){\vector(1,0){7.5}}
+\put(22.5,13){\oval(8,4.7)\put(-2,.5){Block} \put(-2,-1.5){DC}}
+\put(26.5,13){\vector(1,0){7.5}}
+\put(34,13){\line(0,-1){10}}
+
+\end{picture}
+\caption{Block}\label{fig:block}
+\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,12)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2,1){Prediction}\put(-2,-.5){Mode} \put(-2,-2){Residual 1}}
+\put(11,3){\vector(1,0){18}}
+\put(13,3){\line(0,1){5}}
+\put(13,8){\vector(1,0){2}}
+\put(19,8){\oval(8,4.7)\put(-2,1){Prediction}\put(-2,-.5){Mode} \put(-2,-2){Residual 2}}
+\put(23,8){\vector(1,0){2}}
+\put(25,8){\line(0,-1){5}}
+\end{picture}
+
+\caption{Block Mode}\label{fig:blockmode}
+
+\end{figure}
+
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(36,8)
+\put(0,3){\vector(1,0){3}}
+\put(7,3){\oval(8,4.7)\put(-2,1){Luma}\put(-2,-.5){DC} \put(-2,-2){Residual}}
+\put(11,3){\vector(1,0){3}}
+\put(18,3){\oval(8,4.7)\put(-2,1){Chroma}\put(-2,-.5){DC} \put(-2,-2){Residual 1}}
+\put(22,3){\vector(1,0){3}}
+\put(29,3){\oval(8,4.7)\put(-2,1){Chroma}\put(-2,-.5){DC} \put(-2,-2){Residual 2}}
+\put(33,3){\vector(1,0){3}}
+\end{picture}
+
+\caption{Block DC}\label{fig:blockdc}
+\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(48,10)
+
+\put(0,3){\vector(1,0){2}}
+\put(7,3){\oval(10,4.7) \put(-3,1){Motion Vector}\put(-4,-.5){Horizontal Residual}\put(-3,-2){Reference 1}}
+\put(12,3){\vector(1,0){1}}
+\put(18,3){\oval(10,4.7) \put(-3,1){Motion Vector}\put(-3.5,-.5){Vertical Residual}\put(-3,-2){Reference 1}}
+\put(23,3){\vector(1,0){2}}
+
+\put(30,3){\oval(10,4.7) \put(-3,1){Motion Vector}\put(-4,-.5){Horizontal Residual}\put(-3,-2){Reference 2}}
+\put(35,3){\vector(1,0){1}}
+\put(41,3){\oval(10,4.7) \put(-3,1){Motion Vector}\put(-3.5,-.5){Vertical Residual}\put(-3,-2){Reference 2}}
+\put(46,3){\vector(1,0){2}}
+
+\put(1,3){\line(0,1){5}}
+\put(1,8){\vector(1,0){11}}
+\put(12,8){\line(1,0){11.5}}
+\put(23.5,8){\vector(0,-11){5}}
+
+\put(24.25,3){\line(0,1){5}}
+\put(24.25,8){\vector(1,0){11}}
+\put(35.2512,8){\line(1,0){11.5}}
+\put(46.75,8){\vector(0,-11){5}}
+
+\end{picture}
+\caption{Block Motion}\label{fig:blockmotion}
+\end{figure}
+
+
+% Transform data stuff 
+%%%%%%%%%%%
 
 % Transform data
-%\setlength{\unitlength}{1em}
-%\begin{figure}[!h]
-%\centering
-%\begin{picture}(20,12)
-%\put(0,5){\vector(1,0){5}}
-%\put(10,5){\oval(10,4.7)\put(-2,-0.5){Subband}}
-%\put(15,5){\vector(1,0){5}}
-%\put(2.5,5){\line(0,1){5}}
-%\put(17.5,5){\line(0,1){5}}
-%\put(17.5,10){\vector(-1,0){10}}
-%\put(2.5,10){\line(1,0){10}}
-%\end{picture}
-%\caption{Transform Data}\label{fig:transformdata}
-%\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(20,12)
+\put(0,5){\vector(1,0){5}}
+\put(10,5){\oval(10,4.7)\put(-2,-0.5){Subband}}
+\put(15,5){\vector(1,0){5}}
+\put(2.5,5){\line(0,1){5}}
+\put(17.5,5){\line(0,1){5}}
+\put(17.5,10){\vector(-1,0){10}}
+\put(2.5,10){\line(1,0){10}}
+\end{picture}
+\caption{Transform Data}\label{fig:transformdata}
+\end{figure}
+
+% Subband
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,10)
+\put(0,3){\vector(1,0){4}}
+\put(8,3){\oval(8,4.7) \put(-2,1){Subband}\put(-2,-.5){Data} \put(-2,-2){Length}}
+\put(12,3){\vector(1,0){4}}
+\put(14,3){\line(0,1){6}}
+\put(14,9){\vector(1,0){8}}
+\put(22,9){\line(1,0){14}}
+\put(36,9){\line(0,-1){6}}
+\put(20,3){\oval(8,4.7)\put(-2,.5){Quantiser}\put(-2,-1){Index}}
+\put(24,3){\vector(1,0){2}}
+
+\put(25,3){\line(0,1){4}}
+\put(30,3){\oval(8,4.7)\put(-2,-0.25){Codeblock}}
+\put(35,3){\line(0,1){4}}
+\put(35,7){\vector(-1,0){5}}
+\put(30,7){\line(-1,0){5}}
+
+\put(34,3){\vector(1,0){5}}
+
+\end{picture}
+\caption{Subband}\label{fig:subband}
+\end{figure}
+
+% Codeblock
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(40,12)
+\put(0,3){\vector(1,0){3}}
+\put(2,3){\line(0,1){5}}
+\put(2,8){\vector(1,0){18}}
+\put(20,8){\line(1,0){5}}
+\put(25,8){\line(0,-1){5}}
+\put(7,3){\oval(8,4.7)\put(-2,.5){Zero Block}\put(-2,-1.5){Flag}}
+\put(11,3){\vector(1,0){4}}
+
+\put(19,3){\oval(8,4.7)\put(-2,1){Differential}\put(-2,-.5){Quantiser} \put(-2,-2){Index}}
+\put(23,3){\vector(1,0){5}}
+\put(13,3){\line(0,1){4}}
+\put(13,7){\vector(1,0){6}}
+\put(19,7){\line(1,0){5}}
+\put(24,7){\line(0,-1){4}}
+
+\put(32,3){\oval(8,4.7)\put(-2,.5){Wavelet}\put(-2,-1.5){Coefficient}}
+\put(36,3){\vector(1,0){4}}
+
+\put(37,3){\line(0,1){4}}
+\put(37,7){\vector(-1,0){5}}
+\put(27,7){\line(1,0){5}}
+\put(27,7){\line(0,-1){4}}
+
+\put(26,3){\line(0,1){5}}
+\put(26,8){\vector(1,0){6}}
+\put(32,8){\line(1,0){6}}
+\put(38,8){\line(0,-1){5}}
+\end{picture}
+
+\caption{Codeblock}\label{fig:codeblock}
+\end{figure}
+
+\clearpage
+
+\subsection{Low delay syntax}
+
+
+

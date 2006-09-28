@@ -75,7 +75,7 @@ The following arithmetic operators are defined on numerical values:
 
 \paragraph*{Ceiling} $\lceil a \rceil$, the smallest integer greater than or equal to a real number $a$
 
-\paragraph*{Floor} $\lfloor a \rfloor$, the smallest integer greater than or equal to a real number $a$
+\paragraph*{Floor} $\lfloor a \rfloor$, the largest integer less than or equal to a real number $a$
 
 \paragraph*{Maximum} $\max(a,b)$ returns the largest of $a$ and $b$.
 
@@ -190,23 +190,21 @@ intermediate discussion. This is signalled by appending  and prepending ``$\hdot
 the parts of the pseudocode specification:
 
 \begin{pseudo}{foo}{}
-\bsCODE{op1()}
+\bsCODE{code}
 \bsCODE{\hdots}
 \end{pseudo}
 
 [text]
 
 \begin{pseudo*}
-\bsCODE{\hdots}
-\bsCODE{op2()}
+\bsCODE{more code}
 \bsCODE{\hdots}
 \end{pseudo*}
 
 [text]
 
 \begin{pseudo*}
-\bsCODE{\hdots}
-\bsCODE{op3()}
+\bsCODE{even more code}
 \end{pseudo*}
 
 Note that the intervening text may define or modify variables used in the succeeding

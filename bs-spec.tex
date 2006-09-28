@@ -4,9 +4,15 @@
 
 \label{streamparsing}
 
+A Dirac stream can have two alternative basic syntaxes: a core syntax used for conventional
+coding applications and a low-delay syntax used for applications where decoding (and encoding) delay is 
+required to be less than a picture. The low-delay profiles comprise some (but not all) of the Dirac Pro
+application profiles.
+
 This section specifies the Dirac stream and stream parsing operations,
 excepting the decoding of wavelet coefficients and motion data,
-which are deferred to Sections \ref{transformdec} and \ref{motiondec}.
+which are deferred to Sections \ref{transformdec} and \ref{motiondec},
+and the low-delay syntax elements which are deferred to Section \ref{lowdelayparsing}.
 The decoding operations for extracting decoded pictures from parsed
 data are specified in Section \ref{picturedec}.
 
@@ -41,6 +47,7 @@ throughout a sequence, and the state variable $\StateName$ holding
 the values to be used for decoding the current picture, which may override the defaults 
 for many variables. The picture
 state variable is re-intialised from the default settings before each picture is decoded.
+
 
 \begin{informative}
 The requirement that default decoding parameters are overridden 
@@ -77,9 +84,18 @@ independently.
 \label{parseinfo}
 
 This section specifies the operation of the $parse\_info()$ process for parsing
-Parse Info header data. This header is byte-aligned. It occurs at the beginning
-of a sequence, at the end of a sequence, before an Access Unit header, 
-and before each set of picture data. It is used to navigate through the stream (Section \ref{picturedec}).
+Parse Info header data. This header is byte-aligned. It occurs:
+\begin{itemize}
+\item at the beginning of a sequence
+\item at the end of a sequence
+\item before an Access Unit header
+\item before each set of picture data. 
+\end{itemize}
+
+It consists of a whole number of bytes and hence succeeding data elements
+are also byte aligned by default.
+
+It is used to navigate through the stream (Section \ref{picturedec}).
 The values of Parse Info parameters determine the type and format of the
 subsequent data structures, in particular indicating whether a picture is
 Intra or Inter coded, and if Inter how many references it has.
@@ -105,14 +121,24 @@ Parse Info header to the first byte of the previous Parse Info header, if there 
 is no subsequent Parse Info header, it shall be be 0
 \end{itemize}
 
+Parse codes are divided into two sets. The first set of parse codes relate to the core Dirac syntax,
+used for conventional coding applications. The second set of parse codes relate to the low-delay
+syntax, used for professional (Dirac Pro) profiles Dirac Link and Dirac Wireless. These are suitable
+for applications where the required delay is less than a picture -- perhaps much less.
 
 \begin{table}[!h]
 \centering
 \begin{tabular}{|c|c|l|c|}
 \hline
-\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\multicolumn{4}{|c|}{\bf Generic} \\
 \hline
 0x00 & 0000 0000 & Access Unit header &--\\
+\hline
+0x10 & 0001 0000 & End of Sequence & -- \\
+\hline
+\multicolumn{4}{|c|}{\bf Core syntax} \\
+\hline
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
 \hline
 0x0C & 0000 1100 & Intra Reference Picture & 0\\
 \hline
@@ -124,9 +150,23 @@ is no subsequent Parse Info header, it shall be be 0
 \hline
 0x09 & 0000 1001 & Inter Non Reference Picture & 1\\
 \hline
-0x10 & 0000 1010 & Inter Non Reference Picture & 2\\
+0x0A & 0000 1010 & Inter Non Reference Picture & 2\\
 \hline
-0x10 & 0001 0000 & End of Sequence & -- \\
+\multicolumn{4}{|c|}{\bf Low-delay syntax} \\
+\hline
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+0x8C & 1000 1100 & Intra Reference Picture & 0\\
+\hline
+0x88 & 1000 1000 & Intra Non Reference Picture & 0\\
+\hline
+0x8D & 1000 1101 & Inter Reference Picture & 1\\
+\hline
+0x8E & 1000 1110 & Inter Reference Picture & 2\\
+\hline
+0x89 & 1000 1001 & Inter Non Reference Picture & 1\\
+\hline
+0x8A & 1000 1010 & Inter Non Reference Picture & 2\\
 \hline
 \end{tabular}
 \caption{Parse codes}\label{parsecodes}
@@ -166,6 +206,10 @@ boolean, except for $num\_refs()$ which returns an integer:
 
 \begin{pseudo}{is\_inter}{}
 \bsRET{(num\_refs()>0)}
+\end{pseudo}
+
+\begin{pseudo}{is\_low\_delay}{}
+\bsRET{(\ParseCode \&\text{0x80})}
 \end{pseudo}
 
 \begin{informative}
@@ -245,12 +289,15 @@ set by parsing the Access Unit header (Section \ref{auheader}).
 \subsection{Access Unit header}
 \label{auheader}
 
-This section specifies the structure of the Access Unit header. This Access Unit header is byte aligned.
-Parsing this header consists in
-reading the Access Unit parameters (parse, source and sequence parameters) and initialising 
+This section specifies the structure of the Access Unit header. The Access Unit header is byte aligned
+by default (see Section \ref{parseinfo} -- the pseudocode below contains a superfluous byte alignment for clarity).
+
+Parsing this header consists in reading the Access Unit parameters (parse, source and sequence parameters) and initialising 
 the default decoder parameters $\SeqStateName$ as a result of these. Access Unit parameters
 remain constant throughout a sequence, so in theory the AU header may be skipped after being read
 once.
+
+The AU header is parsed as follows:
 
 \begin{pseudo}{access\_unit\_header}{}
 \bsCODE{byte\_align()}
@@ -323,6 +370,13 @@ decoder resources (picture and data buffers; computational resources) sufficient
 to decode a sequence. Applicable values of profile and level are specified in Appendix
 \ref{profilelevel}.
 
+The profile determines the value of the boolean functions $using\_ac()$ and $using\_mc()$.
+If $using\_ac()==\false$ then arithmetic coding is not used for entropy coding of coefficients.
+If $ using\_mc()==\false$ then all pictures in the sequence shall be Intra pictures.
+
+Main profile has value 0, and $using\_ac()$ and $using\_mc()$ are both set to $\true$. This does
+not mean that an application under Main profile is required to use Inter pictures.
+
 \subsection{Access unit sequence parameters}
 \label{sequenceparameters}
 
@@ -337,7 +391,6 @@ parameter data shall remain constant throughout a Dirac sequence.
 \bsCODE{chroma\_format()}{\ref{chromaformat}}
 \bsCODE{video\_depth()}{\ref{videodepth}}
 \end{pseudo}
-
 
 \subsubsection{Setting format defaults}
 \label{setformatdefaults}
@@ -735,11 +788,20 @@ within the same Dirac sequence. The parsing process is:
 
 \begin{pseudo}{picture}{}
 \bsCODE{init\_decode\_params()}{\ref{initdecodeparams}}
+\bsCODE{byte\_align()}
 \bsCODE{picture\_header()}{\ref{pictureheader}}
-\bsIF{is\_inter()}{\ref{parseinfo}}
-    \bsCODE{picture\_prediction()}{\ref{pictureprediction}}
+\bsIF{is\_low\_delay()==\false}
+    \bsIF{is\_inter()}{\ref{parseinfo}}
+        \bsCODE{byte\_align()}
+        \bsCODE{picture\_prediction()}{\ref{pictureprediction}}
+    \bsEND
+    \bsCODE{byte\_align()}
+    \bsCODE{wavelet\_transform()}{\ref{wavelettransform}}
+\bsELSE
+    \bsCODE{byte\_align()}
+    \bsCODE{low\_delay\_picture()}{\ref{ldpicture}}
 \bsEND
-\bsCODE{wavelet\_transform()}{\ref{wavelettransform}}
+
 \end{pseudo}
 
 \subsubsection{Initialising decoding parameters}
@@ -759,16 +821,18 @@ State variables and default state variables are listed in the index.
 \subsubsection{Picture header}
 \label{pictureheader}
 
-The picture header is byte aligned and follows a Parse Info header with a picture parse code.
-The process for parsing the picture header is as follows:
+The picture header follows a Parse Info header with a picture parse code. It is byte aligned
+by default (see Section \ref{parseinfo} -- the pseudocode below contains a superfluous byte
+alignment for clarity). The process for parsing the picture header is as follows:
 
 \begin{pseudo}{picture\_header}{}
-\bsCODE{bytealign()}
 \bsCODE{\PictureNumber=read\_byte\_lit(4)}
 \bsIF{is\_inter()}{\ref{parseinfo}}
     \bsCODE{reference\_picture\_numbers()}
 \bsEND
-\bsCODE{retired\_picture\_list()}
+\bsIF{is\_low\_delay()==\true}
+    \bsCODE{low\_delay\_header()}{\ref{ldpictureheader}}
+\bsEND
 \end{pseudo}
 
 Picture numbers are not required to be unique within a sequence.
@@ -820,6 +884,7 @@ decoding and extracting motion vector fields for motion compensation, as follows
 
 \begin{pseudo}{picture\_prediction}{}
 \bsCODE{picture\_prediction\_parameters()}{\ref{picpredparams}}
+\bsCODE{byte\_align()}
 \bsCODE{block\_data()}{\ref{motiondec}}
 \end{pseudo}
 
@@ -832,7 +897,7 @@ The two elements of the picture prediction process correspond to two elements of
 the picture prediction parameters and the block motion data. Global motion parameters
 are used to construct a global motion vector field, and block motion data is used to provide
 motion vectors block-by-block. Both elements may not be present, depending upon flags
-signalled within the stream. Both elements are byte-aligned within the stream.
+signalled within the stream.
 
 \subsubsection{Picture prediction parameters}
 \label{picpredparams}
@@ -961,8 +1026,6 @@ $\MotionVectorPrecision$ shall lie in the range 0 (pixel-accurate) to 3 (1/8th-p
 
 \subsubsection{Global motion}
 \label{globalmotion}
-
-[Say something about global motion data structures?]
 
 Global motion parameters are encoded if a flag is set. Up to two sets are encoded,
 depending upon the number of references:
@@ -1113,7 +1176,7 @@ $\dfrac{\RefTwoWeight}{2^\RefsWeightPrecision}$
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Wavelet transform}
 \label{wavelettransform}
-The $wavelet\_tranform()$ function parses metadata determining the wavelet
+The $wavelet\_transform()$ function parses metadata determining the wavelet
 transform (including filters, wavelet depth, and code block structures)
 together with the transformed wavelet coefficients.
 
@@ -1129,6 +1192,7 @@ processing using the inverse wavelet transform (Section \ref{idwt}).
 
 \bsIF{\ZeroResidual = \false}
     \bsCODE{transform\_parameters()}{\ref{transformparameters}}
+    \bsCODE{byte\_align()}
     \bsCODE{\ComponentWidth = \LumaWidth}
     \bsCODE{\ComponentHeight = \LumaHeight}
     \bsCODE{\YTransform = transform\_data()}{\ref{transformdata}}
@@ -1150,12 +1214,14 @@ section specifies the decoding of transform parameters.
 \label{transformparameters}
 
 The wavelet transform parameters encode the filter to be used, the depth of filtering
-and how subbands are spatially partitioned:
+and  (if low-delay syntax is not being used) how subbands are spatially partitioned:
 
 \begin{pseudo}{transform\_parameters}{state}
 \bsCODE{wavelet\_filter()}{\ref{wltfilter}}
 \bsCODE{wavelet\_depth()}{\ref{wltdepth}}
-\bsCODE{spatial\_partition()}{\ref{spatialpartition}}
+\bsIF{is\_low\_delay()==\false}
+    \bsCODE{spatial\_partition()}{\ref{spatialpartition}}
+\bsEND
 \end{pseudo}
 
 \paragraph{Wavelet filters\newline}
@@ -1273,10 +1339,6 @@ according to Table \ref{codeblockmodes}.
 The maximum number of codeblocks vertically shall be less than or equal
 $subband\_height(level)//4$ and the number of codeblocks horizontally shall be less than
 or equal to $subband\_width(level)//4$ (subband dimensions as specified in Section {subbandwidthheight}).
-
-\begin{comment}
-[To do: Tim suggests having 0 as a terminator meaning: values are the same from here on]
-\end{comment}
 
 \begin{table}[!h]
 \centering

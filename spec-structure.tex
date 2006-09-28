@@ -11,11 +11,13 @@
 %\part{Dirac concepts}
 \input{dirac-concepts}
 \clearpage
-\part{Stream access}\input{stream-access}
+\part{Stream access}\label{streamaccess}\input{stream-access}
 \clearpage
-\part{Stream parsing}\input{parsing}
+\part{Stream parsing}\label{streamparsing}\input{parsing}
 \clearpage
-\part{Decoding operations}\input{decoding-ops}
+\part{Decoding operations}\label{decodingops}\input{decoding-ops}
+\clearpage
+\part{Low-delay syntax}\input{low-delay}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % -      Appendices etc       - %
@@ -52,6 +54,13 @@
 
 \clearpage
 \section{Profiles and levels}\label{profilelevel}
+Main=0, $is\_low\_delay()==false$, $using\_ac()==\true$, $using\_mc()==\true$
+Simple=1, $is\_low\_delay()==false$, $using\_ac()==\false$, $using\_mc()==\false$
+Link=2, $is\_low\_delay()==true$, $using\_ac()==\false$, $using\_mc()==\false$
+Wireless=3, $is\_low\_delay()==true$, $using\_ac()==\true$, $using\_mc()==\true$
+
+If we have Simple or Link then $using\_ac()$ is false and $using\_inter()$ is false.
+
 %\clearpage
 %\section{References}
 %\annotate{shas}{I hope we do not have any references - it would be nice

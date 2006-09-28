@@ -86,7 +86,7 @@ The decoding loop for block data iterates over all superblocks in raster order:
         \bsEND
     \bsEND
 \bsEND
-\bsCODE{byte\_align()}
+\bsCODE{flush\_arith()}{\ref{inputarith}}
 \end{pseudo}
 
 \begin{informative}
@@ -164,8 +164,8 @@ sets of 2x2 blocks within the superblock. In split mode 2, all sixteen sets of b
 The $sb\_split(y, x)$ decodes the superblock splitting mode at superblock coordinates ($x, y)$.
 
 \begin{pseudo}{sb\_split}{ypos,xpos}
-\bsCODE{\SBSplit[ypos][xpos]=read\_uinta(sb\_split\_contexts() ) }
-\bsCODE{\SBSplit[ypos][xpos] += split\_prediction(ypos, xpos)}{\ref{splitprediction}}
+\bsCODE{sb\_split\_residual=read\_uinta(sb\_split\_contexts() ) }
+\bsCODE{\SBSplit[ypos][xpos] = sp\_split\_residual+split\_prediction(ypos, xpos)}{\ref{splitprediction}}
 \bsCODE{\SBSplit[ypos][xpos] \%= 3}
 \end{pseudo}
 
@@ -187,8 +187,8 @@ of a set of $k\times k$ blocks:
 \label{blockdecoding}
 
 The $block\_decode(y, x)$ process parses block motion data for the block at coordinates $(x, y)$. If $\PictureUsingGlobal$ is set
-then a block will either be intra or will use global motion compensation according to the block mode, and for non-intra blocks a flag is decoded indicating whether this is so. If
-the block is not intra, and not globally motion compensated, then motion vectors are decoded.
+then non-intra blocks may use use global motion compensation according to a flag.
+If the block is not intra, and not globally motion compensated, then motion vectors are decoded.
 
 \begin{pseudo}{block\_decode}{y, x}
 \bsCODE{\BlockData[y][x][mode]=block\_mode(y, x)}{\ref{blockmode}}
@@ -218,11 +218,13 @@ The $block\_mode(ypos,xpos)$ process parses the block prediction mode for the bl
 bit of the block prediction mode is decoded separately.
 
 \begin{pseudo}{block\_mode}{ypos, xpos}
-\bsCODE{\BlockData[ypos][xpos][mode][1] = read\_boola(\PredModeOne)}
-\bsCODE{\BlockData[ypos][xpos][mode][1] \hat\quad= mode\_prediction(ypos, xpos, 1)}{\ref{modeprediction}}
+\bsCODE{pred\_mode\_residue = read\_boola(\PredModeOne)}
+\bsCODE{\BlockData[ypos][xpos][mode][1] =pred\_mode\_residue}
+\bsCODE{\BlockData[ypos][xpos][mode][1] \hat\quad =mode\_prediction(ypos, xpos, 1)}{\ref{modeprediction}}
 \bsIF{\NumRefs == 2}
-    \bsCODE{\BlockData[ypos][xpos][mode][2] = read\_boola(\PredModeOne)}
-    \bsCODE{\BlockData[ypos][xpos][mode][2] \hat\quad = mode\_prediction(ypos, xpos, 2)} {\ref{modeprediction}}
+    \bsCODE{pred\_mode\_residue = read\_boola(\PredModeOne)}
+    \bsCODE{\BlockData[ypos][xpos][mode][2] =pred\_mode\_residue}
+    \bsCODE{\BlockData[ypos][xpos][mode][2]\hat\quad= mode\_prediction(ypos, xpos, 2)} {\ref{modeprediction}}
 \bsEND
 \end{pseudo}
 
@@ -232,26 +234,9 @@ bit of the block prediction mode is decoded separately.
 The $block\_global(ypos,xpos)$ process parses the block global motion flag for the block at position $(xpos, ypos)$.
 
 \begin{pseudo}{block\_mode}{ypos, xpos}
-\bsCODE{\BlockData[ypos][xpos][global] = read\_boola(\BlockGlobal)}
+\bsCODE{block\_global\_residue = read\_boola(\BlockGlobal)}
+\bsCODE{\BlockData[ypos][xpos][global] = block\_global\_residue}
 \bsCODE{\BlockData[ypos][xpos][global] \hat\quad= block\_global\_prediction(ypos, xpos)}{\ref{blockglobalprediction}} 
-\end{pseudo}
-
-\paragraph{Block motion vectors \\}
-\label{blockvectors}
-
-The $block\_motion(ypos, xpos)$ process parses the block motion vectors for the block at position $(xpos, ypos)$.
-
-\begin{pseudo}{block\_motion}{ypos, xpos}
-\bsIF{\BlockData[ypos][xpos][mode][1] == \true}
-    \bsCODE{\BlockData[ypos][xpos][ref1].x = read\_sinta(ref1x\_contexts() ) }{\ref{mvcontexts}}
-    \bsCODE{\BlockData[ypos][xpos][ref1].y = read\_sinta(ref1y\_contexts() ) }{\ref{mvcontexts}}
-    \bsCODE{\BlockData[ypos][xpos][ref1] += mv\_prediction(ypos, xpos, 1)}
-\bsEND
-\bsIF{\BlockData[ypos][xpos][mode][2] == \true}
-    \bsCODE{\BlockData[ypos][xpos][ref2].x = read\_sinta(ref2x\_contexts() ) }{\ref{mvcontexts}}
-    \bsCODE{\BlockData[ypos][xpos][ref2].y = read\_sinta(ref2y\_contexts() ) }{\ref{mvcontexts}}
-    \bsCODE{\BlockData[ypos][xpos][ref2] += mv\_prediction(ypos, xpos, 2)}
-\bsEND
 \end{pseudo}
 
 \paragraph{DC values\\}
@@ -262,8 +247,29 @@ $(xpos, ypos)$.
 
 \begin{pseudo}{block\_motion}{ypos, xpos}
 \bsFOREACH{c}{Y,U,V}
-    \bsCODE{\BlockData[ypos][xpos][dc][c] = read\_sinta(dc\_contexts(c)) }{\ref{dcvaluecontexts}}
-    \bsCODE{\BlockData[ypos][xpos][dc][c] += dc\_prediction(ypos, xpos, c)}{\ref{dcprediction}}
+    \bsCODE{dc\_residual = read\_sinta(dc\_contexts(c)) }{\ref{dcvaluecontexts}}
+    \bsCODE{\BlockData[ypos][xpos][dc][c] = dc\_residual}
+    \bsCODE{\BlockData[ypos][xpos][dc][c] +=dc\_prediction(ypos, xpos, c)}{\ref{dcprediction}}
+\bsEND
+\end{pseudo}
+
+\paragraph{Block motion vectors \\}
+\label{blockvectors}
+
+The $block\_motion(ypos, xpos)$ process parses the block motion vectors for the block at position $(xpos, ypos)$.
+
+\begin{pseudo}{block\_motion}{ypos, xpos}
+\bsIF{\BlockData[ypos][xpos][mode][1] == \true}
+    \bsCODE{mv\_residual.x = read\_sinta(ref1x\_contexts() ) }{\ref{mvcontexts}}
+    \bsCODE{mv\_residual.y = read\_sinta(ref1y\_contexts() ) }{\ref{mvcontexts}}
+    \bsCODE{\BlockData[ypos][xpos][ref1] = mv\_residual}
+    \bsCODE{\BlockData[ypos][xpos][ref1] +=mv\_prediction(ypos, xpos, 1)}
+\bsEND
+\bsIF{\BlockData[ypos][xpos][mode][2] == \true}
+    \bsCODE{mv\_residual.x = read\_sinta(ref2x\_contexts() ) }{\ref{mvcontexts}}
+    \bsCODE{mv\_residual.y = read\_sinta(ref2y\_contexts() ) }{\ref{mvcontexts}}
+    \bsCODE{\BlockData[ypos][xpos][ref2] = mv\_residual}
+    \bsCODE{\BlockData[ypos][xpos][ref2] += mv\_prediction(ypos, xpos, 2)}
 \bsEND
 \end{pseudo}
 
@@ -538,7 +544,6 @@ contribute to the prediction. Define a set $values=\emptyset$. The prediction is
 unbiased mean of available values:
 
 \begin{pseudo*}
-\bsCODE{\hdots}
 \bsCODE{pred=(0, 0)}
 \bsIF{\BlockData[ypos][xpos-1][mode]==\Intra}
     \bsCODE{values = values\cup\{\BlockData[ypos][xpos-1][dc][comp] \} }

@@ -3,18 +3,532 @@
 % - Dirac video coding concepts                - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{A general introduction to video compression for beginners}\input{begin-videocoding}
-\subsection{Outline of the compressino methods used in Dirac}\input{begin-compmethods}
-\subsection{Prediction using motion compensation}\input{begin-mc}
-\subsubsection{Types of picture}\input{begin-pictypes}
-\subsubsection{Blocks}\input{begin-mc-blocks}
-\subsubsection{Global motion parameters}\input{begin-mc-global}
-\subsubsection{Accuracy}\input{begin-mc-accuracy}
-\subsubsection{Intra frames}\input{begin-mc-intra}
-\subsection{Wavelet tranforms}\input{begin-dwt}
-\subsubsection{Wavelet analysis}\input{begin-dwt-fwd}
-\subsubsection{Parent-child relationships}\input{begin-dwt-parentchild}
-\subsection{Entropy coding}\input{begin-ec}
-\subsubsection{Entropy coding of wavelets}\input{begin-ec-dwt}
-\subsubsection{Entropy coding of motion vectors}\input{begin-ec-mc}
+\begin{comment}
+\subsection{A general introduction to video compression for beginners}
+This is a simple guide to video coding. You can miss this subsection out
+if you already know the basics.
+
+Video signals are made up of a succession of still pictures, displayed
+one after the other. Each picture is made up from a series of elementary
+units called pixels, arranged in a raster of lines.
+
+The raw total capacity required for the transmission of moving pictures
+is the product of the number of pixels per picture, pictures per second,
+colours in use and the quantising accuracy adopted. In nearly every
+field of application, the resultant raw bandwidth required exceeds that
+available by more than an order of magnitude.  If we keep the same size
+pictures, then the only variable we have with the simple system is to
+change the quantisation accuracy and lowering the accuracy rapidly leads
+to poor quality pictures.
+
+The solution which has been used from before 1970 is to make a
+prediction of the value of each pixel using information that should be
+available in the decoder. In general, if the prediction is good, then
+the difference between reality and the prediction is small. The entropy
+of the difference signal is low, and so we need less capacity to deliver
+it. One simple solution was to recognise that the quantisation accuracy
+required for the difference signal could be coarser than that required
+for the original picture, and so fewer bits are needed to deliver the
+difference signal than for the original.
+
+This has formed the basis for many of the early video compression
+systems.  The elements that have changed over the years have been
+
+\begin{itemize}
+    \item the algorithms used for making the prediction, and
+    \item the formats used for delivering the difference signal
+    efficiently to the receiver.
+\end{itemize}
+
+Many of the changes have been enabled by the availability of better
+electronic circuitry. Real-time operation puts an upper limit on the
+time available for processing.  We can only use more sophisticated
+algorithms if we can carry out the calculations in the time available.
+Fortunately, the improvement in the speed of hardware has almost matched
+the development of algorithms.
+
+Early algorithms made use of simple predictions predicting one pixel
+from others nearby in the picture, or (spatial prediction in the
+jargon).
+
+Predictions were helped when field-stores became affordable (and smaller
+than a small garden shed) and it became possible to use information from
+the previous field (temporal prediction in the jargon). This process
+works well when the picture is still, but is less effective when the
+pictures depict a lot of movement.
+
+This led to a whole raft of developments, seeking to identify motion in
+the picture. Knowing how parts of the scene are moving (motion
+estimation in the jargon) allowed much more accurate prediction than had
+been possible hitherto. These developments led eventually to mature
+products such as the MPEG 2 compression system.
+
+Having created a good prediction, it is inevitable that it will not be
+perfect. The error signal is the signal we wish to convey to the
+decoder.  In any system, the raw error signal is at least as
+bandwidth-hungry as the original. In most cases it is slightly more
+hungry.
+
+However, the error signal has some physical properties which help us to
+reduce its bandwidth. In information theory terms, the error signal is
+rarely totally random, real pictures have properties which distinguish
+them from random noise.  We can therefore use some of these properties
+to reduce the bit-rate further.
+
+The spectrum of the error signal is usually heavily biased towards the
+low frequency end. This is a direct consequence of the prediction
+process usually being reasonably good. It also turns out that the eye is
+less sensitive to small inaccuracies in the high frequency components of
+the error signal.
+
+Taken together, these observations provide the potential for coarser
+quantisation or omission of some of the components of the error signal.
+
+There are several methods available if we wish to translate the temporal
+signal we started with into the frequency domain. Although many coding
+systems use Discrete Cosine Transforms, we preferred to use the Discrete
+Wavelet Transform. This approach divides the signal into higher and
+lower frequency sub-bands. By quantising the different sub bands
+appropriately, we achieve significant reduction in bandwidth.
+
+Finally, when all the information for this system is packed together,
+there is still a structure it is not statistically random. Information
+theory says that we can use entropy coding to further increase the
+randomness, and thereby reduce the bandwidth.  One of the more powerful
+of these is arithmetic coding the system adopted in Dirac.  So we have
+now outlined some of the key elements of a modern coder.
+
+
+Fig XX. An outline of a typical modern video coder.
+
+It is worth a quick look at the simple representation of the encoder in
+Fig. XX as it leads us to understand the receiver topology.
+
+The input signal $V_{in}$ is compared with the prediction $P$ to produce
+an error signal $e$.  This is then compressed and passed (with the
+various elements of compression metadata) to the arithmetic coder for
+transmission.
+
+The prediction is created from a local version of the signal for a very
+good reason.  This is the signal that the decoder is able to recreate
+with the information available to it. The signal delivered to the
+receiver  $e_{TQ}$ allows the receiver to recreate a close copy of the
+prediction error $e$. If we compare the two signals,
+
+\begin{align*}
+  V_{in} &= P + e \\
+  V_{local}	&= P + e'
+\end{align*}
+
+As the difference between the two error signals $e$ and $e'$ is the
+distortion introduced by the compression algorithm, the local signal is
+a close approximation to the input signal. Looking carefully at Fig. XX,
+we can see that we can create a decoder using a subset of the encoder.
+This is shown in Fig. XXX.
+
+It is quite clear that the main elements of the receiver are duplicated
+in the encoder.  The encoder has to maintain a local decoder within it,
+in part so that the result of the compression can be monitored at the
+time of compression, but mainly because compressed pictures must be used
+as reference frames for subsequent motion compensation else the encoder
+and the decoder will not remain in synchronism.
+
+The motion vectors are delivered from the encoder as metadata. This
+avoids the need to analyse motion vectors in the receiver, and allows
+the encoder considerable flexibility in the choice of appropriate motion
+vectors.  We will now move on to consider the application of this
+technology to Dirac.
+
+
+Fig. YY An outline of the decoder
+\end{comment}
+
+\subsection{Outline of the compression methods used in Dirac}
+The Dirac video codec uses four main techniques to compress the signal:
+
+\begin{itemize}
+    \item Prediction using motion compensation to exploit temporal redundancy
+    \item Wavelet transformation to exploit spatial redundancy
+    \item Quantisation of coefficients to form an approximate description of the picture data
+    \item Entropy coding of the resulting quantised values to maximise efficiency
+\end{itemize}
+
+
+Initially, similarities between frames (temporal redundancy) are
+exploited to predict one frame from another. The process is aided by
+motion vectors - metadata detailing where a particular pixel in the
+predicted frame might have been in the reference frame. It is a bit
+wasteful to assign a motion vector to each pixel, so pixels are
+aggregated in blocks. In Dirac, blocks are overlapping. This reduces
+some of the artefacts found at the boundaries of blocks in some earlier
+systems. The motion is calculated to sub pixel accuracy.
+
+Once the prediction has been made, it is compared with the actual image
+to be transmitted.  The resulting difference (error) is potentially
+greater in range than the original signal. To reduce it the difference
+signal is then transformed using the discrete wavelet transform. This
+process, for the majority of video sequences, produces coefficients
+which are largely zero or near zero, and most of the non-zero
+coefficients are concentrated near at the lower frequency end of the
+range. The properties of the eye allow us to coarsely quantise the high
+frequency coefficients.
+
+Both the motion vectors and the quantised coefficients are then further
+compressed using arithmetic coding.
+
+\subsection{Prediction using motion compensation}
+
+The object of motion compensation is to try to predict the picture in
+one image from others in the sequence. In television, the picture
+usually contains moving objects, so a key part of the process is to
+identify the moving objects and their the details of the motion.
+
+In Dirac, the motion vector is merely an indication of which pixel in
+the reference picture can be used as a good prediction for a particular
+pixel in the current picture.
+
+\subsubsection{Types of picture}
+
+Three types of picture are defined.
+
+Intra pictures are coded without reference to other pictures in the
+sequence. These pictures form a useful point to start the decoding
+process. They also have uses if low-delay coding is required - a
+sequence of Intra pictures has mimimum delay, at the expense of
+potentially greater bandwidth requirements. There is a third use for
+Intra pictures: when the sequence is highly dynamic, prediction using
+motion compensation may be impractical. In such instances, a coder may
+choose to default to a sequence of Intra frames.
+
+Inter pictures are coded with reference to other pictures in the
+sequence, and are split into two types:
+\begin{itemize}
+	\item references for other pictures
+	\item not references for other pictures
+\end{itemize}
+
+Within the receiver, we have to arrange that all the references for
+pictures are available at the right time. This means that pictures are
+often delivered in a different sequence from the display sequence, to
+ensure that the buffer memory in the receiver has the necessary
+information to decode pictures when it is needed.
+
+\subsubsection{Blocks}
+
+In theory, we could define a motion vector for every pixel in the image.
+This would be extremely data intensive and of no practical value.
+
+Instead, pixels are grouped into small regions or blocks, with a single
+motion vector assigned to each block. Ideally these blocks are large -
+thus minimising the amount of information we have to transmit. However,
+the larger the block, the greater the chance that we have more than one
+object or region, and so a single motion vector might be inappropriate.
+
+Although there are several standard block sizes identified within the
+specification, you can choose your own, and that could be as large as
+the original picture. This would not be unreasonable for a picture which
+is a static scene, with the camera being panned across it - although
+there are other ways of identifying this in Dirac.
+
+One of the hard tasks the coder has is to identify which is the optimum
+size of block, and the best compromise for the motion vector in the
+block.
+
+When we have created the prediction, we then calculate the error. The
+error is often greatest at the block boundaries, as this is where the
+motion vector is often least accurate.
+
+To overcome this, Dirac overlaps blocks. Each pixel in the overlap
+regions uses a weighted prediction, incorporating information from all
+the blocks it may lie in. This smooths the error signal, and making the
+following wavelet transformation much more effective.
+
+\subsubsection{Global motion parameters}
+
+Although we said that it is of no practical value to specify a motion
+vector for each pixel, there are exceptions.
+
+Some types of motion are more likely to be features of the camera than
+the scene. For example, a camera may pan, tilt, rotate, zoom, sheer, or
+change of perspective through, say tracking.
+
+If the coder can identify such motion, then Dirac permits the motion to
+be signalled by a small set of parameters, which in effect assign a
+motion vector to each pixel.
+
+\subsubsection{Accuracy}
+Often, we find that the motion vectors required to match a pixel in a
+reference frame to the predicted frame are not integer values.
+
+In Dirac, we can specify motion vectors to 1/8 pixel accuracy.
+
+This means that the coder and decoder have to carry out a process that
+is effectively an upconversion of the signal.
+
+\subsubsection{Intra frames}
+The Intra fields are not predicted using motion compensation.
+
+This leaves us with a potential problem. The wavelet transform process
+assumes that we have a signal which tends to a zero average.
+
+The Intra field is processed to give it a zero mean by removing the DC
+component (average value) of each block from the signal. The DC
+components are signalled separately. In effect the DC components are a
+local spatial prediction, rather than a temporal prediction as applied
+in motion compensation.
+
+\subsection{Wavelet tranforms}
+The consequence of processing the Intra frames by removing the DC
+values, and the Inter frames by removing the predicted values gives us a
+difference signal. This difference signal is hopefully largely zero, but
+can have some large peaks, of either polarity. The signal usually has a
+large amount of low-frequency energy, but with occasional elements of
+high frequency as the prediction process gets it wrong.
+
+Conventional theory says that we can manipulate this signal in the
+frequency domain to reduce the amount of information we need to
+transmit. The properties of the eye are such that many of the higher
+frequency components are less sensitive to coarse quantisation.
+
+We can use wavelet transforms in Dirac. The wavelet transform
+decorrelates the data in a roughly frequency-sensitive way, and
+preserves the fine details of images better than the ubiquitous Discrete
+Cosine Transform.
+
+\subsubsection{Wavelet analysis}
+
+Put simply, wavelet analysis splits a signal into a low and a high
+frequency component, and then subsamples the two partial streams by a
+factor of two.
+
+The two filters used to split the signal are called the analysis
+filters. It is not possible to use just any pair of half-band filters to
+do this. There is an extensive mathematical theory of wavelet filter
+banks. Appropriately chosen filters allow us to undo the aliasing
+introduced by the critical sampling in the down conversion process and
+perfectly reconstruct the signal.
+
+Iterative use of a wavelet process allows us to decompose the
+low-frequency component into successively lower components.
+
+For pictures, we apply wavelet filters in both the horizontal and
+vertical directions. This results in four so-called subbands, termed
+Low-Low (LL), Low-High (LH) High-Low (HL), and High-High (HH). The LL
+band can be iteratively decomposed to create a wavelet transformation of
+many levels.
+
+
+\subsubsection{Parent-child relationships}
+In wavelet analysis, each subband represents a filtered and subsampled
+version of the picture. Because all the subbands are derived from a
+single source image, there is likely to be some form of relationship
+between the images in the different subbands.
+
+The coefficients of each subband relate to specific areas in the image.
+We find that there is often a correlation between these specific areas
+in the different subbands.
+
+The subsampling structure means that a coefficient in the lowest level
+corresponds to  2 by 2 block of coefficients in the next level, and so
+on up the levels. In the jargon, the low-level component is referred to
+as the parent and the higher-level component is referred to as the
+child.
+
+When coding picture features (edges on objects especially), significant
+coefficients are found distributed across subbands, in position related
+by the parent-child structure.
+
+A coefficient of a child is more likely to be significant if its parent
+is also significant. Children with zero or small parents seem to have
+different statistics from children with large parents or ancestors.
+
+These features allow us to entropy code the wavelet coefficients after
+they have been quantised.
+
+\subsection{Entropy coding}
+
+Transmission of the raw motion vectors and wavelet coefficients is
+inefficient. There are still many redundancies in the data, and the form
+of the data is itself suboptimum.
+
+Coding of the motion vectors is especially important for codecs with a
+high level of motion accuracy (quarter or eighth pixel say). Motion
+vector coding and decoding is quite complicated, since significant gains
+in efficiency can be made by choosing a good prediction and entropy
+coding structure.
+
+The processes of removing the redundancies is probably one of the most
+complicated part of the codec. Similar processes are used for coding the
+motion vectors and the wavelet coefficients. In various ways they use a
+combination of
+
+\begin{itemize}
+	\item prediction,
+	\item binarisation,
+	\item context modelling and
+	\item adaptive arithmetic coding.
+\end{itemize}
+
+\subsubsection{Entropy coding of wavelets}
+
+The entropy coding used by Dirac in wavelet subband coefficient coding
+is based on three stages: binarisation, context modelling and adaptive
+arithmetic coding.
+
+Figure: Entropy coding block diagram
+
+The purpose of the first stage is to provide a bitstream with easily
+analysable statistics that can be encoded using arithmetic coding which
+can adapt to those statistics, reflecting any local statistical
+features.
+
+Binarisation is the process of transforming the multi-valued coefficient
+symbols into bits. The resulting bitstream can then be arithmetic coded.
+
+Transform coefficients tend to have a roughly Laplacian distribution,
+which decays exponentially with magnitude. This suits so-called unary
+binarization. Unary codes are simple variable-length codes in which
+every non-negative number $N$ is mapped to $N$ zeros followed by a 1:
+
+
+\begin{verbatim}
+U(0)    =   1
+U(1)    =   0   1
+U(2)    =   0   0   1
+U(3)    =   0   0   0   1
+U(4)    =   0   0   0   0   1
+U(5)    =   0   0   0   0   0   1
+U(6)    =   0   0   0   0   0   0   1
+Bins:       1   2   3   4   5   6   7
+\end{verbatim}
+
+For Laplacian distributed values, the probability of $N$ occurring is
+$2-(|N|+1)$, so the probability of a zero or a 1 occurring in any unary
+bin is constant. So for an ideal only one context would be needed for
+all the bins, leading to a very compact and reliable description of the
+statistics. In practice, the coefficients do deviate from the Laplacian
+ideal and so the lower bins are modelled separately and the larger bins
+lumped into one context.
+
+The process is best explained by example. Suppose one wished to encode
+the sequence:
+
+\begin{verbatim}
+-3 0 1 0 -1
+\end{verbatim}
+
+When binarized, the sequence to be encoded is:
+
+\begin{verbatim}
+0 0 0 1 | 0 | 1 | 0 1 | 1 | 1 | 0 1 | 0
+\end{verbatim}
+
+The first 4 bits encode the magnitude, 3. The first bit is encoded using
+the statistics for Bin1, the second using those for Bin 2 and so on.
+When a 1 is detected, the magnitude is decoded and a sign bit is
+expected. This is encoded using the sign context statistics; here it is
+0 to signify a negative sign. The next bit must be a magnitude bit and
+is encoded using the Bin 1 contexts; since it is 1 the value is 0 and
+there is no need for a subsequent sign bit. And so on.
+
+The context modelling in Dirac is based on the principle that whether a
+coefficient is small (or zero, in particular) or not is well-predicted
+by its neighbours and its parents. Therefore the codec conditions the
+probabilities used by the arithmetic coder for coding bins 1 and 2 on
+the size of the neighbouring coefficients and the parent coefficient.
+
+The reason for this approach is that, whereas the wavelet transform
+largely removes correlation between a coefficient and its neighbours,
+they may not be statistically independent even if they are uncorrelated.
+The main reason for this is that small and especially zero coefficients
+in wavelet subbands tend to clump together, located at points
+corresponding to smooth areas in the image, and as discussed elsewhere,
+are grouped together across subbands in the parent-child relationship.
+
+Conceptually, an arithmetic coder can be thought of a progressive way of
+producing variable-length codes for entire sequences of symbols based on
+the probabilities of their constituent symbols.
+
+For example, if we know the probability of 0 and 1 in a binary sequence,
+we also know the probability of the sequence itself occurring. So if
+
+$P(0)=0.2, $
+
+$P(1)=0.8$
+
+then
+
+$P(11101111111011110101)=(0.2)*3*(0.8)*17=1.8 * 10^{-4}$ (assuming
+independent occurrences).
+
+Information theory then says that optimal entropy coding of this
+sequence requires $log_2 (\frac{1}{p})=12.4$ bits. Arithmetic coding
+produces a code word very close to this optimal length, and
+implementations can do so progressively, outputting bits when possible
+as more arrive.
+
+All arithmetic coding requires are estimates of the probabilities of
+symbols as they occur, and this is where context modelling fits in.
+Since arithmetic coding can, in effect, assign a fractional number of
+bits to a symbol, it is very efficient for coding symbols with
+probabilities very close to 1, without the additional complication of
+run-length coding. The aim of context modelling within Dirac is to use
+information about the symbol stream to be encoded to produce accurate
+probabilities as close to 1 as possible.
+
+Dirac computes these estimates for each context simply by counting their
+occurrences. In order for the decoder to be in the same state as the
+encoder, these statistics cannot be updated until after a binary symbol
+has been encoded. This means that the contexts must be initialised with
+a count for both 0 and 1, which is used for encoding the first symbol in
+that context.
+
+An additional source of redundancy lies in the local nature of the
+statistics. If the contexts are not refreshed periodically then later
+data has less influence in shaping the statistics than earlier data,
+resulting in bias, and local statistics are not exploited. Dirac adopts
+a simple way of refreshing the contexts by halving the the counts of 0
+and 1 for that context at regular intervals. The effect is to maintain
+the probabilities to a reasonable level of accuracy, but to keep the
+influence of all coefficients roughly constant.
+
+\subsubsection{Entropy coding of motion vectors}
+
+The basic format of the coding the motion vectors is similar to the
+coding of wavelet data: it consists of prediction, followed by
+binarisation, context modelling and adaptive arithmetic coding.
+
+
+Figure: motion vector entropy coding architecture
+
+All the motion vector data are predicted from previously encoded data
+from nearest neighbours.
+
 \subsection{Bytestream}\input{begin-bs}
+
+The bytestream of Dirac is the complete, compressed video stream, ready
+for file storage or transmission.
+
+The features are
+
+\begin{itemize}
+    \item A parse structure which gives ready access to the video, even
+    in mid file. This identifies all the static features of the stream.
+    Intelligent systems can use the redundancy in this structure to
+    recover from errors in the stream.
+
+    \item Blocks of data comprising the arithmetically-coded motion
+    vector information
+
+    \item Blocks of data comprising the arithmetically-coded wavelet
+    coefficients
+\end{itemize}
+
+Because of the arithmetic coding, it is difficult to provide a simple
+specification which gives meaningful details of the bytestream without
+some reference to either the early coding processes, or the later
+decoding process. The simple description of the bytestream would only
+refer to compressed motion vectors, and compressed wavelet coefficients.
+We have therefore had to provide extra information to explain how to
+unpack this data, and how to use the resulting structured data.
+
