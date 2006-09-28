@@ -1,0 +1,203 @@
+\begin{comment}
+\section{Dirac Pro profiles}
+
+Dirac Pro consists of a set of profiles of Dirac for professional, high-quality, high-bitrate use, 
+specifically in television and digital cinema production. Dirac Pro applications cover:
+\begin{itemize}
+\item Editing and post production
+\item Archiving
+\item Low-delay links and digital distribution
+\item Wireless cameras 
+\end{itemize}
+
+
+The first two application areas do not require a modified syntax, and are defined in Section \ref{editingarchive}.
+
+ The remaining areas require a different
+syntax suitable for low delay. In particular, Dirac Pro may be used as a serial-link replacement, and in
+that case, parse info, access unit and picture headers may be omitted from the stream. In such a 
+configuration the system may not be used in a networked fashion but in point-to-point links
+where encoders and decoders are configured pair-wise to use the same video format and other
+parameters. 
+
+The syntax in these cases is defined in Section \ref{lowdelay}. Although different from the baseline
+Dirac syntax defined in preceding sections, heavy use is made of the individual syntax elements
+and decoder functions specified for the baseline profile. In particular the stream access functions
+defined in Part \ref{streamaccess} are used for low-level access to the stream.
+
+\section{Editing and archive profiles}
+\label{editingarchive}
+
+\subsection{Dirac Edit}
+\label{editing}
+
+\subsection{Dirac Archive}
+\label{archive}
+
+\section{Low-delay profiles}
+\label{lowdelay}
+
+The primary feature of the low-delay profile stream syntax is to group both wavelet coefficients and 
+motion vectors into small chunks so that pictures may be decoded progressively. Both the wavelet
+transform and motion compensation are specified exactly (i.e. in terms of operations over
+the whole picture) as for the baseline profile, and the decoding process is equivalent to obtaining
+all motion vectors and all wavelet coefficients for a picture and proceeding as specified in Sections
+\ref{idwt} and \ref{mc}. 
+
+However since all the data relating to small areas of the picture is presented together, both the wavelet
+transform and motion compensation may be performed bit-by-bit as data arrives. Note that the data is
+chunked into slices in the {\em compressed} domain, which may mean that a number of subsequent slices
+may also need to be parsed in order to correctly decode the current slice -- due to long wavelet filters
+and block overlaps.
+
+
+\subsection{Dirac Link}
+\label{diraclink}
+
+\subsection{Dirac Wireless}
+\label{diraclink}
+
+\end{comment}
+
+\section{Low-delay stream parsing}
+\label{lowdelayparsing}
+
+This section specifies the stream syntax to be used for low-delay profiles (Link profile and Wireless profile).
+The overall format of the low-delay Dirac stream is as specified in Section \ref{streamparsing}. This section
+specifies the picture data elements which are used in low-delay operation.
+
+In low-delay operation, the Dirac syntax partitions the wavelet coefficients into a number of sets,
+from all subbands, corresponding to a localised area of the picture. Note that it is the coefficients that are divided,
+not the picture. These sets are called slices. A single quantiser, weighted by a quantisation matrix, is used for each slice, 
+a slice is  of fixed size within a picture and is of fixed length in bytes. Each slice interleaves all three components, and hence
+the transform parameters for the components are placed in the picture header.
+
+Not allowing slice bit allocations to vary within a picture does impact on
+compression efficiency, but on the other hand vastly simplifies both encoder and decoder hardware. Furthermore, by
+not allowing load-balancing within a buffer, it assists a chain of multiple encoders and decoders using the same
+slice parameters in producing identical coding decisions and hence no cascading loss. These are all factors of great 
+significance in a professional environment.
+
+Although this specification is not concerned with network adaption and carriage over data interfaces, low-delay
+applications may have specific requirements for headerless and synchronous operation which may imply that
+data carried ``on the wire" should differ from a straight-forward encapsulation of the stream. How this should
+be done in particular cases is described in Section \ref{apps}.
+
+\subsection{Picture header elements}
+\label{ldpictureheader}
+
+This section specifies the operation of the $low\_delay\_header()$ process for parsing low-delay elements
+of the picture header. The low delay elements consist of the wavelet transform parameters and the picture
+prediction parameters (both placed in the picture header), the slice dimensions 
+(width, height, byte allocation) and the quantisation matrix parameters:
+
+\begin{pseudo}{low\_delay\_header}{}
+    \bsCODE{transform\_parameters()}{\ref{transformparameters}}
+    \bsCODE{picture\_prediction\_parameters()}{\ref{picpredparams}}
+    \bsCODE{slice\_parameters()}{\ref{slicedims}}
+    \bsCODE{quant\_matrix()}{\ref{quantmatrix}}
+\end{pseudo}
+
+\subsubsection{Slice dimensions}
+\label{slicedims}
+
+This section specifies the $slice\_dimensions()$ process for parsing the width, height and byte allocation of 
+the slices. Default slice dimensions are defined by the video format parameters in the AU header, as per Appendix 
+\ref{videoformatdefaults}. They may be overridden as follows:
+
+\begin{pseudo}{slice\_dimensions}{}
+\bsITEM{non\_default\_slice\_dims}{bool}
+\bsIF{non\_default\_slice\_dims==\true}
+    \bsITEM{width\_exp}{uint}
+    \bsCODE{\SliceWidth=2^{width\_exp}}
+    \bsITEM{height\_exp}{uint}
+    \bsCODE{\SliceHeight=2^{height\_exp}}
+\bsEND
+\bsITEM{non\_default\_slice\_size}{bool}
+\bsIF{non\_default\_slice\_size==\true}
+    \bsITEM{\SliceBytes}{uint}
+\bsEND
+\end{pseudo}
+
+If $is\_low\_delay==\true$, the following constraints are placed upon the slice dimensions, the wavelet depth
+ and motion compensation block sizes:
+
+\begin{itemize}
+\item $\SliceWidth$ and $\SliceHeight$ shall both be divisible by $2^\WaveletDepth$
+\item If $is\_inter()==\true$, $\SliceWidth$ shall be divisible by $4*\LumaXBsep$ and $\SliceHeight$ shall be divisible by $4*\LumaYBsep$
+\item Chroma and luma subbands must contain corresponding levels of padding, i.e. for all orientations $orient$ and levels $l$,
+\begin{eqnarray*}
+\width(\YTransform[orient][l]) & = & chroma\_h\_factor*\width(\UTransform[orient][l]) \\
+& = & chroma\_h\_factor*\width(\VTransform[orient][l]) \\
+\height(\YTransform[orient][l]) & = & chroma\_h\_factor*\height(\UTransform[orient][l]) \\
+& = & chroma\_h\_factor*\height(\VTransform[orient][l]) \\
+\end{eqnarray*}
+\end{itemize}
+
+These restrictions ensure that both wavelet coefficients and (if present) motion data superblocks may be partitioned
+correctly by the slices. For example, the third condition restricts the transform depth to be at most 3 on $720\times 576$ 4:2:2 video
+since a depth of 4 would lead to padding for chroma coefficients but not for luma, as $2^4=16$ divides 720 but not 360.
+
+\subsubsection{Quantisation matrices}
+\label{quantmatrix}
+
+This section specifies the operation of the $quant\_matrix()$ process for setting the $\QuantMatrix$ parameters.
+
+\begin{pseudo}{quant\_matrix}{}
+\bsITEM{quant\_matrix\_index}{uint}
+\bsIF{quant\_matrix\_index==0}
+    \bsITEM{\QuantMatrix[0][\LL]}{uint}
+    \bsFOR{level=1}{\WaveletDepth}
+        \bsITEM{\QuantMatrix[level][\HL]}{uint}
+        \bsITEM{\QuantMatrix[level][\LH]}{uint}
+        \bsITEM{\QuantMatrix[level][\HH]}{uint}
+    \bsEND
+\bsELSE
+    \bsCODE{set\_quant\_matrix(quant\_matrix\_index)}
+\bsEND
+\end{pseudo}
+
+Default quantisation matrices are defined only if $\WaveletDepth$ is 4. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom).
+The function $set\_quant\_matrix()$ sets the quantisation matrix based on the wavelet filter and the value of $quant\_matrix\_index$, as per Table
+\ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an unweighted matrix, whose values merely compensate for the differential power gain of the different subband filters. Higher values imply greater degrees of perceptual weighting.
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|l|}
+\hline
+\WaveletIndex & quant\_matrix\_indices & {\bf Matrix values} \\
+\hline
+\end{tabular}
+\caption{Preset quantisation matrices}\label{presetqmatrices}
+\end{table}
+  
+\subsection{Low-delay picture parsing}
+\label{ldpicture}
+
+This section specifies the $low\_delay\_picture()$ process for parsing pictures in the low-delay syntax. Each picture
+is merely a concatenation of slices. The number of slices in a picture is determined from the padded picture dimensions
+-- the padding being that required for the application of the wavelet transform to depth $\WaveletDepth$.
+
+\begin{pseudo}{low\_delay\_picture}{}
+\bsCODE{initialise\_wavelet\_data()}{\ref{wltinit}}
+\bsCODE{ph=2^{\TransformDepth}*\left\lceil\frac{\LumaHeight}{2^{\TransformDepth}}\right\rceil}
+\bsCODE{pw= 2^{\TransformDepth}*\left\lceil\frac{\LumaWidth}{2^{\TransformDepth}}\right\rceil}
+\bsCODE{\SlicesX=ph//\SliceWidth}
+\bsCODE{\SlicesY=ph//\SliceHeight}
+\bsCODE{num\_slices=\SlicesX*\SlicesY}
+\bsFOR{n=0}{num\_slices-1}
+    \bsCODE{slice(n)}
+\bsEND
+\end{pseudo}
+
+Note that the padded dimensions are the padded luma dimensions. Since these are divisible by $2^\TransformDepth$ they
+are {\em a fortiori} divisible by the slice dimensions by the constraints of Section \ref{slicedims}. 
+
+[Want to change the way the wavelet stuff is done in wlt-dec.tex so that I pass in which component it is, since we're doing all
+components here. Move wavelet data initialisation into bs-spec.tex. Interface to wltdecoding will be wlt\_decode(banddata, component)]
+
+\begin{informative*}
+\subsection{Data adaption and application requirements}
+
+
+\end{informative*}
