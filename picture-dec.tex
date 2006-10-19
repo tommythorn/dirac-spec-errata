@@ -70,7 +70,6 @@ $n$ in a Dirac sequence consists of:
 \bsCODE{seek\_picture\_parse(n)}{\ref{seeking}}
 \bsCODE{picture()}{\ref{picture}}
 \bsCODE{init\_picture\_data()}{\ref{picturedecodinginit}}
-\bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
 \bsIF{\ZeroResidual==\false}
     \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
     \bsCODE{\CurrentPicture[U]=idwt(\UTransform)}{\ref{idwt}}
@@ -86,6 +85,7 @@ $n$ in a Dirac sequence consists of:
     \bsCODE{motion\_compensate(ref1[V], ref2[V],  \CurrentPicture[V], c)}{\ref{motioncompensate}}
 \bsEND
 \bsCODE{\clip\_picture()}{\ref{pictureclip}}
+\bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
 \bsIF{is\_ref()}
     \bsCODE{ref\_buffer\_add()}{\ref{refbuffer}}
 \bsEND
