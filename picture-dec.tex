@@ -9,8 +9,8 @@ This section specifies the process for decoding a picture from the Dirac stream.
 correctly parsing the Dirac bitstream, and decoding operations are dependent upon the parsing operations
 set out in Sections \ref{streamparsing}, \ref{motiondec} and \ref{transformdec}.
 
-This section does not specify how pictures are encoded, nor how pictures are presented for display, 
-which are outside the scope of this specification.
+This section does not specify how pictures are encoded, nor how pictures are reordered and presented for display, 
+which is described in Section \ref{profilelevel}. 
 
 \subsection{Introduction}
 
@@ -89,6 +89,7 @@ $n$ in a Dirac sequence consists of:
 \bsIF{is\_ref()}
     \bsCODE{ref\_buffer\_add()}{\ref{refbuffer}}
 \bsEND
+\bsCODE{output\_current\_picture()}{\ref{picoutput}}
 \end{pseudo}
 
 When randomly accessing a sequence, a picture may not be decodeable because reference pictures
@@ -167,3 +168,9 @@ used as a reference:
      \bsEND
 \bsEND
 \end{pseudo}
+
+\subsection{Picture output}
+\label{picoutput}
+
+Once decoded, a copy of the current picture is added to the end of the decoded picture buffer
+$\DecodedBuffer$ for display purposes.

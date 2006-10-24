@@ -146,10 +146,10 @@ until the msbs (bit 15) differ and the interval no longer
 straddles the half-way point 0x8000.
 
 \begin{pseudo}{shift\_all\_bits}{}
-\bsWHILE{ \AHigh\&\text{0x8000})==\text{0x0} \&\& (\ALow\&\text{0x8000})==\text{0x0}}
+\bsWHILE{ \AHigh\&\text{0x8000})==\text{0x0} \text{ and } (\ALow\&\text{0x8000})==\text{0x0}}
   \bsCODE{shift\_bit\_in()}
 \bsEND
-\bsWHILE{ (\AHigh\&\text{0x4000})==\text{0x0} \text{and} (\ALow\&\text{0x4000})==\text{0x4000} }
+\bsWHILE{ (\AHigh\&\text{0x4000})==\text{0x0} \text{ and } (\ALow\&\text{0x4000})==\text{0x4000} }
   \bsCODE{\ACode \hat{\text{ }}= \text{0x4000}}
   \bsCODE{\AHigh \hat{\text{ }}= \text{0x4000}}
   \bsCODE{\ALow \hat{\text{ }}= \text{0x4000}}
@@ -182,13 +182,13 @@ state has maximum information.
 \bsCODE{probability0 = context[0]*scaler}
 \bsCODE{count = code-low+1}
 \bsCODE{range = high-low+1}
-\bsCODE{range\_times\_prob = (range * probability0)>>16}
+\bsCODE{range\_times\_prob = (range * probability0)\gg 16}
 \bsIF{ count > range\_times\_prob }
   \bsCODE{value = \true}
   \bsCODE{low = low + range\_times\_prob}
   \bsCODE{context[1] += 1}
 \bsELSE
-  \bsCODE{value = False}
+  \bsCODE{value = \false}
   \bsCODE{high = low + range\_times\_prob - 1}
   \bsCODE{context[0] += 1}
 \bsEND
@@ -199,8 +199,8 @@ state has maximum information.
 \end{pseudo}
 
 \begin{informative}
-The function scales the probability of $0$ from the decoding context
-so that a probability of $1$ is commensurate with the interval between
+The function scales the probability of the symbol $0$ from the decoding context
+so that if this probability were $1$, then the interval would equal that between
  $\ALow$ and $\AHigh$. If $\ACode$ is greater than this cut-off, then 1 ($\true$) has
 been encoded, else 0 ($\false$) has.
 \end{informative}
@@ -220,7 +220,7 @@ processes are essentially identical to the
 $read\_sint()$ and $read\_uint()$ processes, except that instances of $read\_bool()$ are replaced
 by instances of $read\_ba()$ (Section \ref{arithreadbool}) using suitable contextualisation. 
 
-A choice of context depends upon whether the bit is a data bit, follow bit, or sign bit, and the 
+A choice of context depends upon whether the bit is a data bit, follow bit, or sign bit, and upon the 
 position of the bit within the binarisation: $context\_set$ consists of three parts -
 \begin{itemize}
 \item an array of follow contexts, $context\_set[follow]$ (indexed from 0 to 
@@ -235,7 +235,7 @@ The follow context selection function $follow\_context()$ is defined by:
 
 \begin{pseudo}{follow\_context}{index, context\_set}
 \bsCODE{pos= max(index, length(context\_set[follow])-1 }
-\bsCODE{ctx_index = context\_set[follow][pos]}
+\bsCODE{ctx\_index = context\_set[follow][pos]}
 \bsRET{\Contexts[ctx\_index]}
 \end{pseudo}
 
@@ -278,7 +278,8 @@ $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 
 The following is a list of all the context indices used in Dirac arithmetic decoding operations:
 
-%\begin{tabular}{l}
+Wavelet coefficient contexts:
+
 \SignZero\\
 \SignPos\\
 \SignNeg\\
@@ -301,6 +302,9 @@ The following is a list of all the context indices used in Dirac arithmetic deco
 \QOffsetFollow\\
 \QOffsetInfo\\
 \QOffsetSign\\
+
+Motion data contexts:
+
 \SBSplitFollowOne\\
 \SBSplitFollowTwo\\
 \SBSplitData\\
@@ -347,4 +351,3 @@ The following is a list of all the context indices used in Dirac arithmetic deco
 \VDCFollowTwoPlus\\
 \VDCData\\
 \VDCSign
-%\end{tabular}

@@ -71,7 +71,7 @@ The following arithmetic operators are defined on numerical values:
 
 \paragraph*{Real division} The real number value of $a$ divided by $b$ is represented by $a/b$ or $\frac{a}{b}$.
 
-\paragraph*{Exponentiation} For integers $a, b$, $b>00$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
+\paragraph*{Exponentiation} For integers $a, b$, $b>0$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
 
 \paragraph*{Ceiling} $\lceil a \rceil$, the smallest integer greater than or equal to a real number $a$
 
@@ -101,7 +101,7 @@ to be
 
 \[\left( s_0+s_1+\hdots +s_{n-1}+(n//2)\right //n)\]
 
-\paragraph*{Median} Given a set $S=\{s_0, s_1, \hdots, s_{n-1}$ of integer values the median $\median(S)$ 
+\paragraph*{Median} Given a set $S=\{s_0, s_1, \hdots, s_{n-1}\}$ of integer values the median $\median(S)$ 
 returns the middle value. If $t_0\leq t_1\leq \hdots \leq t_{n-1}$ are the values $s_i$ placed in ascending order, this
 is 
 
@@ -109,7 +109,7 @@ $t_{(n-1)/2}$
 
 if $n$ is odd and
 
-$(t_{(n-2)/2}+t_{n/2})//2$ if $n$ is even.
+$(t_{(n-2)/2}+t_{n/2})//2$ if $n$ is even. If $S=\emptyset$, $\median(S)$ returns 0.
 
 The following bitwise operations are defined on non-negative integer values:
 \paragraph*{\&} Logical AND is applied between the corresponding bits in the binary representation of two numbers, e.g.
@@ -132,7 +132,7 @@ not defined bitwise, to avoid ambiguity concerning leading zeroes).
 The bulk of the normative specification is defined by means of pseudocode. 
 The syntax used is an amalgam of Python and Basic. It is not intended
 to be executable code, but rather both precise and descriptive. 
-Iin particular, all the arithmetic functions and
+In particular, all the arithmetic functions and
 operations defined in the preceding section may be applied to variables within
 a pseudocode process.
 
@@ -163,7 +163,7 @@ whilst a function process looks like
 The right-hand column in the pseudocode representation contains a cross-reference to the 
 section in the specification containing the definition of other processes used at that line.
 
-Note well: all input variables are deemed to passed {\em by reference} in this
+Note well: all input variables are deemed to be passed {\em by reference} in this
 specification. This means that any modification to a variable value that
 occurs within a process also applies to that variable within the calling process
 {\em even if it has a different name} in the calling process. One way to understand
@@ -263,7 +263,7 @@ It is to be distinguished from
 the boolean identity operator $a==b$ (Section \ref{booleanops}).
 
 Occasionally the notation $a={\bf 0}$ will be used for an array of integer values:
-it means set all elements of the matrix to 0.
+it means set all elements of the array to 0.
 
 For integer variables, assignment can be combined with arithmetic and bit-wise
 operations in the usual programming manner: for example, 
@@ -374,7 +374,7 @@ only if the value of $a$ equals the value of $b$.
 
 \paragraph*{$>$}	Greater than
 
-\paragraph*{$>=$} Greater than or equal to
+\paragraph*{$\geq$} Greater than or equal to
 
 \paragraph*{$!$} Not. $!a$ is $\true$ for a boolean value $a$ if and only if $a$ is $\false$
 

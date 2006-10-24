@@ -74,6 +74,8 @@ with a parse code. A Dirac sequence can be excised from a Dirac stream and decod
 independently.
 
 \begin{pseudo}{video\_sequence}{}
+\bsCODE{\RefBuffer=\emptyset}
+\bsCODE{\DecodedBuffer=\emptyset}
 \bsCODE{parse\_info()}{\ref{parseinfo}}
 \bsWHILE {is\_access\_unit()}{\ref{parseinfo}}
     \bsCODE{access\_unit()}{\ref{accessunit}}
@@ -370,12 +372,13 @@ decoder resources (picture and data buffers; computational resources) sufficient
 to decode a sequence. Applicable values of profile and level are specified in Appendix
 \ref{profilelevel}.
 
-The profile determines the value of the boolean functions $using\_ac()$ and $using\_mc()$.
+The profile determines, amongst other things, the value of the boolean functions $using\_ac()$ and $using\_mc()$.
 If $using\_ac()==\false$ then arithmetic coding is not used for entropy coding of coefficients.
 If $ using\_mc()==\false$ then all pictures in the sequence shall be Intra pictures.
 
 Main profile has value 0, and $using\_ac()$ and $using\_mc()$ are both set to $\true$. This does
-not mean that an application under Main profile is required to use Inter pictures.
+not mean that an application under Main profile is required to use Inter pictures, but it is
+required to use arithmetic coding.
 
 \subsection{Access unit sequence parameters}
 \label{sequenceparameters}
@@ -800,8 +803,6 @@ within the same Dirac sequence. The parsing process is:
 \bsELSE
     \bsCODE{byte\_align()}
     \bsCODE{low\_delay\_picture()}{\ref{ldpicture}}
-\bsEND
-
 \end{pseudo}
 
 \subsubsection{Initialising decoding parameters}
@@ -975,11 +976,14 @@ Block parameters shall satisfy the following constraints:
 \item $\LumaXBlen$, $\LumaYBlen$, $\LumaXBsep$, and $\LumaYBsep$ shall all be positive
 multiples of 4
 \item $\LumaXBlen\geq\LumaXBsep$ and $\LumaYBlen\geq\LumaYBsep$
+\item $\LumaXBlen\leq 2*\LumaXBsep$ and $\LumaYBlen\leq 2*\LumaYBsep$
 \item $\LumaXBlen-\LumaXBsep$ and $\LumaYBlen-\LumaYBsep$ shall be
-powers of 2 other than 1
-\item $\ChromaXBlen-\ChromaXBsep$ and $\ChromaYBlen-\ChromaYBsep$ shall be
-powers of 2 other than 1
+powers of 2 (i.e. 0 or $2^k$, $k\geq 2$ by 1.)
 \end{enumerate}
+
+\begin{comment}
+These block constraints are now implemented in the software and non-overlapped blocks are supported.
+\end{comment}
 
 \begin{informative}
 Note that these requirements do not preclude length from equalling separation, i.e.
@@ -999,15 +1003,12 @@ are equal to the corresponding luma block parameters scaled according to the chr
 vertical and horizontal subsampling ratios. In this way chroma blocks and luma blocks are
 co-located in the video picture.
 
-\begin{pseudo}{chroma\_block\_params()}{}
+\begin{pseudo}{chroma\_block\_params}{}
 \bsCODE{\ChromaXBlen=\LumaXBlen//chroma\_h\_ratio()}
 \bsCODE{\ChromaYBlen=\LumaYBlen//chroma\_v\_ratio()}
 \bsCODE{\ChromaXBsep=\LumaXBsep//chroma\_h\_ratio()}
 \bsCODE{\ChromaYBsep=\LumaYBsep//chroma\_v\_ratio()}
 \end{pseudo}
-
-[Note that all the stuff about recomputing the chroma block lengths is now redundant since
-we allow non-overlapping blocks as well]
 
 \subsubsection{Motion vector precision}
 \label{mvprecision}
@@ -1076,7 +1077,7 @@ c_1
 with a scaling exponent
 \end{itemize}
 
-Their interpretion and the process for generating a global motion vector field is specified in Section \ref{globalmv}. 
+Their interpretation and the process for generating a global motion vector field is specified in Section \ref{globalmv}. 
 These elements are parsed in turn:
 
 \begin{pseudo}{global\_motion\_parameters}{gparams}
@@ -1170,7 +1171,7 @@ and reference 2 data by
 
 $\dfrac{\RefTwoWeight}{2^\RefsWeightPrecision}$ 
 
-(Section \ref{pixelpredict}). 
+(see Section \ref{pixelpredict}). 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%

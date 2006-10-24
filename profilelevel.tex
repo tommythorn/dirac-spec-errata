@@ -1,0 +1,73 @@
+\label{profilelevel}
+
+A compliant Dirac decoder may support a number of different profiles and levels, which determine 
+which tools, syntax elements and structures are to be supported, and what decoder resources 
+(computational and memory) are required. Profiles deal largely with the former and levels
+with the latter, although in particular in a software implementation, the choice of supported tools
+also affects decoder resources. Level constraints are expressed in terms of picture sizes and 
+formats 
+
+A particular profile will require that particular syntax/syntax elements be used and that decoder
+variables or functions are set to particular values. Profiles also determine the size of the
+decoded picture buffer $\DecodedBuffer$ and the stream buffer for data entering the decoder. [or is this levels]
+The operation of these buffers is described in Sections \ref{decodedbufferop} and \ref{streambufferop}.
+
+\begin{comment}
+Main=0, $is\_low\_delay()==false$, $using\_ac()==\true$, $using\_mc()==\true$
+Simple=1, $is\_low\_delay()==false$, $using\_ac()==\false$, $using\_mc()==\false$
+Link=2, $is\_low\_delay()==true$, $using\_ac()==\false$, $using\_mc()==\false$
+Wireless=3, $is\_low\_delay()==true$, $using\_ac()==\true$, $using\_mc()==\true$
+
+If we have Simple or Link then $using\_ac()$ is false and $using\_inter()$ is false.
+\end{comment}
+
+\subsection{Decoded picture buffer model operation}
+\label{decodedbufferop}
+
+In order to define compliance with level and profile requirements, a model of decoded picture buffer
+operation is specified.
+
+The decoded picture buffer (DPB) $\DecodedBuffer$ exists to allow for pictures to be presented in display, or 
+picture number, order whilst pictures are coded out of order. No constraints are placed on the order
+of pictures within a Dirac stream provided that reordering can be carried out within the given size of
+the DPB. The DPB size is the minimum delay required by the decoder, ignoring decoding time and stream
+buffering delays (Section \ref{streambufferop}).
+
+Pictures are deemed to be output from the decoder and placed in the DPB instantaneously at multiples
+of the (real number) picture sample interval $\PictureInterval$. This interval is defined as follows:
+
+\begin{itemize}
+\item if $\Interlaced$ is $\true$ and $\SequentialFields$ is $\true$ (i.e. pictures are fields) then 
+\begin{equation*}
+\PictureInterval=\dfrac{\FrameRateDenominator}{2*\FrameRateNumerator}
+\end{equation*}
+\item otherwise (i.e. pictures are frames) then 
+\begin{equation*}
+\PictureInterval=\dfrac{\FrameRateDenominator}{\FrameRateNumerator}
+\end{equation*}
+\end{itemize}
+
+In modelling the display of a sequence, pictures are deemed not to be output from the DPB until after $\DPBSize$ pictures
+have been placed in the buffer i.e. the first picture is output at the time instant with index $\DPBSize$, counting from 0. 
+A picture is deemed to be output instantaneously and simultaneously with a picture being input.
+
+Hence if $\DPBSize$ is 0, a picture passes through the DPB with zero delay, and is produced for display at the same
+time instant.
+
+Picture numbers are constrained to lie in the range $0, \hdots, 2^{32}-1$, and may wrap around 
+in a sequence. In particular, as picture numbers pass through 0, the standard numerical ordering does not
+reflect the desired display ordering. Instead, define the distance between two pictures $p_1,p_2$ with 
+picture number $n_1$
+and $n_2$ respectively as $d(n_1,n_2)=\min((n_1-n_2) \mod 2^{32}, (n_2-n_1) \mod 2^{32})$. 
+
+If $d(n_1,n_2)!=n_2-n_1$ then ???
+
+An encoder compliant with a given profile and level determining a DPB size of $\DPBSize$ is 
+
+\begin{informative}
+Note that, if the DPB is sufficiently large to allow it, a Dirac sequence may contain frames out of order
+even if it is not strictly necessary: for example, a sequence containing only intra frames could be 
+delivered out of order in Main profile, but not in Simple profile which has a zero-sized buffer.
+\end{informative}
+
+\subsection{Supported profiles}

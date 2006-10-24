@@ -37,29 +37,12 @@
 \clearpage
 \section{Video systems model and source parameters}
 \input{vidsys}
-\label{vidsys}
-\begin{informative*}
-\subsection{Colour}\input{vidsys-colour}
-\subsection{Frame rate}\input{vidsys-framerate}
-\subsection{Aspect ratios and clean area}\input{vidsys-aspect}
-\subsection{Signal range}\input{vidsys-sigrange}
-\subsection{Colour primaries}\input{vidsys-colourprimaries}
-\subsection{Colour matrix}\input{vidsys-colourmatrix}
-\subsection{Transfer charactaristics}\input{vidsys-transfer}
-\end{informative*}
-\subsection{Source parameter presets}\input{sourcepresets}
 
 \clearpage
 \section{Video format defaults}\input{ref-default-videoparams}
 
 \clearpage
-\section{Profiles and levels}\label{profilelevel}
-Main=0, $is\_low\_delay()==false$, $using\_ac()==\true$, $using\_mc()==\true$
-Simple=1, $is\_low\_delay()==false$, $using\_ac()==\false$, $using\_mc()==\false$
-Link=2, $is\_low\_delay()==true$, $using\_ac()==\false$, $using\_mc()==\false$
-Wireless=3, $is\_low\_delay()==true$, $using\_ac()==\true$, $using\_mc()==\true$
-
-If we have Simple or Link then $using\_ac()$ is false and $using\_inter()$ is false.
+\section{Profiles and levels}\input{profilelevel}
 
 %\clearpage
 %\section{References}
