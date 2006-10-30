@@ -42,10 +42,12 @@ An individual context is rescaled by halving the counts of $0$ and $1$ and ensur
 these counts do not reach zero:
 
 \begin{pseudo}{rescale\_context}{context}
-\bsCODE{context[0] \gg= 1}
-\bsCODE{context[0] += 1}
-\bsCODE{context[1] \gg= 1}
-\bsCODE{context[1] += 1}
+\bsIF{context[0]+context[1]> 16}
+  \bsCODE{context[0] \gg= 1}
+  \bsCODE{context[0] += 1}
+  \bsCODE{context[1] \gg= 1}
+  \bsCODE{context[1] += 1}
+\bsEND
 \end{pseudo}
 
 \subsection{Initialisation}
@@ -80,12 +82,12 @@ block are sufficient to allow for the
 decoding of all coefficients. However, the specification of arithmetic
 decoding operations in this section may occasionally cause further bits to be read,
 even though they are not required for determining decoded values. For this
-reason a read function $read\_bita()$ is defined which returns $0$ if the
+reason a read function $read\_bita()$ is defined which returns $1$ if the
 bounds of this block of data have been exceeded:
 
 \begin{pseudo}{read\_bita}{}
 \bsIF{\ABitsLeft==0}
-  \bsRET{0}
+  \bsRET{1}
 \bsELSE
   \bsCODE{\ABitsLeft -= 1}
   \bsRET{read\_bit()}
@@ -109,10 +111,14 @@ data element.
 \begin{informative}
 The Dirac arithmetic decoding engine uses 16 bit words, and so no more than 16
 additional bits can be read beyond the end of the block. Hence it is sufficient
-to read in the entire block of data and pad the end with two zero bytes to
+to read in the entire block of data and pad the end with two bytes of value 255 to
 avoid a branch condition with each input bit. If this approach is taken, the
 $flush\_arith()$ operation at the end of decoding is superfluous.
 \end{informative}
+
+\begin{comment}
+May need to add in an arbitrary number of such bytes in order to support early termination.
+\end{comment}
 
 \subsection{Decoder functions}
 \label{extractarith}

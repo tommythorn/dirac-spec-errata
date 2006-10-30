@@ -272,7 +272,7 @@ process for Intra DC bands, since values are coded using spatial prediction.
 \bsIF{is\_intra() \text{ and } level==0}
     \bsCODE{intra\_dc\_prediction(band)}{\ref{intradcprediction}}
 \bsEND
-\bsCODE{flush\_arith()}{\ref{inputraith}}
+\bsCODE{flush\_arith()}{\ref{inputarith}}
 \end{pseudo*}
 
 
@@ -462,7 +462,7 @@ values are all zero.
     \bsRET{\false}
   \bsEND
   \bsIF{h>0}
-    \bsIF{band[v-1][h-1])!=0 || band[v][h-1]!=0}
+    \bsIF{band[v-1][h-1])!=0 \text{ or } band[v][h-1]!=0}
       \bsRET{\false}
     \bsEND
   \bsEND
@@ -623,10 +623,12 @@ $\neq 0$ & \false  & $>0$ &  Follow & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThre
 
 The inverse\_quant() function is defined by:
 
-\begin{pseudo}{inverse\_quantise}{quantised\_coeff, quant\_index}
+\begin{pseudo}{inverse\_quant}{quantised\_coeff, quant\_index}
 \bsCODE{magnitude = |{quantised\_coeff}|}
 \bsCODE{magnitude *= quant\_factor(quant\_index)}{\ref{quantfacs}}
-\bsCODE{magnitude += quant\_offset(quant\_index)}{\ref{quantfacs}}
+\bsIF{magnitude!=0}
+  \bsCODE{magnitude += quant\_offset(quant\_index)}{\ref{quantfacs}}
+\bsEND
 \bsCODE{magnitude = magnitude//4}
 \bsRET{sign( quantised\_coeff )*magnitude}
 \end{pseudo}
@@ -679,7 +681,7 @@ coefficients and rescales arithmetic decoding contexts if \CoefficientReset has 
 \bsIF{\CoefficientCount == \CoefficientReset}
   \bsCODE{\CoefficientCount = 0}
   \bsFOR{i=0}{len(\AContexts)-1}
-    \bsCODE{rscale\_context(i)}{\ref{arithcontexts}}
+    \bsCODE{rescale\_context(i)}{\ref{arithcontexts}}
   \bsEND
 \bsEND
 \end{pseudo}

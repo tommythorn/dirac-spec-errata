@@ -100,8 +100,8 @@ whole number of bytes.
 One reason for the improved efficiency afforded by first reading into a buffer is because the 
 arithmetic coding engine may require (up to) two extra bytes of data for its output to 
 converge. In this specification this feature is provided by testing that the amount of data 
-requested has not exceeded $length$ bytes and, if it has, inputting a zero byte. By 
-reading the data directly into a buffer of length  $length + 2$ this test can be 
+requested has not exceeded $length$ bytes and, if it has, inputting a bit of value 1. By 
+reading the data directly into a buffer of length  $length + 2$ with padding bytes of value 255 this test can be 
 avoided.
 \end{informative}
 
