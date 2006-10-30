@@ -359,9 +359,8 @@ for reconstructing values within Intra picture DC bands using spatial prediction
 Intra DC values are derived by spatial prediction using the mean of the
 three values to the left, top-left and above a coefficient (if available).
 
+\begin{comment}
 \begin{pseudo}{intra\_dc\_prediction}{band}
-
-\bsCODE{prediction = 0 }
 \bsFOR{v=0}{subband\_height(level)-1}
   \bsFOR{h=0}{subband\_width(level)-1}
     \bsCODE{prediction = 0 }
@@ -384,7 +383,29 @@ three values to the left, top-left and above a coefficient (if available).
   \bsEND
 \bsEND
 \end{pseudo}
+\end{comment}
 
+\begin{pseudo}{intra\_dc\_prediction}{band}
+\bsCODE{prediction = 0 }
+\bsFOR{v=0}{subband\_height(level)-1}
+  \bsFOR{h=0}{subband\_width(level)-1}
+    \bsIF{h>0}
+        \bsIF{v>0}
+            \bsCODE{prediction=\mean(band[v][h-1],band[v-1][h-1],band[v-1][h])}
+        \bsELSE
+            \bsCODE{prediction=band[0][h-1]}
+        \bsEND
+    \bsELSE
+        \bsIF{v>0}
+            \bsCODE{prediction=band[v-1][0]}
+        \bsELSE
+            \bsCODE{prediction = 0}
+        \bsEND
+    \bsEND
+    \bsCODE{band[v][h] += prediction}
+  \bsEND
+\bsEND
+\end{pseudo}
 \subsection{Subband coefficient decoding process}
 
 \label{wltcoeff}

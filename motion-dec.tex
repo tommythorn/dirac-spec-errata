@@ -392,8 +392,9 @@ $split\_prediction$ returns the mean of the the neighbouring split values:
 
 \bsCODE{ 
 \begin{array}{ll}
-\text{return} & (\SBSplit[ypos-1][xpos-1] +\SBSplit[ypos][xpos-1]+  \\
-                   &  \quad \SBSplit[ypos-1][xpos]+1)//3
+\text{return} & \mean(\SBSplit[ypos-1][xpos-1], \\
+                   &  \quad\quad\quad \SBSplit[ypos][xpos-1],  \\
+                   &  \quad\quad\quad \SBSplit[ypos-1][xpos])
 \end{array}
 }
 \end{pseudo}
@@ -414,8 +415,8 @@ $mode\_prediction$ returns a majority verdict for each of the references:
 \bsCODE{
 \begin{array}{ll}
 \text{return} & \majority(\BlockData[ypos-1][xpos-1][mode][n], \\
-& \quad\BlockData[ypos-1][xpos][mode][n], \\
-& \quad\BlockData[ypos][xpos-1][mode][n] )
+& \quad\quad\quad \BlockData[ypos-1][xpos][mode][n], \\
+& \quad\quad\quad \BlockData[ypos][xpos-1][mode][n] )
 \end{array}
 }
 
@@ -438,8 +439,8 @@ $block\_global\_prediction$ returns a majority verdict of the neighbouring block
 \bsCODE{
 \begin{array}{ll}
 \text{return} & \majority(\BlockData[ypos-1][xpos-1][global], \\
-& \quad\BlockData[ypos-1][xpos][global],  \\
-& \quad\BlockData[ypos][xpos-1][global]) 
+& \quad\quad\quad \BlockData[ypos-1][xpos][global],  \\
+& \quad\quad\quad \BlockData[ypos][xpos-1][global]) 
 \end{array}
 }
 
@@ -556,7 +557,7 @@ unbiased mean of available values:
 \bsEND
 
 \bsIF{values!=\{\}}
-    \bsRET{pred =(unbiased\_mean(values)}
+    \bsRET{pred =\mean(values)}
 \bsELSE
     \bsRET{2^{\VideoDepth-1}}
 \bsEND
