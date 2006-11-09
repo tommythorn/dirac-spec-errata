@@ -58,9 +58,9 @@ decoding state is initialised as follows:
 
 \begin{pseudo}{initialise\_arithmetic\_decoding}{block\_data\_length}
 \bsCODE{\ABitsLeft=8*block\_data\_length}
-\bsCODE{\ALow = \text{0x0000}}
-\bsCODE{\AHigh =\text{0x0000}}
-\bsCODE{\ACode =\text{ 0x0000}}
+\bsCODE{\ALow = \text{0x0}}
+\bsCODE{\AHigh =\text{0x0}}
+\bsCODE{\ACode =\text{ 0x0}}
 \bsCODE{init\_contexts()}
 \end{pseudo}
 
@@ -109,11 +109,14 @@ data element.
 \end{pseudo}
 
 \begin{informative}
-The Dirac arithmetic decoding engine uses 16 bit words, and so no more than 16
-additional bits can be read beyond the end of the block. Hence it is sufficient
-to read in the entire block of data and pad the end with two bytes of value 255 to
-avoid a branch condition with each input bit. If this approach is taken, the
-$flush\_arith()$ operation at the end of decoding is superfluous.
+The Dirac arithmetic decoding engine uses 16 bit words, and so if all coefficients are
+coded no more than 16 additional bits should be read beyond the end of the block. Hence it 
+would seem sufficient to read in the entire block of data and pad the end with two bytes of value 0xFF,
+to avoid a branch condition on inputting data
+However, an arithmetically encoded block may end with a string of 1s, which an encoder could
+conceivably strip out to save bits, in the knowledge that $read\_bita()$ will re-insert them. Terminating
+strings of 1s can occur (but not exclusively) in coding many zero wavelet subband coefficients at the end
+of a subband. So a much larger number of pad bytes may be required in practice.
 \end{informative}
 
 \begin{comment}

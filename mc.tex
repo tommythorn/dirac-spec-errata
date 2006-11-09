@@ -299,9 +299,9 @@ Define a horizontal weighting array $WH$ by the recipe:
 \providecommand{\abs}[1]{\left\lvert#1\right\rvert}
 \begin{pseudo*}
 \bsCODE{max\_x=2(xblen-xbsep)}
-\bsIF{i==0 \text{and} xpos< xblen//2}
+\bsIF{i==0 \text{ and } xpos< xblen//2}
     \bsCODE{WH[xpos]=max\_x}
-\bsELSEIF{i==\BlocksX \text{and} xpos\geq xblen//2}
+\bsELSEIF{i==\BlocksX \text{ and } xpos\geq xblen//2}
     \bsCODE{WH[xpos]=max\_x}
 \bsELSE
     \bsCODE{WH[xpos]  =  \clip(xblen-2\abs{xpos-\dfrac{(xblen-1)}{2}}, max\_x ) }
@@ -312,9 +312,9 @@ Likewise define $WV$ by
 
 \begin{pseudo*}
 \bsCODE{max\_y=2(yblen-ybsep)}
-\bsIF{j==0 \text{and} xpos< yblen//2}
+\bsIF{j==0 \text{ and } xpos< yblen//2}
     \bsCODE{WH[ypos]=max\_y}
-\bsELSEIF{j==\BlocksY \text{and} ypos\geq yblen//2}
+\bsELSEIF{j==\BlocksY \text{ and } ypos\geq yblen//2}
     \bsCODE{WH[ypos]=max\_y}
 \bsELSE
     \bsCODE{WV[ypos]  =  \clip(yblen - 2\abs{ypos-\dfrac{(yblen-1)}{2}},0, max\_y) }
@@ -358,11 +358,11 @@ mv= \BlockData[j][i][ref]
 whereas if $c=U$ or $c=V$, set
 
 \begin{eqnarray*}
-mv.x & = & (\BlockData[j][i][ref].x +(chroma\_h_factor()//2) )//chroma\_h_factor() \\
-mv.y & = & (\BlockData[j][i][ref].y +(chroma\_v_factor()//2) )//chroma\_v_factor()
+mv.x & = & \rounddivide(\BlockData[j][i][ref].x, chroma\_h\_factor() ) \\
+mv.y & = & \rounddivide(\BlockData[j][i][ref].y, chroma\_v\_factor() )
 \end{eqnarray*}
 
-(chroma subsampling factors are as specified in Section \ref{chromaformats})
+(chroma subsampling factors are as specified in Section \ref{chromaformats}.)
 
 {\bf Case 2: $\BlockData[j][i][global]=\true$}. In this case, a motion vector is determined from the global
 motion parameters as per Section \ref{globalmv}:

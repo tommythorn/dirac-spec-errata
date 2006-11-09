@@ -67,16 +67,19 @@ The overall format of the low-delay Dirac stream is as specified in Section \ref
 specifies the picture data elements which are used in low-delay operation.
 
 In low-delay operation, the Dirac syntax partitions the wavelet coefficients into a number of sets,
-from all subbands, corresponding to a localised area of the picture. Note that it is the coefficients that are divided,
+from all subbands, corresponding to a localised area of the picture (Figure \ref{fig:waveletslice}).
+ Note that it is the coefficients that are divided,
 not the picture. These sets are called slices. A single quantiser, weighted by a quantisation matrix, is used for each slice, 
-a slice is  of fixed size within a picture and is of fixed length in bytes. Each slice interleaves all three components, and hence
+a slice is  of fixed dimensions within a picture and is also of fixed length in bytes. Each slice interleaves all three components, and hence
 the transform parameters for the components are placed in the picture header.
 
+\begin{informative}
 Not allowing slice bit allocations to vary within a picture does impact on
 compression efficiency, but on the other hand vastly simplifies both encoder and decoder hardware. Furthermore, by
 not allowing load-balancing within a buffer, it assists a chain of multiple encoders and decoders using the same
 slice parameters in producing identical coding decisions and hence no cascading loss. These are all factors of great 
 significance in a professional environment.
+\end{informative}
 
 Although this specification is not concerned with network adaption and carriage over data interfaces, low-delay
 applications may have specific requirements for headerless and synchronous operation which may imply that
@@ -159,7 +162,8 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
 
 Default quantisation matrices are defined only if $\WaveletDepth$ is 4. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom).
 The function $set\_quant\_matrix()$ sets the quantisation matrix based on the wavelet filter and the value of $quant\_matrix\_index$, as per Table
-\ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an unweighted matrix, whose values merely compensate for the differential power gain of the different subband filters. Higher values imply greater degrees of perceptual weighting.
+\ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an ``unweighted" matrix, whose values merely compensate for the differential 
+power gain of the different subband filters. Higher values of $quant\_matrix\_index$ imply greater degrees of perceptual weighting.
 
 \begin{table}[!h]
 \centering
@@ -184,18 +188,46 @@ is merely a concatenation of slices. The number of slices in a picture is determ
 \bsCODE{pw= 2^{\TransformDepth}*\left\lceil\frac{\LumaWidth}{2^{\TransformDepth}}\right\rceil}
 \bsCODE{\SlicesX=ph//\SliceWidth}
 \bsCODE{\SlicesY=ph//\SliceHeight}
-\bsCODE{num\_slices=\SlicesX*\SlicesY}
-\bsFOR{n=0}{num\_slices-1}
-    \bsCODE{slice(n)}
+\bsFOR{sy=0}{\SlicesY-1}
+  \bsFOR{sx=0}{\SlicesX-1}
+    \bsCODE{slice(sy, sx)}
+  \bsEND
 \bsEND
 \end{pseudo}
 
 Note that the padded dimensions are the padded luma dimensions. Since these are divisible by $2^\TransformDepth$ they
 are {\em a fortiori} divisible by the slice dimensions by the constraints of Section \ref{slicedims}. 
+\begin{comment}
+\subsubsection{Slice parsing}
+\label{sliceparsing}
+
+This section specifies the operation of the $slice(sy,sx)$ process for decoding the slice with coordinates $(sx,sy)$. Each slice
+constains coefficients from all subbands, and  the overall slice decoding process is as follows:
+
+\begin{pseudo}{slice}{sy,sx}
+\bsFOREACH{c}{Y,U,V}
+  \bsCODE{\SliceCompLength=read\_nbits(8)}{\text{NB:shd be variable}}
+  \bsCODE{qindex=read\_nbits(7)}{\text{NB:shd be variable}}
+  \bsCODE{\BitsLeft=0}
+  \bsCODE{q\_idx=\max(qindex-\QuantMatrix[0][\LL],0)}
+  \bsCODE{slice\_band(0,\LL,sy,sx,q_idx)}{\ref{sliceband}}
+  \bsFOR{level=1}{\WaveletDepth}
+    \bsFOREACH{orient}{\HL,\LH,\HH}
+      \bsCODE{q\_idx=\max(qindex-\QuantMatrix[level][orient],0)}
+      \bsCODE{slice\_band(level,orient,sy,sx,q_idx)}{\ref{sliceband}}
+    \bsEND
+  \bsEND
+\bsEND
+\end{pseudo}
+
+\subsubsection{Slice subband parsing}
+\label{sliceband}
+
+
 
 [Want to change the way the wavelet stuff is done in wlt-dec.tex so that I pass in which component it is, since we're doing all
 components here. Move wavelet data initialisation into bs-spec.tex. Interface to wltdecoding will be wlt\_decode(banddata, component)]
-
+\end{comment}
 \begin{informative*}
 \subsection{Data adaption and application requirements}
 

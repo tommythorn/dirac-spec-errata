@@ -1,0 +1,113 @@
+This document only specifies the decoding of arithmetic coded data. 
+However whilst it is clearly vital that an encoding process matches the decoding
+process, it is not straightforward to derive an implementation of the
+encoder by only looking only at the decoder specification. Therefore this
+informative section describes a possible implementation for an
+arithmetic encoding engine that will produce output decodeable by
+the Dirac arithmetic decoding engine.
+
+\subsection{Encoder variables}
+
+An arithmetic encoder would require the following integer variables:
+
+\begin{itemize}
+\item $\text{low}$, a value indicating the bottom of the encoding interval
+\item $\text{high}$, a value indicating the top of the encoding interval
+\item $\text{underflow}$, a value tracking the number of unresolved ``straddle" conditions 
+(described below)
+\end{itemize}
+
+A Dirac binary arithmetic encoder implementation will code a set of data in three stages:
+
+\begin{enumerate}
+\item Initialisation
+\item Processing of all values
+\item Flushing
+\end{enumerate}
+
+\subsubsection{Initialisation}
+
+Initialisation of the arithmetic encoder is very simple -- the internal variables are
+set as:
+
+\begin{eqnarray*}
+\text{low}&=&\text{0x0} \\
+\text{high}&=&\text{0xFFFF} \\
+\text{underflow}&=&0
+\end{eqnarray*}
+
+(Note that although the arithmetic decoder initialises $\AHigh$ to be 0x0000 in decoding the first
+value, $shift\_all\_bits()$ is called which will set $\AHigh$ to 0xFFFF and $\ACode$ to the first
+16 bits in the stream.)
+
+\subsubsection{Processing of binary values}
+\begin{comment}
+The arithmetic coding processBits are encoded one at a time based on an estimated probability
+embodied in a ``context''. As with decoding, the context simply relates to
+counts of the number of zeros or ones that have been previously encoded.
+
+A possible algorithm for encoding a single bit, given a context, is:
+
+Encode Binary Arithmetic Coded Bit
+\begin{verbatim}
+write_ba(symbol, context):
+    while ( ((high&0x4000)==0x0) and
+           ((low&0x4000)==0x4000) ):
+        code ^= 0x4000
+        high ^= 0x4000
+        low ^= 0x4000
+        shift_bit_out()
+    weight = context[0] + context[1]
+    scaler = (0x10000+weight//2)//weight
+
+    probability0 = context[0]*scaler
+    range = high-low+1
+    range_x_prob = (range * probability0)>>16
+    if ( symbol )
+        context[1] += 1
+        low = low + range_x_prob
+    else
+        context[0] += 1
+        high = low  + range_x_prob - 1
+    if ( (context[0] + context[1]) > 255 ):
+        #Halve counts in the context
+        context[0] >> 1
+        context[0] += 1
+        context[1] >> 1
+        context[1] += 1
+    while (((high&0x8000)==0x0) and ((low&0x8000)==0x0)):
+        output_bits()
+        shift_bit_out()
+\end{verbatim}
+
+Shift Bit Out
+\begin{verbatim}
+shift_bit_out():
+    high << 1
+    high &= 0xFFFF
+    high += 1
+    low << 1
+    low &= 0xFFFF
+\end{verbatim}
+
+Output Bits
+\begin{verbatim}
+output_bits():
+    write_bit( (high&0x8000)==0x8000 )
+    while ( underflow > 0 ):
+        write_bit( high&0x8000)==0x0 )
+        underflow -= 1
+\end{verbatim}
+
+Flush Encoder
+\begin{verbatim}
+flush_encoder():
+
+    write_bit( (high&0x4000)==0x4000 )
+    while ( underflow >= 0 ):
+        write_bit( high&0x4000)==0x0 )
+        underflow -= 1
+\end{verbatim}
+
+Where the ``write\_bit(bit)'' function outputs a single bit.
+\end{comment}

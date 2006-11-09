@@ -89,11 +89,13 @@ The following arithmetic operators are defined on numerical values:
 \[a//b= \left\{ 
 \begin{array}{l} 
 \left\lfloor \dfrac{a}{b} \right\rfloor \text{ if } a>0 \\
+\\
 \left\lceil \dfrac{a}{b} \right\rceil \text{ if } a\leq 0
 \end{array} \right.
 \]
 
-(i.e. round towards zero).
+i.e. round towards zero as per C/C++ conventions. Note that explicit division of potentially negative numbers
+is avoided in this specification for clarity.
 
 \paragraph*{Remainder} For integers $a,b$, with $b>0$, the remainder $a\%b$ is equal to 
 
@@ -107,14 +109,28 @@ The following arithmetic operators are defined on numerical values:
 
 Note that this is {\em not} equivalent to $a//2^b$, since shifting down rounds towards $-\infty$, not 0.
 
-\paragraph*{Shift down} For integers $a,b$, with $b\geq 0$, $a\ll b$ is $a*2^b$.
+\paragraph*{Shift up} For integers $a,b$, with $b\geq 0$, $a\ll b$ is $a*2^b$.
+
+\paragraph*{Rounded integer division} For integers $a,b$ with $b>0$, $\rounddivide(a,b)$ is the unbiased
+integer division of $a$ by $b$, defined by
+
+\[\left\lfloor\dfrac{a+(b//2)}{b}\right\rfloor\]
+
+\begin{informative}
+Note that $\rounddivide(a,2^b)=(a+2^{b-1})\gg b$. Note also that if $NUM$ is a sufficiently large integer 
+(i.e. bigger than $\left\lceil\dfrac{a}{b}\right\rceil$), then
+
+\[\rounddivide(a,b)=(a+b*NUM+(b//2))//b - NUM\]
+
+which may be used to avoid a branch condition.
+\end{informative}
 
 \paragraph*{Mean} Given a set  $S=\{s_0, s_1, \hdots, s_{n-1}\}$ of integer values, the integer unbiased mean, $\mean(S)$, is defined
 to be
 
-\[\left\lfloor\dfrac{ s_0+s_1+\hdots +s_{n-1}+(n//2)}{n}\right\rfloor\]
+\[\rounddivide(s_0+s_1+\hdots +s_{n-1},n)\]
 
-\paragraph*{Median} Given a set $S=\{s_0, s_1, \hdots, s_{n-1} \}$ of integer values the median $\median(S)$ 
+\paragraph*{Median} Given a set $S=\{s_0, s_1, \hdots, s_{n-1} \}$ of integer values the median, $\median(S)$, 
 returns the middle value. If $t_0\leq t_1\leq \hdots \leq t_{n-1}$ are the values $s_i$ placed in ascending order, this
 is 
 

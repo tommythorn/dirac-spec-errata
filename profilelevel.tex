@@ -9,7 +9,7 @@ formats
 
 A particular profile will require that particular syntax/syntax elements be used and that decoder
 variables or functions are set to particular values. Profiles also determine the size of the
-decoded picture buffer $\DecodedBuffer$ and the stream buffer for data entering the decoder. [or is this levels]
+decoded picture buffer $\DecodedBuffer$ and the stream buffer for data entering the decoder. [or is this levels?]
 The operation of these buffers is described in Sections \ref{decodedbufferop} and \ref{streambufferop}.
 
 \begin{comment}
@@ -49,20 +49,25 @@ of the (real number) picture sample interval $\PictureInterval$. This interval i
 
 In modelling the display of a sequence, pictures are deemed not to be output from the DPB until after $\DPBSize$ pictures
 have been placed in the buffer i.e. the first picture is output at the time instant with index $\DPBSize$, counting from 0. 
-A picture is deemed to be output instantaneously and simultaneously with a picture being input.
+A picture is deemed to be output instantaneously and simultaneously with a picture being input to the buffer.
 
 Hence if $\DPBSize$ is 0, a picture passes through the DPB with zero delay, and is produced for display at the same
-time instant.
+time instant. 
 
-Picture numbers are constrained to lie in the range $0, \hdots, 2^{32}-1$, and may wrap around 
-in a sequence. In particular, as picture numbers pass through 0, the standard numerical ordering does not
-reflect the desired display ordering. Instead, define the distance between two pictures $p_1,p_2$ with 
-picture number $n_1$
-and $n_2$ respectively as $d(n_1,n_2)=\min((n_1-n_2) \mod 2^{32}, (n_2-n_1) \mod 2^{32})$. 
+Determining the picture to output at a given time is simple in practice but delicate to specify, since picture numbers
+may wrap around through 0. Define the absolute difference between two pictures with picture numbers $n_1, n_2$
+as
 
-If $d(n_1,n_2)!=n_2-n_1$ then ???
+\[d(n_1,n_2)=\min\left((n_1-n_2) \% 2^{32}, (n_2-n_1) \% 2^{32} \right)\] 
 
-An encoder compliant with a given profile and level determining a DPB size of $\DPBSize$ is 
+An encoder must ensure that the absolute difference between the picture numbers of two pictures lying in the DPB is 
+always positive and strictly less than $2^{31}$. This determines an unambiguous ordering
+on pictures in the buffer: a picture with picture number $n_1$ is then earlier than a picture with a different picture number 
+$n_2$ if and only if $n_2-n_1=d(n_1,n_2)>0$. The picture output at a given time instant is deemed to be the picture 
+with the earliest picture number according to this metric.
+
+An encoder is required to so order its pictures that the DPB shall produce pictures whose picture numbers comprise a
+contiguous series, modulo $2^{32}$, when output according to this rule.
 
 \begin{informative}
 Note that, if the DPB is sufficiently large to allow it, a Dirac sequence may contain frames out of order

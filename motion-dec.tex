@@ -92,17 +92,10 @@ The decoding loop for block data iterates over all superblocks in raster order:
 \begin{informative}
 The specification for parsing and decoding block data is written indicating that a sequence of 
 superblocks are read following the block data length. This is conceptually correct. However, 
-in practice it may be more efficient to read the whole of the block data (excluding the block 
-data length) into a buffer before parsing and decoding. To facilitate this the arithmetic coded 
+in practice it may be more efficient to read the whole of the block data (plus padding bytes -- 
+see Section \ref{inputarith}) into a buffer before parsing and decoding. To facilitate this the arithmetic coded 
 superblock data is byte aligned, i.e. starts at the beginning of a byte boundary and occupies a 
 whole number of bytes.
-
-One reason for the improved efficiency afforded by first reading into a buffer is because the 
-arithmetic coding engine may require (up to) two extra bytes of data for its output to 
-converge. In this specification this feature is provided by testing that the amount of data 
-requested has not exceeded $length$ bytes and, if it has, inputting a bit of value 1. By 
-reading the data directly into a buffer of length  $length + 2$ with padding bytes of value 255 this test can be 
-avoided.
 \end{informative}
 
 \subsubsection{Motion data initialisation}
