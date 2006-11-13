@@ -625,8 +625,9 @@ The inverse\_quant() function is defined by:
 \bsCODE{magnitude *= quant\_factor(quant\_index)}{\ref{quantfacs}}
 \bsIF{magnitude!=0}
   \bsCODE{magnitude += quant\_offset(quant\_index)}{\ref{quantfacs}}
+  \bsCODE{magnitude += 2}
+  \bsCODE{magnitude = magnitude//4}
 \bsEND
-\bsCODE{magnitude = magnitude//4}
 \bsRET{sign( quantised\_coeff )*magnitude}
 \end{pseudo}
 
@@ -635,6 +636,9 @@ The pseudocode description separates inverse quantisation from decoding. However
 since dead-zone quantisation is used, the $inverse\_quant()$ function must compute
 the magnitude. Hence it is more efficient to first decode the coefficient magnitude,
 then inverse quantise, and then decode the coefficient sign. 
+
+Note that an unbiased division by 4 is applied: the additional 2 may be absorbed into
+the quantisation offset, but is separated in this specification.
 \end{informative}
 
 
@@ -648,7 +652,7 @@ Quantisation factors represent an approximation of quarter-bit values
 with two bits of accuracy (i.e. $round(2^{\frac{index}{4}+2})$:
 
 \begin{pseudo}{quant\_factor}{index}
-\bsCODE{base = 2**(index//4)}
+\bsCODE{base = 2^{index//4}}
 \bsIF{ (x\%4)==0 }
   \bsRET{4*base}
 \bsELSEIF{ (x\%4)==1 }
@@ -660,12 +664,34 @@ with two bits of accuracy (i.e. $round(2^{\frac{index}{4}+2})$:
 \bsEND
 \end{pseudo}
 
-Offsets are approximately $3/8$ of the quantisation factors - these
+For intra pictures, offsets are approximately $1/2$ of the 
+quantisation factors, and for inter pictures they are $3/8$ - these
 mark the reconstruction point within the quantisation interval:
 
 \begin{pseudo}{quant\_offset}{index}
-\bsRET{ (quant\_factor(index)*3+4)//8 }
+\bsIF{index==0}
+  \bsCODE{offset = 1}
+\bsELSE
+  \bsIF{ is\_intra() }
+    \bsIF{index==1}
+      \bsCODE{offset = 2}
+    \bsELSE
+      \bsCODE{ offset=(quant\_factor(index)+1)//2 }
+    \bsEND
+  \bsELSE
+    \bsCODE{ offset=(quant\_factor(index)*3+4)//8 }
+  \bsEND
+\bsEND
+\bsRET{offset}
 \end{pseudo}
+
+\begin{informative}
+The quantisation offsets have been selected so as to make inverse quantisation
+and quantisation by the same quantisation factor transparent. This requires that
+\[3\leq quant\_offset+2<quant\_factor\]
+
+-- hence the special conditions for quantisation index 0 and 1.
+\end{informative}
 
 \subsubsection{Updating counts and resetting contexts}
 \label{updatecounts}
