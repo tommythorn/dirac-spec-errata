@@ -406,7 +406,7 @@ defaults are set, with picture size equal to $252\times 288$, 4:2:0 chroma forma
 $12\times 12$ luma blocks.
 
 Sequence and source parameters may be overridden by subsequent data in the AU header.
-For example, an image width of 360 may be encoded as per Section {imagedimensions},
+For example, an image width of 360 may be encoded as per Section \ref{imagedimensions},
 overriding the CIF format defaults. Decoding parameters may be overridden by data in individual pictures.
 
 \subsubsection{Custom image dimensions}
@@ -1194,14 +1194,9 @@ processing using the inverse wavelet transform (Section \ref{idwt}).
 \bsIF{\ZeroResidual = \false}
     \bsCODE{transform\_parameters()}{\ref{transformparameters}}
     \bsCODE{byte\_align()}
-    \bsCODE{\ComponentWidth = \LumaWidth}
-    \bsCODE{\ComponentHeight = \LumaHeight}
-    \bsCODE{\YTransform = transform\_data()}{\ref{transformdata}}
-
-    \bsCODE{\ComponentWidth = \ChromaWidth}
-    \bsCODE{\ComponentHeight = \ChromaHeight}
-    \bsCODE{\UTransform = transform\_data()}{\ref{transformdata}}
-    \bsCODE{\VTransform = transform\_data()}{\ref{transformdata}}
+    \bsCODE{\YTransform = transform\_data(Y)}{\ref{transformdata}}
+    \bsCODE{\UTransform = transform\_data(U)}{\ref{transformdata}}
+    \bsCODE{\VTransform = transform\_data(V)}{\ref{transformdata}}
 \end{pseudo}
 
 If $\ZeroResidual=\true$ then all component pixels will be set to zero prior to
@@ -1337,9 +1332,11 @@ $\Codeblocks[level][h]$ respectively.
 $index$ shall lie in the range 0 to 2, and $codeblock\_mode$ sets the codeblock mode
 according to Table \ref{codeblockmodes}.
 
+\begin{comment}
 The maximum number of codeblocks vertically shall be less than or equal
 $subband\_height(level)//4$ and the number of codeblocks horizontally shall be less than
 or equal to $subband\_width(level)//4$ (subband dimensions as specified in Section {subbandwidthheight}).
+\end{comment}
 
 \begin{table}[!h]
 \centering

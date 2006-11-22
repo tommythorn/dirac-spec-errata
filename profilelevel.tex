@@ -75,4 +75,20 @@ even if it is not strictly necessary: for example, a sequence containing only in
 delivered out of order in Main profile, but not in Simple profile which has a zero-sized buffer.
 \end{informative}
 
+\subsection{Stream buffer model operation}
+\label{streambufferop}
+
+In order to define compliance with level and profile requirements, a model of decoded picture buffer
+operation is specified.
+
+The decoder stream buffer (DSB) $\StreamBuffer$ exists to allow for data to be transmitted at a constant bit
+rate (CBR), yet consist of varying bit allocations to individual pictures. It is well-known that input buffers
+operate in mirror-image to output buffers, and so the specification of the ISB implicitly defines
+how an identically-sized encoder stream buffer (ESB) would operate to ensure correct CBR operation, although
+in practice some encoder-side headroom may be required.
+
+Buffer operation is complicated by random access, which implies that the state of the DSB is not
+wholly known at the encoder. At best, an upper bound on the decoder buffer occupancy is  
+ 
+
 \subsection{Supported profiles}

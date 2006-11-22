@@ -39,7 +39,8 @@ variable, which is a structure with indices $pic\_num$, $Y$, $U$ and $V$.
 The $init\_picture\_data()$ initialises the current picture data so that:
 \begin{itemize}
 \item $\CurrentPicture[pic\_num]=\PictureNumber$
-\item $\CurrentPicture[Y]$ is a 2-dimensional of width $\LumaWidth$ and height$\LumaHeight$, all values $\CurrentPicture[Y][y][x]$ set to 0
+\item $\CurrentPicture[Y]$ is a 2-dimensional array of width $\LumaWidth$ and height$\LumaHeight$, 
+all values $\CurrentPicture[Y][y][x]$ set to 0
 \item $\CurrentPicture[U]$ and $CurrentPicture[V]$ are 2-dimensional arrays of width $\ChromaWidth$ and height $\ChromaHeight$, 
 all values $\CurrentPicture[U][y][x]$ and $\CurrentPicture[V][y][x]$ set to 0
 \end{itemize}
@@ -161,10 +162,10 @@ used as a reference:
 \bsEND
 \end{pseudo}
 
-\begin{pseudo}{clip\_component}{data}
-\bsFOR{y=0}{\height(data)-1}
-    \bsFOR{x=0}{\width(data)-1}
-        \bsCODE{data = \clip(data[y][x], 0, 2^\VideoDepth-1)}
+\begin{pseudo}{clip\_component}{comp\_data}
+\bsFOR{y=0}{\height(comp\_data)-1}
+    \bsFOR{x=0}{\width(comp\_data)-1}
+        \bsCODE{data = \clip(comp\_data[y][x], 0, 2^\VideoDepth-1)}
      \bsEND
 \bsEND
 \end{pseudo}

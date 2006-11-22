@@ -448,8 +448,8 @@ Motion vectors are allowed to extend beyond the edges of the
 upconverted reference picture component and values lying outside the range
 of the component are determined by edge extension, using the values:
 \begin{eqnarray*}
-cu & = &\clip(u, 0, 2^\MotionVectorPrecision*width(ref)) \\
-cv & = &\clip(v, 0, 2^\MotionVectorPrecision*height(ref))
+cu & = &\clip(u, 0, 2^\MotionVectorPrecision*\width(ref)) \\
+cv & = &\clip(v, 0, 2^\MotionVectorPrecision*\height(ref))
 \end{eqnarray*}
 
 There are four cases, depending upon the motion vector precision selected.
@@ -481,8 +481,8 @@ Value & 167 & -56 & 25 & -11 & 3
 \end{centering}
 \end{figure}
 
-Define an array $ref2$ of height $2*height(ref)$ and width $width(ref)$ by
-the recipe, for $0\leq p<width(ref)$ and $0\leq q<2*height(ref)$:
+Define an array $ref2$ of height $2*\height(ref)$ and width $\width(ref)$ by
+the recipe, for $0\leq p<\width(ref)$ and $0\leq q<2*\height(ref)$:
 
 {\bf Case 1.} If $q\%2==0$, set
 \begin{equation*}
@@ -492,14 +492,14 @@ ref2[q][p]=ref2[q//2][p]
 {\bf Case 2.} If $q\%2!=0$, $ref2[q][p]$ is set by
 
 \begin{pseudo*}
-\bsCODE{ref2[q][p]=  \sum_{i=0}^{4} t_i *(ref[\clip( (q-1)//2-i, 0, height(ref)-1)][p]+
-ref[\clip((q+1)//2+i, 0,height(ref)-1)) ][p])}
+\bsCODE{ref2[q][p]=  \sum_{i=0}^{4} t_i *(ref[\clip( (q-1)//2-i, 0, \height(ref)-1)][p]+
+ref[\clip((q+1)//2+i, 0,\height(ref)-1)) ][p])}
 \bsCODE{ref2[q][p] = (ref2[q][p]+128)\gg 8}
 \bsCODE{ref2[q][p] = \clip(ref2[q][p], 0, 2^\VideoDepth-1)}
 \end{pseudo*}
 
 The full upconverted array is constructed from $ref2$ in the same way.
- For $0\leq p<2*width(ref)$ and $0\leq q<2*height(ref)$ we have:
+ For $0\leq p<2*\width(ref)$ and $0\leq q<2*\height(ref)$ we have:
 
 {\bf Case 1.} If $p\%2==0$, set
 \begin{equation*}
@@ -509,8 +509,8 @@ upref[q][p]=ref2[q][p//2]
 {\bf Case 2.} If $p\%2!=0$, $upref[q][p]$ is set by
 
 \begin{pseudo*}
-\bsCODE{upref[q][p]=  \sum_{i=0}^{4} t_i *\left(ref2[q][\clip( (p-1)//2-i, 0, width(ref2)-1)]+
-ref2[q][\clip((p+1)//2+i, 0, width(ref2)-1)]\right)}
+\bsCODE{upref[q][p]=  \sum_{i=0}^{4} t_i *\left(ref2[q][\clip( (p-1)//2-i, 0, \width(ref2)-1)]+
+ref2[q][\clip((p+1)//2+i, 0, \width(ref2)-1)]\right)}
 \bsCODE{upref[q][p] = (upref[q][p]+128)\gg 8}
 \bsCODE{upref[q][p] = \clip(upref[q][p], 0, 2^\VideoDepth-1)}
 \end{pseudo*}
@@ -554,10 +554,10 @@ w11 & = & rv*ru
 and also define the clipped coordinates that we shall use for interpolation by:
 
 \begin{eqnarray*}
-cu & = \clip(hu, 0, width(upref)-1) \\
-cu1 & = \clip(hu+1, 0, width(upref)-1) \\
-cv & = \clip(hv, 0, width(upref)-1) \\
-cv1 & = \clip(hv+1, 0, width(upref)-1)
+cu & = \clip(hu, 0, \width(upref)-1) \\
+cu1 & = \clip(hu+1, 0, \width(upref)-1) \\
+cv & = \clip(hv, 0, \height(upref)-1) \\
+cv1 & = \clip(hv+1, 0, \height(upref)-1)
 \end{eqnarray*}
 
 The value returned is:

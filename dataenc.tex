@@ -1,7 +1,7 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % - This chapter defines how raw and VLC data  - %
 % - is extracted                               - % 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Data is encoded in the Dirac bitstream in four basic ways: fixed-length
 bit-wise and byte-wise encodings; variable-length codes; and arithmetic encoding.
@@ -97,14 +97,56 @@ An $n$-byte number in literal format shall be decoded by the recipe:
 
 \subsection{Variable-length code formats}
 \label{vlc}
-Variable-length codes are used in two ways in the Dirac stream. The first
-use is for direct encoding into the stream. The second use is for binarisation
-in the arithmetic encoding/decoding process so that integer values may be 
-coded and decoded using a binary arithmetic coding engine. 
+Variable-length codes are used in three ways in the Dirac stream. The first
+use is for direct encoding of header values into the stream. The second use
+is for entropy coding of motion data and coefficients, where arithmetic decoding
+is not in use.
 
-\subsubsection{Unsigned interleaved exp-Golomb}
+The third use 
+is for binarisation in the arithmetic encoding/decoding process so that integer 
+values may be coded and decoded using a binary arithmetic coding engine. This is
+described in Section \ref{arithdecoding}.
+
+When used for coding motion data and coefficients, VLCs are employed within
+a data block of known length. It is possible to gain additional compression by early termination:
+maintaining a count of remaining bits, and returning default values when this length
+is exceeded. This is achieved by use of the $read\_bitb()$, $read\_uintb()$ and $read\_sintb()$
+for reading values from data blocks. A similar early termination facility is a used for
+arithmetic decoding.
+
+\subsubsection{Data input for block operation}
+\label{blockreadbit}
+
+This section specifies the operation of the $read\_bitb()$ process for reading bits from
+a block of known size. In this case, the decoder state variable $\ABitsLeft$ has been
+set to the block length, and is decremented on reading a bit. When all bits in the block
+have been read, then $1$ is returned by default:
+
+\begin{pseudo}{read\_bitb}{}
+\bsIF{\ABitsLeft==0}
+  \bsRET{1}
+\bsELSE
+  \bsCODE{\ABitsLeft -= 1}
+  \bsRET{read\_bit()}
+\bsEND
+\end{pseudo}
+
+It is possible that not all data in a block is exhausted after a sequence of read operations.
+At the end of a sequence of read operations, the decoder will flush the block. This assists
+with recovery in the event of errors in the stream, and enforces byte-alignment where required 
+(for example in arithmetic coded blocks).
+
+\begin{pseudo}{flush\_inputb()}{}
+\bsWHILE{\ABitsLeft>0}
+    \bsCODE{read\_bit()}
+    \bsCODE{\ABitsLeft-=1}
+\bsEND
+\end{pseudo}
+
+
+\subsubsection{Unsigned interleaved exp-Golomb codes}
 This section defines the unsigned interleaved exp-Golomb data format and the operation
-of the $read\_uint()$ function. 
+of the $read\_uint()$ and the $read\_uintb()$ functions. 
 
 Unsigned interleaved exp-Golomb data is decoded to produce unsigned
  integer values.The format consists of two interleaved parts, 
@@ -153,17 +195,15 @@ The $read\_uint()$ function returns an unsigned integer value and is defined by 
 
 \begin{pseudo}{read\_uint}{}
 \bsCODE{value = 1}
-\bsWHILE{read\_bool()== \false}
+\bsWHILE{read\_bit() == 0}
   \bsCODE{value \ll = 1}
-  \bsIF{read\_bool()==\true}
+  \bsIF{read\_bit()==1}
     \bsCODE{value += 1}
   \bsEND
 \bsEND
 \bsCODE{value -= 1}
 \bsRET{value}
-
 \end{pseudo}
-
 
 \begin{informative}
 Conventional exp-Golomb coding places all follow bits at the beginning as a prefix. This is
@@ -172,11 +212,28 @@ be decoded in two loops -- the prefix followed by the data bits. Interleaved exp
 coding allows values to be decoded in a single loop, without the need for a length count.
 \end{informative}
 
+The $read\_uintb()$ function is identical to $read\_uint()$ except that the block-bounded read
+operation is employed:
+
+\begin{pseudo}{read\_uintb}{}
+\bsCODE{value = 1}
+\bsWHILE{read\_bitb() == 0}
+  \bsCODE{value \ll = 1}
+  \bsIF{read\_bitb()==\true}
+    \bsCODE{value += 1}
+  \bsEND
+\bsEND
+\bsCODE{value -= 1}
+\bsRET{value}
+\end{pseudo}
+
+Note that when $\ABitsLeft==0$, all subsequent values read by $read\_uintb()$ will be 0.
+
 \subsubsection{Signed interleaved exp-Golomb}
 \label{segol}
 
 This section defines the signed interleaved exp-Golomb data format and the operation
-of the $read\_sint()$ function.
+of the $read\_sint()$ and $read\_sintb()$ functions.
 
 The code for the signed interleaved exp-Golomb data format consists of the
 unsigned interleaved exp-Golomb code for the magnitude, followed by a sign bit
@@ -206,9 +263,21 @@ The decoding operation is as follows.
 
 \begin{pseudo}{read\_sint}{}
 \bsCODE{value = read\_uint()}
-\bsIF{read\_bool()==\true}
+\bsIF{read\_bit()==1}
   \bsCODE{value = -value}
 \bsEND
 \bsRET{value}
-
 \end{pseudo}
+
+The $read\_sintb()$ function is identical to $read\_sint()$ except that the block-bounded read
+operation is employed:
+
+\begin{pseudo}{read\_sintb}{}
+\bsCODE{value = read\_uintb()}
+\bsIF{read\_bitb()==1}
+  \bsCODE{value = -value}
+\bsEND
+\bsRET{value}
+\end{pseudo}
+
+Note that when $\ABitsLeft==0$, all subsequent values read by $read\_sintb()$ will be 0.

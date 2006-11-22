@@ -1,7 +1,5 @@
 \label{videoformatdefaults}
 
-[To Do : add in slice stuff for low-delay]
-
 This Section specifies the default values for decoder state variables that are determined
 by the value of $\SVideoFormat$. These defaults reduce overhead by allowing a
 large number of parameters to be set without explicit signalling. The defaults
@@ -175,7 +173,7 @@ $K_{B}$ & 0.144 & 0.144 & 0.0722 & 0.0722 & 0.25 & 0.25\\
 \hline
 \VSliceWidth & 32 & 16 & 16 & 32 & 32 & 32 & 32 \\
 \VSliceHeight & 32 & 16 & 16 & 32 & 32 & 32 & 32 \\
-\VSliceBytes & 512 & 256 & 256 & 512 & 512 & 512 & 512 \\
+\VSliceBits & 512 & 256 & 256 & 512 & 512 & 512 & 512 \\
 \hline
 \end{tabular}
 \caption{Default decoding parameters for video formats 0--6}
@@ -216,7 +214,7 @@ $K_{B}$ & 0.144 & 0.144 & 0.0722 & 0.0722 & 0.25 & 0.25\\
 \hline
 \VSliceHeight & 32 & 32 & 48 & 64 & 64 & 64 \\
 \VSliceWidth & 32 & 32 & 48 & 64 & 64 & 64 \\
-\VSliceBytes & 512 & 512 & 768 & 1024 & 1024 & 1024 \\
+\VSliceBits & 512 & 512 & 768 & 1024 & 1024 & 1024 \\
 \hline
 
 \end{tabular}
@@ -311,7 +309,7 @@ $K_{B}$ & 0.0722 &0.144&0.144&0.144&0.144&0.144&0.144\\
 \hline
 \VSliceWidth & 16 & 16 & 16 & 16 & 16 & 16 & 16 \\
 \VSliceHeight & 16 & 16 & 16 & 16 & 16 & 16 & 16 \\
-\VSliceBytes & 256 & 256 & 256 & 256 & 256 & 256 & 256 \\
+\VSliceBits & 256 & 256 & 256 & 256 & 256 & 256 & 256 \\
 \hline
 \end{tabular}
 \caption{Default video parameters for video formats 0--6.}
@@ -395,7 +393,7 @@ $K_{B}$ & 0.144 & 0.144 & 0.0722 & 0.0722 & 0.25 & 0.25\\
 \hline
 \VSliceHeight & 16 & 16 & 16 & 16 & 16 & 16 \\
 \VSliceWidth & 16 & 16 & 16 & 16 & 16 & 16 \\
-\VSliceBytes & 256 & 256 & 256 & 256 & 256 & 256 \\
+\VSliceBits & 256 & 256 & 256 & 256 & 256 & 256 \\
 \hline
 \end{tabular}
 \caption{Default video parameters for video formats 7--12}

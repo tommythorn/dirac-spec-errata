@@ -82,31 +82,16 @@ block are sufficient to allow for the
 decoding of all coefficients. However, the specification of arithmetic
 decoding operations in this section may occasionally cause further bits to be read,
 even though they are not required for determining decoded values. For this
-reason a read function $read\_bita()$ is defined which returns $1$ if the
-bounds of this block of data have been exceeded:
-
-\begin{pseudo}{read\_bita}{}
-\bsIF{\ABitsLeft==0}
-  \bsRET{1}
-\bsELSE
-  \bsCODE{\ABitsLeft -= 1}
-  \bsRET{read\_bit()}
-\bsEND
-\end{pseudo}
+reason the bounded-block read function $read\_bitb()$ (Section \ref{blockreadbit}) is 
+used for data access.
 
 Since the length of arithmetically coded data elements is given in bytes within the Dirac
-stream, there may be bits left unread when all values have been extracted. The $flush\_arith()$
-function reads all unread data, and aligns data input with the beginning of the byte 
+stream, there may be bits left unread when all values have been extracted. These
+are flushed as desribed in Section \ref{blockreadbit}. Since arithmetically coded blocks
+are byte-aligned and a whole number of bytes, this aligns data input with the beginning of the byte 
 after the arithmetically coded data i.e. at the end of the
-data chunk. $flush\_arith()$ is always called at the end of decoding an arithmetically encoded
+data chunk. $flush\_inputb()$ is always called at the end of decoding an arithmetically encoded
 data element.
-
-\begin{pseudo}{flush\_arith()}{}
-\bsWHILE{\ABitsLeft>0}
-    \bsCODE{read\_bit()}
-    \bsCODE{\ABitsLeft-=1}
-\bsEND
-\end{pseudo}
 
 \begin{informative}
 The Dirac arithmetic decoding engine uses 16 bit words, and so if all coefficients are
@@ -114,14 +99,10 @@ coded no more than 16 additional bits should be read beyond the end of the block
 would seem sufficient to read in the entire block of data and pad the end with two bytes of value 0xFF,
 to avoid a branch condition on inputting data
 However, an arithmetically encoded block may end with a string of 1s, which an encoder could
-conceivably strip out to save bits, in the knowledge that $read\_bita()$ will re-insert them. Terminating
+conceivably strip out to save bits, in the knowledge that $read\_bitb()$ will re-insert them. Terminating
 strings of 1s can occur (but not exclusively) in coding many zero wavelet subband coefficients at the end
 of a subband. So a much larger number of pad bytes may be required in practice.
 \end{informative}
-
-\begin{comment}
-May need to add in an arbitrary number of such bytes in order to support early termination.
-\end{comment}
 
 \subsection{Decoder functions}
 \label{extractarith}
@@ -147,7 +128,7 @@ for reading bits into the arithmetic decoding state variables.
 \bsCODE{\ALow \&= \text{0xFFFF}}
 \bsCODE{\ACode \ll= 1}
 \bsCODE{\ACode \&= \text{0xFFFF}}
-\bsCODE{\ACode += read\_bita()}{\ref{inputarith}}
+\bsCODE{\ACode += read\_bitb()}{\ref{blockreadbit}}
 \end{pseudo}
 
 $shift\_all\_bits()$ expands the interval between $\ALow$ and $\AHigh$
@@ -227,7 +208,7 @@ Signed and unsigned integer values are binarised using interleaved exp-Golomb
  binarisation as per Section \ref{vlc}: the $read\_sinta()$ and $read\_uinta()$
 processes are essentially identical to the 
 $read\_sint()$ and $read\_uint()$ processes, except that instances of $read\_bool()$ are replaced
-by instances of $read\_ba()$ (Section \ref{arithreadbool}) using suitable contextualisation. 
+by instances of $read\_boola()$ (Section \ref{arithreadbool}) using suitable contextualisation. 
 
 A choice of context depends upon whether the bit is a data bit, follow bit, or sign bit, and upon the 
 position of the bit within the binarisation: $context\_set$ consists of three parts -
@@ -257,9 +238,9 @@ Unsigned integers are decoded by:
 \begin{pseudo}{read\_uinta}{context\_set}
 \bsCODE{value = 1}
 \bsCODE{index = 0}
-\bsWHILE{read\_ba(follow\_context(index,context\_set) )== \false}
+\bsWHILE{read\_boola(follow\_context(index,context\_set) )== \false}
   \bsCODE{value \ll = 1}
-  \bsIF{read\_ba(\text{state[contexts]}[context\_set[data])])}
+  \bsIF{read\_boola(\text{state[contexts]}[context\_set[data])])}
     \bsCODE{value += 1}
   \bsEND
   \bsCODE{index += 1}
@@ -275,7 +256,7 @@ $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 \begin{pseudo}{read\_sinta}{context\_set}
 \bsCODE{value=read\_uinta(context_set)}
 \bsIF{value != 0}
-  \bsIF{read\_ba(\Contexts[context\_set[sign])]) == \true}
+  \bsIF{read\_boola(\Contexts[context\_set[sign])]) == \true}
     \bsCODE{value=-value}
   \bsEND
 \bsEND

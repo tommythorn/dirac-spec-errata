@@ -16,7 +16,7 @@ to cover the picture area. Superblocks may overlap the right and bottom edge of 
 Since superblocks may overlap the right and bottom edge of the picture, blocks in such superblocks
 may also overlap the edges or even fall outside the picture area altogether. Motion data for 
 blocks which fall outside the picture area is still decoded, but will not be used for motion compensation 
-(Section \ref{motioncompensation}). 
+(Section \ref{motioncompensate}). 
 
 Unlike macroblocks in MPEG standards, a superblock does not encapsulate all data within a 
 given area of the picture. It is merely an aggregation device for motion data, and for this reason
@@ -86,7 +86,7 @@ The decoding loop for block data iterates over all superblocks in raster order:
         \bsEND
     \bsEND
 \bsEND
-\bsCODE{flush\_arith()}{\ref{inputarith}}
+\bsCODE{flush\_inputb()}{\ref{blockreadbit}}
 \end{pseudo}
 
 \begin{informative}
