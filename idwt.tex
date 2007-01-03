@@ -187,7 +187,8 @@ A predict filter with taps $t_i$ is not equivalent to an update filter with taps
 \end{informative}
 
 These formulae are deemed to be applied for all applicable $n$
-before the next filtering stage is applied and to use reflection at the array
+before the next filtering stage is applied and to use edge extension (of even and
+odd parts separately) at the array
 edges where the filter would otherwise overlap. In pseudo-code, two
 functions $lifteven(A, t_i, s)$ and $liftodd(A, t_i, s)$ are specified by:
 
@@ -196,13 +197,9 @@ functions $lifteven(A, t_i, s)$ and $liftodd(A, t_i, s)$ are specified by:
     \bsCODE{sum=0}
     \bsFOR{i=-N}{M}
         \bsCODE{pos=2*(n+i)-1}
-        \bsIF{pos<0}
-            \bsCODE{sum+=t_i*A[-pos]}
-        \bsELSEIF{pos\geq \length(A)}
-            \bsCODE{sum+=t_i*A[2*\length(A)-pos]}
-        \bsELSE
-            \bsCODE{sum+=t_i*A[pos]}
-        \bsEND
+        \bsCODE{pos=\min(pos, \length(A)-1)}        
+        \bsCODE{pos=\max(pos, 1)}
+        \bsCODE{sum+=t_i*A[pos]}
     \bsEND
     \bsCODE{sum+=(1\ll (s-1))}
     \bsIF{fsort==\textit{PREDICT}}
@@ -219,13 +216,9 @@ and
     \bsCODE{sum=0}
     \bsFOR{i=-N}{M}
         \bsCODE{pos=2*(n+i)}
-        \bsIF{pos<0}
-            \bsCODE{sum+=t_i*A[-pos]}
-        \bsELSEIF{pos\geq \length(A)}
-            \bsCODE{sum+=t_i*A[2*\length(A)-pos]}
-        \bsELSE
-            \bsCODE{sum+=t_i*A[pos]}
-        \bsEND
+        \bsCODE{pos=\min(pos, \length(A)-2)}        
+        \bsCODE{pos=\max(pos, 0)}
+        \bsCODE{sum+=t_i*A[pos]}
     \bsEND
     \bsCODE{sum+=(1\ll (s-1))}
     \bsIF{fsort==\textit{PREDICT}}
