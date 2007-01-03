@@ -331,7 +331,7 @@ and this is the value returned.
 
 Note that blocks at the extremities of the block set receive maximum weight around their outward-facing edges.
 This is to compensate for the lack of blocks making weight contributions on these edges, and ensures that
-the total contribution for the pixels in the blocks is $2^alpha$. In section ($i=0$), the profile of the matrix 
+the total contribution for the pixels in the blocks is $2^{\alpha}$. In section ($i=0$), the profile of the matrix 
 for interior blocks is:
 
 \begin{figure}[!h]
@@ -379,7 +379,7 @@ where $upconvert$ is defined in Section \ref{upconvert} is returned.
 \subsection{Global motion vector field generation}
 \label{globalmv}
 
-This section specifies the operation of the $global\_pred(ref, ref\_num, x,y, c)$ process
+This section specifies the operation of the $global\_mv(ref, ref\_num, x,y, c)$ process
 for deriving a global motion vector for a pixel at location $(x,y)$, in a component of 
 type $c$ from a reference $ref$.
 
