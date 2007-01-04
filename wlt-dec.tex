@@ -229,7 +229,7 @@ zero, then the subband is deemed to be skipped and all coefficients are set to z
 before the process exits:
 
 \begin{pseudo}{subband}{data, level, orient}
-\bsITEM{length}{unsigned}
+\bsITEM{length}{uint}
 \bsIF{length == 0}
   \bsFOR{y=0}{\height(data[level][orient])-1}
     \bsFOR{x=0}{\width(data[level][orient])-1}

@@ -145,7 +145,7 @@ sets of 2x2 blocks within the superblock. In split mode 2, all sixteen sets of b
 \bsCODE{step = 4//block\_count }
 \bsFOR{q=0}{block\_count-1}
    \bsFOR{p=0}{block\_count-1}
-        \bsCODE{block(y+q*step, x+p*step)}{\ref{blockdecoding}}
+        \bsCODE{block\_decode(y+q*step, x+p*step)}{\ref{blockdecoding}}
         \bsCODE{propagate\_data(y+q*step, x+p*step, step)}{\ref{propagatedata}}
    \bsEND
 \bsEND
@@ -249,9 +249,9 @@ $(xpos, ypos)$.
 \paragraph{Block motion vectors \\}
 \label{blockvectors}
 
-The $block\_motion(ypos, xpos)$ process parses the block motion vectors for the block at position $(xpos, ypos)$.
+The $block\_vectors(ypos, xpos)$ process parses the block motion vectors for the block at position $(xpos, ypos)$.
 
-\begin{pseudo}{block\_motion}{ypos, xpos}
+\begin{pseudo}{block\_vectors}{ypos, xpos}
 \bsIF{\BlockData[ypos][xpos][mode][1] == \true}
     \bsCODE{mv\_residual.x = read\_sinta(ref1x\_contexts() ) }{\ref{mvcontexts}}
     \bsCODE{mv\_residual.y = read\_sinta(ref1y\_contexts() ) }{\ref{mvcontexts}}
@@ -486,27 +486,28 @@ median vector has  horizontal and vertical components equal to the median of the
 components of available vectors:
 
 \begin{pseudo*}
-\bsIF{\BlockData[ypos][xpos-1][global]==\true}
-    \bsIF{\BlockData[ypos][xpos-1][mode][ref]==\false}
-        \bsCODE{valuesx = valuesx\cup\{\BlockData[ypos][xpos-1][ref].x \} }
-        \bsCODE{valuesy = valuesy\cup\{\BlockData[ypos][xpos-1][ref].y \} }
+\bsIF{xpos>0 \text{ and } ypos>0 }
+    \bsIF{\BlockData[ypos][xpos-1][global]==\true}
+        \bsIF{\BlockData[ypos][xpos-1][mode][ref]==\false}
+            \bsCODE{valuesx = valuesx\cup\{\BlockData[ypos][xpos-1][ref].x \} }
+            \bsCODE{valuesy = valuesy\cup\{\BlockData[ypos][xpos-1][ref].y \} }
+        \bsEND
     \bsEND
-\bsEND
-\bsIF{\BlockData[ypos-1][xpos][global]==\true}
-    \bsIF{\BlockData[ypos-1][xpos][mode][ref]==\false}
-        \bsCODE{valuesx = valuesx\cup\{\BlockData[ypos-1][xpos][ref].x \} }
-        \bsCODE{valuesy = valuesy\cup\{\BlockData[ypos-1][xpos][ref].y \} }
+    \bsIF{\BlockData[ypos-1][xpos][global]==\true}
+        \bsIF{\BlockData[ypos-1][xpos][mode][ref]==\false}
+            \bsCODE{valuesx = valuesx\cup\{\BlockData[ypos-1][xpos][ref].x \} }
+            \bsCODE{valuesy = valuesy\cup\{\BlockData[ypos-1][xpos][ref].y \} }
+        \bsEND
     \bsEND
-\bsEND
-\bsIF{\BlockData[ypos-1][xpos-1][global]==\false}
-    \bsIF{\BlockData[ypos-1][xpos-1][mode][ref]==\true}
-        \bsCODE{valuesx = valuesx\cup\{\BlockData[ypos-1][xpos-1][ref].x \} }
-        \bsCODE{valuesy = valuesy\cup\{\BlockData[ypos-1][xpos-1][ref].y \} }
+    \bsIF{\BlockData[ypos-1][xpos-1][global]==\false}
+        \bsIF{\BlockData[ypos-1][xpos-1][mode][ref]==\true}
+            \bsCODE{valuesx = valuesx\cup\{\BlockData[ypos-1][xpos-1][ref].x \} }
+            \bsCODE{valuesy = valuesy\cup\{\BlockData[ypos-1][xpos-1][ref].y \} }
+        \bsEND
     \bsEND
-\bsEND
 
-\bsRET{(\median(valuesx), \median(valuesy) )}
-
+    \bsRET{(\median(valuesx), \median(valuesy) )}
+\bsEND
 \end{pseudo*}
 
 (Note that the median of an empty set is zero.)
@@ -538,21 +539,23 @@ contribute to the prediction. Define a set $values=\emptyset$. The prediction is
 unbiased mean of available values:
 
 \begin{pseudo*}
-\bsCODE{pred=(0, 0)}
-\bsIF{\BlockData[ypos][xpos-1][mode]==\Intra}
-    \bsCODE{values = values\cup\{\BlockData[ypos][xpos-1][dc][comp] \} }
-\bsEND
-\bsIF{\BlockData[ypos-1][xpos][mode]==\Intra}
-    \bsCODE{values = valuesx\cup\{\BlockData[ypos-1][xpos][ref][dc][comp] \} }
-\bsEND
-\bsIF{\BlockData[ypos-1][xpos-1][mode]==\Intra}
-    \bsCODE{values = values\cup\{\BlockData[ypos-1][xpos-1][ref][dc][comp] \} }
-\bsEND
+\bsIF{ xpos>0 \text{ and } ypos>0 }
+    \bsCODE{pred=(0, 0)}
+    \bsIF{\BlockData[ypos][xpos-1][mode]==\Intra}
+        \bsCODE{values = values\cup\{\BlockData[ypos][xpos-1][dc][comp] \} }
+    \bsEND
+    \bsIF{\BlockData[ypos-1][xpos][mode]==\Intra}
+        \bsCODE{values = valuesx\cup\{\BlockData[ypos-1][xpos][ref][dc][comp] \} }
+    \bsEND
+    \bsIF{\BlockData[ypos-1][xpos-1][mode]==\Intra}
+        \bsCODE{values = values\cup\{\BlockData[ypos-1][xpos-1][ref][dc][comp] \} }
+    \bsEND
 
-\bsIF{values!=\{\}}
-    \bsRET{pred =\mean(values)}
-\bsELSE
-    \bsRET{2^{\VideoDepth-1}}
+    \bsIF{values!=\emptyset}
+        \bsRET{pred =\mean(values)}
+    \bsELSE
+        \bsRET{2^{\VideoDepth-1}}
+    \bsEND
 \bsEND
 \end{pseudo*}
 
@@ -573,28 +576,28 @@ The $sb\_split\_contexts()$ function returns the following unsigned integer cont
 
 There are four motion vector context sets, which are signed integer context sets as follows.
 
-$ref1x\_contexts$ returns the set with
+$ref1x\_contexts()$ returns the set with
 \begin{itemize}
 \item Follow = [ \RefOnexFollowOne, \RefOnexFollowTwo, \RefOnexFollowThree, \RefOnexFollowFour, \RefOnexFollowFivePlus ]
 \item Data = \RefOnexData
 \item Sign = \RefOnexSign
 \end{itemize}
 
-$ref1y\_contexts$ returns the set with
+$ref1y\_contexts()$ returns the set with
 \begin{itemize}
 \item Follow = [ \RefOneyFollowOne, \RefOneyFollowTwo, \RefOneyFollowThree, \RefOneyFollowFour, \RefOneyFollowFivePlus ]
 \item Data = \RefOneyData
 \item Sign = \RefOneySign
 \end{itemize}
 
-$ref2x\_contexts$ returns the set with
+$ref2x\_contexts()$ returns the set with
 \begin{itemize}
 \item Follow = [ \RefTwoxFollowOne, \RefTwoxFollowTwo, \RefTwoxFollowThree, \RefTwoxFollowFour, \RefTwoxFollowFivePlus ]
 \item Data = \RefTwoxData
 \item Sign = \RefTwoxSign
 \end{itemize}
 
-$ref1y\_contexts$ returns the set with
+$ref2y\_contexts()$ returns the set with
 \begin{itemize}
 \item Follow = [ \RefTwoyFollowOne, \RefTwoyFollowTwo, \RefTwoyFollowThree, \RefTwoyFollowFour, \RefTwoyFollowFivePlus ]
 \item Data = \RefTwoyData
