@@ -254,7 +254,7 @@ Unsigned integers are decoded by:
 $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 
 \begin{pseudo}{read\_sinta}{context\_set}
-\bsCODE{value=read\_uinta(context_set)}
+\bsCODE{value=read\_uinta(context\_set)}
 \bsIF{value != 0}
   \bsIF{read\_boola(\Contexts[context\_set[sign])]) == \true}
     \bsCODE{value=-value}

@@ -138,6 +138,8 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 0x10 & 0001 0000 & End of Sequence & -- \\
 \hline
+0x10 & 0010 0000 & Auxiliary data & -- \\
+\hline
 \multicolumn{4}{|c|}{\bf Core syntax} \\
 \hline
 \ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
@@ -179,7 +181,7 @@ as a bit-field, which shall be used to direct subsequent decoding operations. Al
 boolean, except for $num\_refs()$ which returns an integer:
 
 \begin{pseudo}{is\_AU}{}
-\bsRET{!(\ParseCode \&\text{0x18})}
+\bsRET{\ParseCode==\text{0x00}}
 \end{pseudo}
 
 \begin{pseudo}{is\_picture}{}
@@ -187,7 +189,7 @@ boolean, except for $num\_refs()$ which returns an integer:
 \end{pseudo}
 
 \begin{pseudo}{is\_end\_of\_sequence}{}
-\bsRET{((\ParseCode \&\text{0x18})==\text{0x10})}
+\bsRET{\ParseCode==\text{0x10}}
 \end{pseudo}
 
 \begin{pseudo}{is\_reference}{}
@@ -448,7 +450,7 @@ The supported chroma formats are specified in Table \ref{chromaformats}:
 \hline
 1 & 4:2:2 \\
 \hline
-1 & 4:2:0 \\
+2 & 4:2:0 \\
 \hline
 \end{tabular}
 \caption{Supported chroma formats}\label{chromaformats}
@@ -715,7 +717,7 @@ specification consists of primaries, matrix and transfer function. Defaults
 are available for all three collectively and individually. The process is:
 
 \begin{pseudo}{colour\_spec}{}
-\bsITEM{colour\_spec_flag}{bool}{}
+\bsITEM{colour\_spec\_flag}{bool}{}
 \bsIF{colour\_spec\_flag==\true}
     \bsITEM{index}{uint}{}
     \bsCODE{preset\_colour\_specs(index)}
@@ -1330,7 +1332,7 @@ $\Codeblocks[level][h]$ respectively.
 \end{pseudo}
 
 $index$ shall lie in the range 0 to 2, and $codeblock\_mode$ sets the codeblock mode
-according to Table \ref{codeblockmodes}.
+according to Table \ref{codeblockmodes}. 
 
 \begin{comment}
 The maximum number of codeblocks vertically shall be less than or equal

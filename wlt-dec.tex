@@ -504,13 +504,13 @@ conditioning of the sign contexts only.
   \bsIF{v==0}
     \bsRET{0}
   \bsELSE
-    \bsRET{sign(band[v-1][h])}
+    \bsRET{\sign(band[v-1][h])}
   \bsEND
 \bsELSEIF{orient==LH}
   \bsIF{h==0}
     \bsRET{0}
   \bsELSE
-    \bsRET{sign(band[v][h-1])}
+    \bsRET{\sign(band[v][h-1])}
   \bsEND
 \bsELSE
   \bsRET{0}
@@ -520,7 +520,7 @@ conditioning of the sign contexts only.
 \subsubsection{Coefficient context selection}
 \label{selectcoeffcontext}
 
-This section defines the $select\_context(zero\_nhood, parent, sign)$
+This section defines the $select\_coeff\_ctxs(zero\_nhood, parent, sign\_pred)$
 function, which chooses a context index set for decoding a coefficient value.
 
 Twelve possible coefficient index sets are defined, and are returned as specified 
@@ -535,7 +535,7 @@ for all coefficients.
 \begin{table}[h!]
 \begin{tabular}{|c|c|c||l|l|}
 \hline
- $parent$ & $zero\_nhood$ & $sign$ & \multicolumn{2}{c|}{\bf{Context set}} \\
+ $parent$ & $zero\_nhood$ & $sign\_pred$ & \multicolumn{2}{c|}{\bf{Context set}} \\
 
 % Zero parent, zero neighbour, zero sign prediction
 \hline
@@ -639,7 +639,7 @@ The inverse\_quant() function is defined by:
   \bsCODE{magnitude += 2}
   \bsCODE{magnitude = magnitude//4}
 \bsEND
-\bsRET{sign( quantised\_coeff )*magnitude}
+\bsRET{\sign( quantised\_coeff )*magnitude}
 \end{pseudo}
 
 \begin{informative}
@@ -658,8 +658,7 @@ the quantisation offset, but is separated in this specification.
 This section specifies the operation of the $quant\_factor()$ and 
 $quant\_offset()$ functions for performing inversion quantisation.
 
-Quantisation factors represent an approximation of quarter-bit values 
-with two bits of accuracy (i.e. $round(2^{\frac{index}{4}+2})$:
+Quantisation factors are set as follows:
 
 \begin{pseudo}{quant\_factor}{index}
 \bsCODE{base = 2^{index//4}}
@@ -696,8 +695,10 @@ mark the reconstruction point within the quantisation interval:
 \end{pseudo}
 
 \begin{informative}
+Quantisation factors represent an integer approximation of quarter-bit values 
+with two bits of accuracy i.e. of $(2^{\frac{index}{4}+2})$.
 The quantisation offsets have been selected so as to make inverse quantisation
-and quantisation by the same quantisation factor transparent. This requires that
+and re-quantisation by the same quantisation factor transparent. This requires that
 \[3\leq quant\_offset+2<quant\_factor\]
 
 -- hence the special conditions for quantisation index 0 and 1.

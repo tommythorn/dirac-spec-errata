@@ -136,7 +136,7 @@ At the end of a sequence of read operations, the decoder will flush the block. T
 with recovery in the event of errors in the stream, and enforces byte-alignment where required 
 (for example in arithmetic coded blocks).
 
-\begin{pseudo}{flush\_inputb()}{}
+\begin{pseudo}{flush\_inputb}{}
 \bsWHILE{\ABitsLeft>0}
     \bsCODE{read\_bit()}
     \bsCODE{\ABitsLeft-=1}
@@ -244,14 +244,14 @@ for non-zero values (Figure \ref{segolcodings}).
 \begin{tabular}{l|c}
 Bit sequence & Decoded value \\
 \hline\\
-1                 &  0\\
-0 0 1 1           &  -1\\
-0 0 1 0           &  1\\
-0 1 1 1            &  -2\\
-0 1 1 0            &  2\\
-0 0 0 0 1 1         &  -3\\
-0 0 0 0 1 0         &  3\\
 0 0 0 1 1 1         &  -4\\
+0 0 0 0 1 1         &  -3\\
+0 1 1 1            &  -2\\
+0 0 1 1           &  -1\\
+1                 &  0\\
+0 0 1 0           &  1\\
+0 1 1 0            &  2\\
+0 0 0 0 1 0         &  3\\
 0 0 0 1 1 0         &  4\\
 \end{tabular}
 

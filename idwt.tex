@@ -393,7 +393,7 @@ also allows for much more efficient implementation.
 $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+6])\\
                                              & &       -25*(A[2*n-2]+A[2*n+4])+81*(A[2*n]+A[2*n+2])+128)\gg 8 \end{array}$ \\
 1. Even, Predict,  $s=8, t_{-3}=-8, t_{-2}=21, t_{-1}=-46, t_0=161, t_1=161, t_2=-46, t_3=21, t_4=-8$ i.e. \\
- $ \begin{array}{rcl}A[2*n]  & += & (-8*(A[2*n-7]+A[2*n+7])+21*(A[2*n-5]+A[2*n+5]) \\
+ $ \begin{array}{rcl}A[2*n]  & -= & (-8*(A[2*n-7]+A[2*n+7])+21*(A[2*n-5]+A[2*n+5]) \\
                                           & &      -46*(A[2*n-3]+A[2*n+3])+161*(A[2*n-1]+A[2*n+1])+128)\gg 8 \end{array}$ 
 \end{tabular}
 & 0 \\
@@ -403,7 +403,7 @@ $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+
 \caption{$\WaveletIndex==6$: Fidelity filter for improved downconversion and anti-aliasing}
 \end{table}
 
-\begin{table}[h!]
+\begin{table}[!ht]
 \begin{tabular}{|l|l|}
 
 \hline
