@@ -120,7 +120,7 @@ initially (Section \ref{parsecodes})
 
 This section specifies how the Dirac stream data is used to manage the reference 
 picture buffer $\RefBuffer$. The reference picture buffer has a maximum size of
-5 elements.
+$\RefBufferSize$ elements, as set in the applicable level (Appendix \ref{profilelevel}).
 
 The $ref\_picture\_remove()$ process operates as
 follows:
@@ -128,9 +128,11 @@ follows:
 \begin{pseudo}{ref\_picture\_remove}{}
 \bsFOR{i=0}{\length(\RetiredPictureList)-1}
     \bsCODE{n=\RetiredPictureList[i]}
-    \bsFOR{k=0}{\length(\RefBuffer)-1}
+    \bsFOR{k=0}{\RefBufferSize-1}
        \bsIF{\RefBuffer[k][pic\_number]==n}
-            \bsCODE{\text{delete } \RefBuffer[k]}   
+            \bsFOR{j=k}{\RefBufferSize-1}
+                \bsCODE{\RefBuffer[j]=\RefBuffer[j+1]}
+            \bsEND
         \bsEND
     \bsEND
 \bsEND
@@ -143,12 +145,14 @@ picture number $n$.
 The $ref\_picture\_add()$ process for adding pictures to the reference picture
 buffer proceeds according to the following rules:
 
-{\bf Case 1.} If the reference picture buffer is not full i.e. has fewer than 5 elements,
+{\bf Case 1.} If the reference picture buffer is not full i.e. has fewer than $\RefBufferSize$ elements,
 then add the $\CurrentPicture$ data to the end of the buffer. 
 
-{\bf Case 2.} If the reference picture is full i.e. it has 5 elements, then remove the
-first (i.e. oldest) element of the buffer $\RefBuffer[0]$, and set
-\[\RefBuffer[4]=\CurrentPicture\]
+{\bf Case 2.} If the reference picture is full i.e. it has $\RefBufferSize$ elements, then remove the
+first (i.e. oldest) element of the buffer, $\RefBuffer[0]$, set
+\[\RefBuffer[i] = \RefBuffer[i+1] \]
+for $i=0$ to $\RefBufferSize-2$, and set the last element $\RefBuffer[\RefBufferSize-1]$ equal to
+a copy of $\CurrentPicture$.
  
 \subsection{Clipping}
 \label{pictureclip}

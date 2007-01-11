@@ -371,7 +371,9 @@ features.
 
 A profile determines a toolset that is sufficient to decode a sequence. A level determines
 decoder resources (picture and data buffers; computational resources) sufficient
-to decode a sequence. Applicable values of profile and level are specified in Appendix
+to decode a sequence, including the sizes $\RefBufferSize$ and $\DPBSize$ of 
+the reference picture and decoded picture buffers. 
+Applicable values of profile and level and the variables they set are specified in Appendix
 \ref{profilelevel}.
 
 The profile determines, amongst other things, the value of the boolean functions $using\_ac()$ and $using\_mc()$.
