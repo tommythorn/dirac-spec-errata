@@ -201,7 +201,7 @@ The overall $transform\_data()$ decoding process is as follows:
 \bsCODE{data=initialise\_wavelet\_data(comp)}{\ref{wltinit}}
 \bsCODE{subband(data, 0, \LL)}{\ref{subbanddecodeprocess}}    
 \bsFOR{level=1}{\TransformDepth}
-  \bsFOREACH{orient}{\HH, \LH,\HL}
+  \bsFOREACH{orient}{\LH,\HL,\HH}
     \bsCODE{byte\_align()}
     \bsCODE{subband(data, level, orient)}{\ref{subbanddecodeprocess}}
   \bsEND
