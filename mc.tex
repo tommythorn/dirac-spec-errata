@@ -14,6 +14,8 @@ Transform (IWT), specified in Section \ref{idwt}.
 Motion compensation uses the motion block data $\BlockData$ and (optionally) the
 global motion parameters $\GlobalParams$.
 
+\subsection{Dimensions}
+
 Since $motion\_compensate()$ applies to both luma and (potentially subsampled)
 chroma data, for simplicity a number of local variables are defined. If $c=Y$ then:
 \begin{eqnarray*}
@@ -53,16 +55,28 @@ larger area produced by padding. The specification of this section fully support
 interpretation.
 \end{informative}
 
-Throughout this Section, the following conventions are used.
+\subsubsection{Chroma subsampling}
+\label{chromamvscale}
 
-\begin{itemize}
-\item $x,y$ are co-ordinates in the predicted picture component
-\item $u,v$ are co-ordinates in a potentially upconverted reference picture component
-\end{itemize}
+When motion compensating chroma components, motion vectors are scaled by the
+$chroma\_mv\_scale()$ function:
 
-\begin{comment}
-[Are they??]
-\end{comment}
+\begin{pseudo}{chroma\_mv\_scale}{v}
+\bsCODE{sv.x = \rounddivide(v.x, chroma\_h\_factor() )}{\ref{chromaformat}}
+\bsCODE{sv.x = \rounddivide(v.x, chroma\_v\_factor())}{\ref{chromaformat}}
+\bsRET{sv}
+\end{pseudo}
+
+%Throughout this Section, the following conventions are used.
+%
+%\begin{itemize}
+%\item $x,y$ are co-ordinates in the predicted picture component
+%\item $u,v$ are co-ordinates in a potentially upconverted reference picture component
+%\end{itemize}
+%
+%\begin{comment}
+%[Are they??]
+%\end{comment}
 
 \begin{informative*}
 \subsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
@@ -150,8 +164,9 @@ vbits  & = & \log_2(yblen-ybsep)+1 = \log_2(yoffset)+2 \\
 total\_wt\_bits & = & hbits+vbits+\RefsWeightPrecision
 \end{eqnarray*}
 
-This is the number of bits added to pixel values in order to perform OBMC reversibly with integer arithmetic
-using the spatial specified in Sections \ref{mcspatialweights} and the reference weights extracted in
+This is the number of bits added to pixel values in order to perform OBMC 
+reversibly with integer arithmetic using the spatial specified in Sections 
+\ref{mcspatialweights} and the reference weights extracted in
 parsing the picture prediction header data (Section \ref{refpicweights}).
 
 The $pixel\_predict(y, x, ref1, ref2, c)$ function forms a prediction by adding together weighted predictions
@@ -175,7 +190,8 @@ weights assigned to references:
         \bsCODE{val1=block\_pred(ref1, 1, i, j, x, y, c)}
         \bsCODE{val1=val1*\RefOneWeight}
         \bsCODE{val2=block\_pred(ref2, 2, i, j, x, y, c)}
-        \bsCODE{val2=va2l*\RefTwoWeight}
+        \bsCODE{val2=val2*\RefTwoWeight}
+        \bsCODE{val=val1+val2}
     \bsEND{}
     \bsCODE{val=val*spatial\_wt(i,j,x,y)}{\ref{mcspatialweights}}
     \bsCODE{p=p+val}
@@ -187,23 +203,31 @@ weights assigned to references:
 
 \begin{informative}
 
-{\bf 1.} Note that the number of bits $total\_wt\_bits$ used for the OBMC weighting matrix depends upon the block sizes - specifically
-the block overlaps - selected. A Dirac decoder level (\ref{levels}) specifies the maximum block overlaps allowable, and hence 
-the word widths necessary for processing OBMC. If we assume that the picture weights are complementary (i.e. the weights
-for reference 1 and reference 2 sum to $2^\RefsWeightPrecision$, then the number of bits required for performing 
-motion compensation 
-calculations is
-\[\VideoDepth+total\_wt\_bits+\RefsWeightPrecision\]
-unsigned bits. 8 bit video data encoded with block overlaps of 4 luminance pixels and the standard picture weights therefore
-requires 8+3+3+1=15 unsigned bits. The additional bit within a 16 bit word could be used to provide additional reference 
+{\bf 1.} Note that the number of bits $total\_wt\_bits$ used for 
+the OBMC weighting matrix depends upon the block sizes - specifically
+the block overlaps - selected. A Dirac decoder level (\ref{levels}) 
+specifies the maximum block overlaps allowable, and hence 
+the word widths necessary for processing OBMC. If we assume that 
+the picture weights are complementary (i.e. the weights
+for reference 1 and reference 2 sum to $2^\RefsWeightPrecision$, 
+then the number of bits required for performing motion compensation 
+calculations is \[\VideoDepth+total\_wt\_bits+\RefsWeightPrecision\]
+unsigned bits. 8 bit video data encoded with block overlaps of 4 
+luminance pixels and the standard picture weights therefore
+requires 8+3+3+1=15 unsigned bits. The additional bit within 
+a 16 bit word could be used to provide additional reference 
 weighting.
 
 
-{\bf 2.} The motion compensation process has been presented as double loop: first over all 
-pixels in a given component and second over all blocks of which the pixel is a member. However, if an intermediate
-buffer is allowed, the loop order can be reversed. In this case one sets a picture buffer, consisting of 
-a component of data (or a strip of component data lines) and add in the weighted predictions for each block. As the
-blocks overlap, the contributions sum and form a prediction for every pixel. This is the most natural implementation
+{\bf 2.} The motion compensation process has been presented as double 
+loop: first over all pixels in a given component and second over all 
+blocks of which the pixel is a member. However, if an intermediate
+buffer is allowed, the loop order can be reversed. In this case 
+one sets a picture buffer, consisting of 
+a component of data (or a strip of component data lines) and 
+add in the weighted predictions for each block. As the
+blocks overlap, the contributions sum and form a prediction 
+for every pixel. This is the most natural implementation
 strategy:
 
 \begin{pseudo*}
@@ -238,9 +262,12 @@ strategy:
 \bsEND
 \end{pseudo*}
 
-The double multiplication by a spatial and by a reference weight can be avoided by using a set of spatial weighting matrices
-pre-multiplied by the applicable reference weights according to prediction mode. In the default case where the reference
-picture weights are one, as is the picture weight precision, this means a double-size spatial matrix for all modes other than
+The double multiplication by a spatial and by a reference weight can be 
+avoided by using a set of spatial weighting matrices
+pre-multiplied by the applicable reference weights according to 
+prediction mode. In the default case where the reference
+picture weights are one, as is the picture weight precision, 
+this means a double-size spatial matrix for all modes other than
 $\RefOneAndTwo$.
 
 {\bf 3.} The reference prediction weights used for each prediction mode may appear confusing. It is helpful
@@ -332,7 +359,7 @@ and this is the value returned.
 Note that blocks at the extremities of the block set receive maximum weight around their outward-facing edges.
 This is to compensate for the lack of blocks making weight contributions on these edges, and ensures that
 the total contribution for the pixels in the blocks is $2^{\alpha}$. In section ($i=0$), the profile of the matrix 
-for interior blocks is:
+for interior blocks is as shown in Figure \ref{fig:weightprofile}.
 
 \begin{figure}[!h]
 \centering
@@ -348,23 +375,21 @@ This section specifies the operation of the $block\_pred(ref, ref\_num, i, j, x,
 process for forming a prediction for a pixel 
 with coordinates $(x,y)$ in component $c$, belonging to the block with coordinates $(i,j)$.
 
-{\bf Case 1: $\BlockData[j][i][global]=\false$}. In this case, the block motion vectors are used to form a prediction.
-Motion vectors for chroma components must be scaled according to the chroma scale factors. If $c=Y$, set
-
+{\bf Case 1: $\BlockData[j][i][global]=\false$}. 
+In this case, the block motion vectors are used to form a prediction.
+Motion vectors for chroma components must be scaled 
+according to the chroma scale factors. If $c=Y$, set
 \begin{equation*}
 mv= \BlockData[j][i][ref]
 \end{equation*}
-
 whereas if $c=U$ or $c=V$, set
+\begin{equation*}
+mv = chroma\_mv\_scale(\BlockData[j][i][ref])
+\end{equation*}
+as per Section \ref{chromamvscale}.
 
-\begin{eqnarray*}
-mv.x & = & \rounddivide(\BlockData[j][i][ref].x, chroma\_h\_factor() ) \\
-mv.y & = & \rounddivide(\BlockData[j][i][ref].y, chroma\_v\_factor() )
-\end{eqnarray*}
-
-(chroma subsampling factors are as specified in Section \ref{chromaformats}.)
-
-{\bf Case 2: $\BlockData[j][i][global]=\true$}. In this case, a motion vector is determined from the global
+{\bf Case 2: $\BlockData[j][i][global]=\true$}. 
+In this case, a motion vector is determined from the global
 motion parameters as per Section \ref{globalmv}:
 \begin{equation*}
 mv=global\_mv(ref, ref\_num, x, y, c)
@@ -383,45 +408,11 @@ This section specifies the operation of the $global\_mv(ref, ref\_num, x,y, c)$ 
 for deriving a global motion vector for a pixel at location $(x,y)$, in a component of 
 type $c$ from a reference $ref$.
 
-\subsubsection{Chroma scaling}
-\label{chromascaling}
-
-The global motion parameters are extracted from the state data. If the component is a chroma
-component, the parameters must be scaled appropriately. Set:
-
-\begin{itemize}
-\item $\tilde{\bf A}=\GlobalParams[ref\_num].{\bf A}$
-\item $\tilde{\bf b}=\GlobalParams[ref\_num].{\bf b}$
-\item $\tilde{\bf c}=\GlobalParams[ref\_num].{\bf c}$
-\end{itemize}
-
-If $c=Y$, set ${\bf A}=\tilde{\bf A}$, ${\bf b}=\tilde{\bf b}$ and ${\bf c}=\tilde{\bf c}$.
-
-If $c=U$ or $c=V$, ${\bf A}$, ${\bf b}$ and ${\bf c}$ are defined as follows. Scale 
-${\bf b}$ according to the chroma scale factors:
-\begin{eqnarray*}
-b_0 & = & \left(\tilde{b}_0+chroma\_h\_factor()//2\right)//chroma\_h\_factor() \\
-b_1 & = & \left(\tilde{b}_1+chroma\_h\_factor()//2\right)//chroma\_h\_factor()
+For convenience, set
+\begin{eqnarray*} 
+\alpha & = & \GlobalParams[ref\_num][ZRS\_exp] \\
+\beta & = & \GlobalParams[ref\_num][perspective\_exp]
 \end{eqnarray*}
-
-Scale ${\bf A}$, taking into account vertical and horizontal factors:
-\begin{eqnarray*}
-A_{0,0} & = & \tilde{A}_{0,0}\\
-A_{1,1} & = & \tilde{A}_{1,1}\\
-A_{0,1} & = & \left(\tilde{A}_{0,1}*chroma\_h\_factor()+chroma\_v\_factor()//2 \right) // chroma\_v\_factor() \\
-A_{1,0} & = & \left(\tilde{A}_{1,0}*chroma\_v\_factor()+chroma\_h\_factor()//2\right)//chroma\_h\_factor()
-\end{eqnarray*}
-
-and give ${\bf c}$ the inverse scaling to ${\bf b}$:
-\begin{eqnarray*}
-c_0 & = & \tilde{c}_0*chroma\_h\_factor \\
-c_1 & = & \tilde{c}_1*chroma\_h\_factor
-\end{eqnarray*}
-
-\subsubsection{Field generation}
-
-Set $\alpha = \GlobalParams[ref\_num][ZRS\_exp]$ and 
-$\beta =\GlobalParams[ref\_num][perspective\_exp]$.
 
 Writing ${\bf x}=\left( \begin{array}{c} x\\y \end{array}\right)$, set ${\bf y}$ to be
 the integer vector defined by:
@@ -432,10 +423,11 @@ the integer vector defined by:
 Set
 \begin{eqnarray*}
 mv.x & = & y_0\gg (\alpha+\beta) \\
-mv.x & = & y_1\gg (\alpha+\beta)
+mv.y & = & y_1\gg (\alpha+\beta)
 \end{eqnarray*}
 
-and return the motion vector $mv$.
+If $c=Y$, then $mv$ is returned, otherwise 
+$chroma\_mv\_scale(mv)$ (Section \ref{chromamvscale}) is returned.
 
 \subsection{Upconversion}
 \label{upconvert}
