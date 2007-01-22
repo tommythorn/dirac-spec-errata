@@ -138,17 +138,17 @@ ph = 2^{\TransformDepth}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
 If $level==0$,
 \begin{eqnarray*}
 subband\_height(level) & = & ph//2^{\TransformDepth} \\
-& = & \left\lceil\frac{\ComponentHeight}{2^{\TransformDepth}}\right\rceil \\
+& = & \left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil \\
 subband\_width(level) & = & pw//2^{\TransformDepth} \\
-& = & \left\lceil\frac{\ComponentWidth}{2^{\TransformDepth}}\right\rceil
+& = & \left\lceil\frac{w}{2^{\TransformDepth}}\right\rceil
 \end{eqnarray*}
 
 If $level>0$
 \begin{eqnarray*}
 subband\_height(level) & = & ph//2^{\TransformDepth-level+1} \\
-& = & 2^{level-1}*\left\lceil\frac{\ComponentHeight}{2^{\TransformDepth}}\right\rceil \\
+& = & 2^{level-1}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil \\
 subband\_width(level) & = & pw//2^{\TransformDepth-level+1} \\
-& = & 2^{level-1}*\left\lceil \frac{\ComponentWidth}{2^{\TransformDepth}}\right\rceil
+& = & 2^{level-1}*\left\lceil \frac{w}{2^{\TransformDepth}}\right\rceil
 \end{eqnarray*}
 
 \begin{informative}
@@ -356,7 +356,7 @@ $quant\_contexts()$ returns the context set:
 
 \begin{itemize}
 \item{Follow= \{\QOffsetFollow\}}
-\item{Data=\QOffsetInfo}
+\item{Data=\QOffsetData}
 \item{Sign=\QOffsetSign}
 \end{itemize}
 
@@ -442,8 +442,8 @@ upon whether spatial prediction is required or not.
     \bsCODE{parent = parent\_val(parent, v, h)}{\ref{parentval}}
     \bsCODE{nhood = zero\_nhood(band,v,h)}{\ref{zeronhood}}
     \bsCODE{sign\_pred = sign\_predict(band,orient,v,h)}{\ref{signpredict}}
-    \bsCODE{context\_set = select\_coeff\_ctxs(parent, nhood, sign\_pred)}{\ref{selectcoeffcontext}}
-    \bsCODE{quant\_coeff = read\_sina( context\_set )}{}
+    \bsCODE{context\_set = select\_coeff\_ctxs(nhood, parent, sign\_pred)}{\ref{selectcoeffcontext}}
+    \bsCODE{quant\_coeff = read\_sinta( context\_set )}{}
     \bsCODE{band[v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
     \bsCODE{update\_count()}{\ref{updatecounts}}
 \end{pseudo}
