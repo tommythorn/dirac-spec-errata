@@ -63,7 +63,7 @@ and block overlaps.
 \label{lowdelayparsing}
 
 This section specifies the stream syntax to be used for low-delay profiles.
-The overall format of the low-delay Dirac stream is as specified in Section \ref{streamparsing}. This section
+The overall format of the low-delay Dirac stream is as specified in Section \ref{streamstructure}. This section
 specifies the picture data elements which are used in low-delay operation. 
 
 In low-delay operation, the Dirac syntax partitions the wavelet coefficients into a number of sets,
@@ -231,11 +231,12 @@ The overall slice decoding process is as follows:
 
 \begin{pseudo}{slice}{sy,sx}
 \bsCODE{slice\_bits\_left = \SliceBits}
-\bsCODE{qindex=read\_nbits(6)}{\text{NB:shd be variable}}
-\bsCODE{slice\_bits\_left -= 6}
+\bsCODE{qindex=read\_nbits(7)}
+\bsCODE{slice\_bits\_left -= 7}
 \bsCODE{slice\_quantisers(qindex)}{\ref{slicequantisers}}
-\bsCODE{slice\_y\_length=read\_nbits(9)}{\text{NB:shd be variable}}
-\bsCODE{slice\_bits\_left -= 9}
+\bsCODE{length\_bits = \log_2(\SliceBits) }
+\bsCODE{slice\_y\_length=read\_nbits(length\_bits)}
+\bsCODE{slice\_bits\_left -= length\_bits}
 \bsCODE{\ABitsLeft=slice\_y\_length}
 \bsCODE{luma\_slice\_band(0,\LL,sy,sx,q_idx[0][\LL])}{\ref{lumasliceband}}
 \bsFOR{level=1}{\WaveletDepth}
