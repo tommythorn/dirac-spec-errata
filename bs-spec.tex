@@ -2,7 +2,7 @@
 % - This chapter defines the bytestream structure - %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\label{streamparsing}
+\label{streamstructure}
 
 A Dirac stream can have two alternative basic syntaxes: a core syntax used for conventional
 coding applications and a low-delay syntax used for applications where decoding (and encoding) delay is 
@@ -440,7 +440,7 @@ If a flag is set, the chroma format specified by the video format defaults is ov
 \bsCODE{chroma\_dimensions()}
 \end{pseudo}
 
-The supported chroma formats are specified in Table \ref{chromaformats}:
+The supported chroma formats are specified in Table \ref{tab:chromaformats}:
 
 \begin{table}[!h]
 \centering
@@ -455,7 +455,7 @@ The supported chroma formats are specified in Table \ref{chromaformats}:
 2 & 4:2:0 \\
 \hline
 \end{tabular}
-\caption{Supported chroma formats}\label{chromaformats}
+\caption{Supported chroma formats}\label{tab:chromaformats}
 \end{table}
 
 Chroma dimensions are set according to the scaling implied by the chroma format:

@@ -67,16 +67,16 @@ $chroma\_mv\_scale()$ function:
 \bsRET{sv}
 \end{pseudo}
 
-%Throughout this Section, the following conventions are used.
-%
-%\begin{itemize}
-%\item $x,y$ are co-ordinates in the predicted picture component
-%\item $u,v$ are co-ordinates in a potentially upconverted reference picture component
-%\end{itemize}
-%
-%\begin{comment}
-%[Are they??]
-%\end{comment}
+Throughout this Section, the following conventions are used.
+
+\begin{itemize}
+\item $x,y$ are co-ordinates in the predicted picture component
+\item $u,v$ are co-ordinates in a potentially upconverted reference picture component
+\end{itemize}
+
+\begin{comment}
+[Are they??]
+\end{comment}
 
 \begin{informative*}
 \subsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
@@ -315,15 +315,14 @@ to the prediction as a result of the weights applied to each reference.
 The two-dimensional spatial weighting matrix $W$ applies a linear roll-off in both horizontal and vertical directions
 based on the position of the pixel $(x,y)$ within the block $B(i,j)$. Define $xpos, ypos$ as the relative
 pixel coordinates from the top-left corner of the block:
-
 \begin{eqnarray*}
 xpos & = & x-(i*xbsep-xoffset) \\
 ypos & = & x-(i*ybsep-yoffset) 
 \end{eqnarray*}
 
 Define a horizontal weighting array $WH$ by the recipe:
-
 \providecommand{\abs}[1]{\left\lvert#1\right\rvert}
+
 \begin{pseudo*}
 \bsCODE{max\_x=2(xblen-xbsep)}
 \bsIF{i==0 \text{ and } xpos< xblen//2}
@@ -375,32 +374,34 @@ This section specifies the operation of the $block\_pred(ref, ref\_num, i, j, x,
 process for forming a prediction for a pixel 
 with coordinates $(x,y)$ in component $c$, belonging to the block with coordinates $(i,j)$.
 
-{\bf Case 1: $\BlockData[j][i][global]=\false$}. 
-In this case, the block motion vectors are used to form a prediction.
-Motion vectors for chroma components must be scaled 
-according to the chroma scale factors. If $c=Y$, set
-\begin{equation*}
-mv= \BlockData[j][i][ref]
-\end{equation*}
-whereas if $c=U$ or $c=V$, set
-\begin{equation*}
-mv = chroma\_mv\_scale(\BlockData[j][i][ref])
-\end{equation*}
-as per Section \ref{chromamvscale}.
+Firstly, a motion vector to be applied to pixel $(x,y)$ is derived. For block motion, this is
+the block motion vector, whereas for global motion it is computed from the global motion 
+parameters:
 
-{\bf Case 2: $\BlockData[j][i][global]=\true$}. 
-In this case, a motion vector is determined from the global
-motion parameters as per Section \ref{globalmv}:
-\begin{equation*}
-mv=global\_mv(ref, ref\_num, x, y, c)
-\end{equation*}
+\begin{pseudo}{block\_pred}{ref,ref\_num,i,j,x,y,c}
+\bsIF{\BlockData[j][i][global]==\false}
+  \bsCODE{mv= \BlockData[j][i][ref]}
+\bsELSE
+  \bsCODE{mv=global\_mv(ref, ref\_num, x, y, c)}{\ref{globalmv}}
+\bsEND
+\bsCODE{mv = chroma\_mv\_scale(mv)}{\ref{chromamvscale}}
+\bsCODE{\hdots}
+\end{pseudo}
 
-In both cases the value 
+Then the motion vector is used to derive reference picture coordinates.
+The value returned is that of the upconverted reference pixel at the derived coordinates.
 
-$upconvert(ref, (x\ll \MotionVectorPrecision)+mv.x, (y\ll \MotionVectorPrecision)+mv.y)$ 
+\begin{pseudo*}
+\bsIF{\MotionVectorPrecision>0}
+  \bsCODE{px = (x\ll \MotionVectorPrecision)+mv.x}
+  \bsCODE{py = (y\ll \MotionVectorPrecision)+mv.y}
+\bsELSE
+  \bsCODE{px = (x+mv.x)<<1}
+  \bsCODE{py = (y+mv.y)<<1}
+\bsEND
+\bsRET{upconvert(ref, px, py))}{\ref{upconvert}}
+\end{pseudo*}
 
-where $upconvert$ is defined in Section \ref{upconvert} is returned.
- 
 \subsection{Global motion vector field generation}
 \label{globalmv}
 
@@ -426,37 +427,90 @@ mv.x & = & y_0\gg (\alpha+\beta) \\
 mv.y & = & y_1\gg (\alpha+\beta)
 \end{eqnarray*}
 
-If $c=Y$, then $mv$ is returned, otherwise 
-$chroma\_mv\_scale(mv)$ (Section \ref{chromamvscale}) is returned.
+$mv$ is then returned.
 
 \subsection{Upconversion}
 \label{upconvert}
 
 This section specifies the operation of the $upconvert(ref, u, v)$ function
 for producing a value from an upconverted picture reference. This
-allows for sub-pixel precision in motion compensation.
+allows for sub-pixel precision in motion compensation. 
 
-Motion vectors are allowed to extend beyond the edges of the 
-upconverted reference picture component and values lying outside the range
-of the component are determined by edge extension, using the values:
+Upconversion is defined by means of a half-pixel interpolated reference array
+$upref$ of dimensions double that of the original reference picture component
+array, as per Section \ref{halfpel}. The values returned by $upconvert(ref,u,v)$
+are as specified in the succeeding subsections of this section.
+% edge extension}
+
+Motion vectors are allowed to extend beyond the edges of $upref$, with values lying outside the range determined by edge extension,
+and access to the array is via the function $up2by2(ref,u,v)$:
+
+\begin{pseudo}{up2by2}{ref,u,v}
+\bsCODE{upref=interp2by2(ref)}
+\bsCODE{xpos=\clip(u,0,\width(upref)-1)}
+\bsCODE{ypos=\clip(v,0,\height(upref)-1)}
+\bsRET{upref[ypos][xpos]}
+\end{pseudo}
+
+\subsubsection{Pixel- and half-pixel accurate motion vectors}
+
+If $\MotionVectorPrecision==0$ or $\MotionVectorPrecision==1$ then $up2by2(ref,u,v)$
+is returned.
+
+\subsubsection{Quarter- and eighth-pixel accurate motion vectors}
+
+If $\MotionVectorPrecision==2$ or $\MotionVectorPrecision==3$, upconverted values are derived by linear
+interpolation from the half-pixel interpolated array $upref$, which is calculated as 
+per Section \ref{halfpel}. Given coordinates $(u,v)$, their half-pixel part
+is extracted by:
 \begin{eqnarray*}
-cu & = &\clip(u, 0, 2^\MotionVectorPrecision*\width(ref)) \\
-cv & = &\clip(v, 0, 2^\MotionVectorPrecision*\height(ref))
+hu & = & u \gg (\MotionVectorPrecision-1) \\
+hv & = & v \gg (\MotionVectorPrecision-1) 
 \end{eqnarray*}
 
-There are four cases, depending upon the motion vector precision selected.
+and their remainder (giving the residual subpixel accuracy) by
+\begin{eqnarray*}
+ru & = & u-(hu\ll (\MotionVectorPrecision-1)) \\
+rv & = & v-(hv\ll (\MotionVectorPrecision-1)) 
+\end{eqnarray*}
 
-\subsubsection{Pixel-accurate motion vectors}
+$ru$ and $rv$ satisfy $0\leq ru,rv <2^{\MotionVectorPrecision-1}$. Then define four weighting
+values by:
+\begin{eqnarray*}
+w00 & = & (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)\\
+w01 & = & (2^{\MotionVectorPrecision-1}-rv)*ru\\
+w10 & = & rv*(2^{\MotionVectorPrecision-1}-ru)\\
+w11 & = & rv*ru
+\end{eqnarray*}
 
-If $\MotionVectorPrecision==0$, no upconversion is actually required and the value
-$ref[cv][cu]$ is returned.
+The value returned is:
+\[
+\left(
+\begin{array}{l}
+w00*up2by2(ref,hu,hv)+\\
+w01*up2by2(ref,hu+1,hv)+\\
+w10*up2by2(ref,hu,hv+1)+\\
+w11*up2by2(ref,hu+1,hv+1)+2^{\MotionVectorPrecision-2}
+\end{array}
+\right)\gg(\MotionVectorPrecision-1)\]
 
-\subsubsection{Half-pixel accurate motion vectors}
+\begin{informative}
+Note that the remainder values $ru$ and $rv$, although apparently depending
+on the values of $u$ and $v$, only depend on the motion vectors. This is because
+$u$ and $v$ have been computed by scaling the picture coordinates by
+$2^{\MotionVectorPrecision}$ and adding the motion vector.
+In particular
+constant linear interpolation weights are applied throughout a block when
+block motion is used.
+\end{informative}
+
+
+\subsubsection{Half-pixel interpolation}
 \label{halfpel}
 
-If $\MotionVectorPrecision==1$ then the reference picture component $ref$ is
-upconverted by a factor of 2 in each dimension to create an
-array $upref$. The value returned is $upref[cv][cu]$.
+This section specifies the operation of the $interp2by2(ref)$ process for generating
+an upconverted reference array $upref$ with double the dimensions of the reference
+array $ref$. 
 
 $upref$ is created in two stages, first upconverting vertically by
 a factor of 2, then horizontally. Define the interpolation filter $h$
@@ -473,38 +527,69 @@ Value & 167 & -56 & 25 & -11 & 3
 \end{centering}
 \end{figure}
 
-Define an array $ref2$ of height $2*\height(ref)$ and width $\width(ref)$ by
-the recipe, for $0\leq p<\width(ref)$ and $0\leq q<2*\height(ref)$:
+Define an array $ref2$ of height $2*\height(ref)$ and width $\width(ref)$.
+The values of $ref2$ are derived by a Nyquist vertical filter, preserving
+the original values in even positions and interpolating odd values. The general 
+interpolation formula, when $q$ is odd is:
+\[
+ref2[q][p]=  \left(\sum_{i=0}^{4} t_i *
+\left(
+ ref[(q-1)//2-i][p]
++ref[(q+1)//2+i][p]
+\right)+128 \right)>>8
+\]
 
-{\bf Case 1.} If $q\%2==0$, set
-\begin{equation*}
-ref2[q][p]=ref2[q//2][p]
-\end{equation*}
-
-{\bf Case 2.} If $q\%2!=0$, $ref2[q][p]$ is set by
+Where coefficients fall outside the bounds of the reference array, values
+are supplied by edge extension. The overall process is thus defined by
 
 \begin{pseudo*}
-\bsCODE{ref2[q][p]=  \sum_{i=0}^{4} t_i *(ref[\clip( (q-1)//2-i, 0, \height(ref)-1)][p]+
-ref[\clip((q+1)//2+i, 0,\height(ref)-1)) ][p])}
-\bsCODE{ref2[q][p] = (ref2[q][p]+128)\gg 8}
+\bsIF{q\%2==0}
+  \bsCODE{ref2[q][p]=ref[q//2][p]}
+\bsELSE
+\bsCODE{ref2[q][p]=0}
+\bsFOR{i=0}{4}
+  \bsCODE{ypos=(q-1)//2-i}
+  \bsCODE{ref2[q][p]+=t_i*ref[\clip(ypos,0,\height(ref)-1)][p]}
+  \bsCODE{ypos=(q+1)//2+i}
+  \bsCODE{ref2[q][p]+=t_i*ref[\clip(ypos,0,\height(ref)-1)][p]}
+\bsEND
+\bsCODE{ref2[q][p] += 128}
+\bsCODE{ref2[q][p] >>=8}
 \bsCODE{ref2[q][p] = \clip(ref2[q][p], 0, 2^\VideoDepth-1)}
 \end{pseudo*}
 
+for each $(p,q)$ such that $0\leq p<\width(ref)$ and $0\leq q<2*\height(ref)$.
+
 The full upconverted array is constructed from $ref2$ in the same way.
- For $0\leq p<2*\width(ref)$ and $0\leq q<2*\height(ref)$ we have:
+Even values of $upref$ horizontally are copied directly from $ref2$, whereas
+odd values are interpolated by the formula
+\[
+upref[q][p]=  \left(\sum_{i=0}^{4} t_i *
+\left(
+ ref2[q][(p-1)//2-i]
++ref2[q][(p+1)//2+i]
+\right)+128 \right)>>8
+\]
 
-{\bf Case 1.} If $p\%2==0$, set
-\begin{equation*}
-upref[q][p]=ref2[q][p//2]
-\end{equation*}
-
-{\bf Case 2.} If $p\%2!=0$, $upref[q][p]$ is set by
+Where coefficients fall outside the bounds of $ref2$, values
+are supplied by edge extension.
+For $0\leq p<2*\width(ref)$ and $0\leq q<2*\height(ref)$ we have:
 
 \begin{pseudo*}
-\bsCODE{upref[q][p]=  \sum_{i=0}^{4} t_i *\left(ref2[q][\clip( (p-1)//2-i, 0, \width(ref2)-1)]+
-ref2[q][\clip((p+1)//2+i, 0, \width(ref2)-1)]\right)}
-\bsCODE{upref[q][p] = (upref[q][p]+128)\gg 8}
-\bsCODE{upref[q][p] = \clip(upref[q][p], 0, 2^\VideoDepth-1)}
+\bsIF{p\%2==0}
+  \bsCODE{upref[q][p]=ref2[q][p//2]}
+\bsELSE
+  \bsCODE{upref[q][p]=0}
+  \bsFOR{i=0}{4}
+    \bsCODE{xpos=(p-1)//2-i}
+    \bsCODE{upref[q][p]+=t_i*ref2[q][\clip(xpos,0,\height(ref)-1)]}
+    \bsCODE{xpos=(p+1)//2+i}
+    \bsCODE{upref[q][p]+=t_i*ref2[q][\clip(xpos,0,\height(ref)-1)]}
+  \bsEND
+  \bsCODE{upref[q][p] += 128}
+  \bsCODE{upref[q][p] >>=8}
+  \bsCODE{upref[q][p] = \clip(upref[q][p], 0, 2^\VideoDepth-1)}
+\bsEND
 \end{pseudo*}
 
 \begin{informative}
@@ -514,64 +599,6 @@ filtering terms implies that the upconversion uses edge-extension at the array
 edges, consistent with the edge-extension used in motion-compensation itself.
 \end{informative}
 
-\subsubsection{Quarter- and eighth-pixel accurate motion vectors}
-
-If $\MotionVectorPrecision==2$ or $\MotionVectorPrecision==3$, upconverted values are derived by linear
-interpolation from the half-pixel interpolation values $upref$, which is calculated as 
-per Section \ref{halfpel}. Given coordinates $(u,v)$, their half-pixel part
-is extracted by:
-
-\begin{eqnarray*}
-hu & = & u \gg (\MotionVectorPrecision-1) \\
-hv & = & v \gg (\MotionVectorPrecision-1) 
-\end{eqnarray*}
-
-and their remainder (giving the residual subpixel accuracy) by
-
-\begin{eqnarray*}
-ru & = & u-(hu\ll (\MotionVectorPrecision-1)) \\
-rv & = & v-(hv\ll (\MotionVectorPrecision-1)) 
-\end{eqnarray*}
-
-$ru$ and $rv$ satisfy $0\leq ru,rv <2^{\MotionVectorPrecision-1}$. Then define four weighting
-values by:
-
-\begin{eqnarray*}
-w00 & = & (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)\\
-w01 & = & (2^{\MotionVectorPrecision-1}-rv)*ru\\
-w10 & = & rv*(2^{\MotionVectorPrecision-1}-ru)\\
-w11 & = & rv*ru
-\end{eqnarray*}
-
-and also define the clipped coordinates that we shall use for interpolation by:
-
-\begin{eqnarray*}
-cu & = & \clip(hu, 0, \width(upref)-1) \\
-cu1 & = & \clip(hu+1, 0, \width(upref)-1) \\
-cv & = &\clip(hv, 0, \height(upref)-1) \\
-cv1 & = & \clip(hv+1, 0, \height(upref)-1)
-\end{eqnarray*}
-
-The value returned is:
-\[
-\left(
-\begin{array}{l}
-w00*upref[cv][cu]+\\
-w01*upref[cv][cu1]+\\
-w10*upref[cv1][cu]+\\
-w11*upref[cv1][cu1]+2^{\MotionVectorPrecision-2}
-\end{array}
-\right)\gg(\MotionVectorPrecision-1)\]
-
-\begin{informative}
-Note that the remainder values $ru$, $rv$ are not determined from the clipped
-half-pixel values $cu$, $cv$, $cu1$, and $cv1$. This ensures the remainder
-values depend only on the motion vector, and hence are constant across
-each block, and allows a block-wise implementation. If the clipped values 
-had been used, blocks whose reference
-block straddled the edge of a picture would use different remainders in
-different parts of the block. See Section \ref{mcimplementation}.
-\end{informative}
 
 \begin{informative*}
 \subsection{Implementation}
@@ -583,7 +610,7 @@ terms of the prediction determined for each pixel. Typically, an
 implementation will motion compensate all pixels within a prediction
 unit or a block together, as they share motion parameters and hence will
 have a contiguous prediction data set in the reference frames.
-
+%
 
 %The weighting matrix is then applied directly
 %to the prediction block as a whole.
