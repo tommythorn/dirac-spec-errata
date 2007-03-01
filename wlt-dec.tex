@@ -248,9 +248,7 @@ the quantisation index and byte-aligning the subsequent read operations.
 \begin{pseudo*}
 \bsIF{length>0}
     \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-    \bsCODE{\CoefficientCount=0}
     \bsCODE{vol=\height(data[level][orient])*\width(data[level][orient])}
-    \bsCODE{\CoefficientReset=max(min(vol//32, 800), 25)}
     \bsCODE{quant\_index = read\_uint()}
 \bsEND
 \bsCODE{byte\_align()}
@@ -445,7 +443,6 @@ upon whether spatial prediction is required or not.
     \bsCODE{context\_set = select\_coeff\_ctxs(nhood, parent, sign\_pred)}{\ref{selectcoeffcontext}}
     \bsCODE{quant\_coeff = read\_sinta( context\_set )}{}
     \bsCODE{band[v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
-    \bsCODE{update\_count()}{\ref{updatecounts}}
 \end{pseudo}
 
 
@@ -703,19 +700,3 @@ and re-quantisation by the same quantisation factor transparent. This requires t
 
 -- hence the special conditions for quantisation index 0 and 1.
 \end{informative}
-
-\subsubsection{Updating counts and resetting contexts}
-\label{updatecounts}
-
-The $update\_count()$ function updates a periodic count of subband 
-coefficients and rescales arithmetic decoding contexts if \CoefficientReset has been reached.
-
-\begin{pseudo}{update\_count}{}
-\bsCODE{\CoefficientCount += 1}
-\bsIF{\CoefficientCount == \CoefficientReset}
-  \bsCODE{\CoefficientCount = 0}
-  \bsFOR{i=0}{len(\AContexts)-1}
-    \bsCODE{rescale\_context(i)}{\ref{arithcontexts}}
-  \bsEND
-\bsEND
-\end{pseudo}

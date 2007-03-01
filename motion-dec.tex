@@ -73,17 +73,10 @@ The decoding loop for block data iterates over all superblocks in raster order:
 \bsITEM{length}{uint}{}
 \bsCODE{byte\_align()}
 \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-\bsCODE{superblock\_count = 0}
 \bsFOR{v=0}{\SuperblocksY}
     \bsFOR{h=0}{\SuperblocksX}
         \bsCODE{superblock(4*v, 4*h)}
         \bsCODE{superblock\_count += 1}
-        \bsIF{superblock\_count == 32}
-            \bsCODE{superblock\_count = 0}
-            \bsFOR{i=0}{len(\AContexts)-1}
-                \bsCODE{rescale\_context(i)}{\ref{arithcontexts}}
-            \bsEND
-        \bsEND
     \bsEND
 \bsEND
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
