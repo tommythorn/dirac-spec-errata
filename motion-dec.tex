@@ -76,7 +76,6 @@ The decoding loop for block data iterates over all superblocks in raster order:
 \bsFOR{v=0}{\SuperblocksY}
     \bsFOR{h=0}{\SuperblocksX}
         \bsCODE{superblock(4*v, 4*h)}
-        \bsCODE{superblock\_count += 1}
     \bsEND
 \bsEND
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}

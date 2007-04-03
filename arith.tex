@@ -33,7 +33,7 @@ The arithmetic decoder state consists of the following decoder state variables:
 A context $context$ is an integer array consisting of three positive values:
 \begin{itemize}
 \item $context[count0]$ is a count of the number of zeroes
-\item $context[count1]$ is a count of the number of ones}
+\item $context[count1]$ is a count of the number of ones
 \item $context[prob0]$ is an estimate of the probability of zero to 16 bit accuracy
 \end{itemize}
 
@@ -91,7 +91,11 @@ decoding state is initialised as follows:
 \bsCODE{\ABitsLeft=8*block\_data\_length}
 \bsCODE{\ALow = \text{0x0}}
 \bsCODE{\ARange =\text{0x10000}}
-\bsCODE{\ACode =\text{ 0x0}}{No- TBC-read 16 bits}
+\bsCODE{\ACode =\text{ 0x0}}
+\bsFOR{i=0}{15}
+    \bsCODE{\ACode <<= 1}
+    \bsCODE{\ACode+= read\_bitb()} 
+\bsEND
 \bsCODE{init\_contexts()}
 \end{pseudo}
 
@@ -163,7 +167,7 @@ pseudocode:
   \bsCODE{\ARange -= range\_time\_prob}
 \bsELSE
   \bsCODE{value = \false}
-  \bsCODE{\Arange = range\_times\_prob}
+  \bsCODE{\ARange = range\_times\_prob}
 \bsEND
 \bsCODE{update\_context(\AContexts[context\_index],value)}
 \bsCODE{renormalise()}{\ref{renormalisation}}
@@ -184,7 +188,7 @@ range is less than or equal to a quarter of the total available 16-bit  range:
 
 \begin{pseudo}{renormalise}{}
 \bsWHILE{\ARange<=\text{0x4000}}
-    \bsIF{(\ALow+\ARange-1)^\Alow>=\text{0x8000}}
+    \bsIF{(\ALow+\ARange-1)^\ALow>=\text{0x8000}}
         \bsCODE{resolve\_straddle()}
     \bsEND
     \bsCODE{shift\_bits()}
@@ -200,8 +204,8 @@ When the range is one quarter or less of the original range ($2^{16}$), then one
 \item $low=b01...$, $high=b10....$,  and the interval straddles the half-way point 0x8000. 
 \end{enumerate}
 
-In all of these cases the interval can be doubled in size to increase accuracy. In the first case, it is doubled from zero ($x\arrow 2*x$); 
-in the second it is doubled from 1 ($x\arrow 2*x-1$); and in the third it is doubled from 1/2 ($x\arrow 2x-0.5$).[TBC]
+In all of these cases the interval can be doubled in size to increase accuracy. In the first case, it is doubled from zero ($x\mapsto 2*x$); 
+in the second it is doubled from 1 ($x\mapsto 2*x-1$); and in the third it is doubled from 1/2 ($x\mapsto 2x-0.5$).
  
 \end{informative}
 
@@ -213,10 +217,10 @@ in the second it is doubled from 1 ($x\arrow 2*x-1$); and in the third it is dou
 \begin{pseudo}{shift\_bits}{}
 \bsCODE{\ALow  <<=  1}
 \bsCODE{\ARange  <<=  1}
-\bsCODE{\ALow &= \text{0xFFFF}}
+\bsCODE{\ALow \&= \text{0xFFFF}}
 \bsCODE{\ACode <<= 1}
 \bsCODE{\ACode+= read\_bitb()}
-\bsCODE{\ACode &= \text{0xFFFF}}
+\bsCODE{\ACode \&= \text{0xFFFF}}
 \end{pseudo}
 
 \begin{comment}
