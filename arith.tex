@@ -260,9 +260,9 @@ straddles the half-way point 0x8000.
   \bsCODE{shift\_bit\_in()}
 \bsEND
 \bsWHILE{ (\AHigh\&\text{0x4000})==\text{0x0} \text{ and } (\ALow\&\text{0x4000})==\text{0x4000} }
-  \bsCODE{\ACode \hat{\text{ }}= \text{0x4000}}
-  \bsCODE{\AHigh \hat{\text{ }}= \text{0x4000}}
-  \bsCODE{\ALow \hat{\text{ }}= \text{0x4000}}
+  \bsCODE{\ACode \wedge= \text{0x4000}}
+  \bsCODE{\AHigh \wedge= \text{0x4000}}
+  \bsCODE{\ALow \wedge= \text{0x4000}}
   \bsCODE{shift\_bit\_in()}
 \bsEND
 \end{pseudo}
@@ -383,43 +383,14 @@ Motion data contexts:
 \PredModeOne\\
 \PredModeTwo\\
 \BlockGlobal\\
-\RefOnexFollowOne\\
-\RefOnexFollowTwo\\
-\RefOnexFollowThree\\
-\RefOnexFollowFour\\
-\RefOnexFollowFivePlus\\
-\RefOnexData\\
-\RefOnexSign\\
-\RefOneyFollowOne\\
-\RefOneyFollowTwo\\
-\RefOneyFollowThree\\
-\RefOneyFollowFour\\
-\RefOneyFollowFivePlus\\
-\RefOneyData\\
-\RefOneySign\\
-\RefTwoxFollowOne\\
-\RefTwoxFollowTwo\\
-\RefTwoxFollowThree\\
-\RefTwoxFollowFour\\
-\RefTwoxFollowFivePlus\\
-\RefTwoxData\\
-\RefTwoxSign\\
-\RefTwoyFollowOne\\
-\RefTwoyFollowTwo\\
-\RefTwoyFollowThree\\
-\RefTwoyFollowFour\\
-\RefTwoyFollowFivePlus\\
-\RefTwoyData\\
-\RefTwoySign\\
-\YDCFollowOne\\
-\YDCFollowTwoPlus\\
-\YDCData\\
-\YDCSign\\
-\UDCFollowOne\\
-\UDCFollowTwoPlus\\
-\UDCData\\
-\UDCSign\\
-\VDCFollowOne\\
-\VDCFollowTwoPlus\\
-\VDCData\\
-\VDCSign
+\VectorFollowOne\\
+\VectorFollowTwo\\
+\VectorFollowThree\\
+\VectorFollowFour\\
+\VectorFollowFivePlus\\
+\VectorData\\
+\VectorSign\\
+\DCFollowOne\\
+\DCFollowTwoPlus\\
+\DCData\\
+\DCSign\\

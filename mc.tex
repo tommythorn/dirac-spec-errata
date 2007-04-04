@@ -62,8 +62,8 @@ When motion compensating chroma components, motion vectors are scaled by the
 $chroma\_mv\_scale()$ function:
 
 \begin{pseudo}{chroma\_mv\_scale}{v}
-\bsCODE{sv.x = \rounddivide(v.x, chroma\_h\_factor() )}{\ref{chromaformat}}
-\bsCODE{sv.x = \rounddivide(v.x, chroma\_v\_factor())}{\ref{chromaformat}}
+\bsCODE{sv[0] = \rounddivide(v[0], chroma\_h\_factor() )}{\ref{chromaformat}}
+\bsCODE{sv[1] = \rounddivide(v[1], chroma\_v\_factor())}{\ref{chromaformat}}
 \bsRET{sv}
 \end{pseudo}
 
@@ -393,11 +393,11 @@ The value returned is that of the upconverted reference pixel at the derived coo
 
 \begin{pseudo*}
 \bsIF{\MotionVectorPrecision>0}
-  \bsCODE{px = (x\ll \MotionVectorPrecision)+mv.x}
-  \bsCODE{py = (y\ll \MotionVectorPrecision)+mv.y}
+  \bsCODE{px = (x\ll \MotionVectorPrecision)+mv[0]}
+  \bsCODE{py = (y\ll \MotionVectorPrecision)+mv[1]}
 \bsELSE
-  \bsCODE{px = (x+mv.x)<<1}
-  \bsCODE{py = (y+mv.y)<<1}
+  \bsCODE{px = (x+mv[0])<<1}
+  \bsCODE{py = (y+mv[1])<<1}
 \bsEND
 \bsRET{upconvert(ref, px, py))}{\ref{upconvert}}
 \end{pseudo*}
@@ -423,8 +423,8 @@ the integer vector defined by:
 
 Set
 \begin{eqnarray*}
-mv.x & = & y_0\gg (\alpha+\beta) \\
-mv.y & = & y_1\gg (\alpha+\beta)
+mv[0] & = & y_0\gg (\alpha+\beta) \\
+mv[1] & = & y_1\gg (\alpha+\beta)
 \end{eqnarray*}
 
 $mv$ is then returned.
@@ -446,7 +446,7 @@ Motion vectors are allowed to extend beyond the edges of $upref$, with values ly
 and access to the array is via the function $up2by2(ref,u,v)$:
 
 \begin{pseudo}{up2by2}{ref,u,v}
-\bsCODE{upref=interp2by2(ref)}
+\bsCODE{upref=interp2by2(ref)}{\ref{halfpel}}
 \bsCODE{xpos=\clip(u,0,\width(upref)-1)}
 \bsCODE{ypos=\clip(v,0,\height(upref)-1)}
 \bsRET{upref[ypos][xpos]}
