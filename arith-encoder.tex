@@ -1,3 +1,52 @@
+This appendix provides three things:
+\begin{itemize}
+\item a description of the principles of arithmetic
+coding
+\item a specification of the arithmetic decoding
+engine used in Dirac
+\item a description of a compatible arithmetic encoder
+\end{itemize}
+
+\begin{informative*}
+\subsection{Arithmetic coding principles (INFORMATIVE)}
+
+This section provides an introduction to the principles underlying arithmetic
+coding. Since arithmetic coding is very extensively described in published literature,
+this section is necessarily brief: for more information, Alasdair Moffat's
+article ''Arithmetic coding revisited'' is recommended. 
+
+Arithmetic coding is extremely powerful and can approach the Shannon information 
+limit for given data. Arithmetic encoding consists of an asynchronous state machine, 
+in which data
+is fed to an arithmetic encoding engine, together with an estimate of its
+probability, and the encoder outputs bits. It is asynchronous because data
+input does not trigger any output directly, but changes the state of the 
+engine. When a certain state is reached a variable amount of output is produced.
+
+This asynchronous nature makes arithmetic coding trickier to implement 
+than Variable-Length Codes (VLCs) but is essential to its optimal nature. Consider
+a binary symbol $b$, with $p(b=0)=p_0$ and $p(b=1)=1-p_0$. The entropy of $b$
+is the expected number of bits required to encode $b$, and is equal to
+\[e(p_0)=p_0\log_2(1/p_0)+(1-p_0)\log(1/(1-p_0))\]
+
+If $e(p_0)$ is plotted against $p_0$, it can be seen that if $p_0$ is not equal
+to 0.5 exactly, $e(p_0)<1$. This means that an optimal binary entropy encoder
+that operates symbol by symbol, cannot produce an output for every symbol - i.e.
+it must operate asynchronously.
+
+\subsubsection{Interval division and scaling}
+The fundamental idea of arithmetic coding is interval division and scaling. An
+arithmetic code can be thought of as a single number lying in an interval 
+determined by the sequence of values being coded. For simplicity, this discussion
+describes binary arithmetic coding, but larger symbol alphabets can be treated
+in an analogous manner.
+[TBC]
+
+\subsubsection{Finite precision arithmetic}
+
+\subsection{Arithmetic encoding (INFORMATIVE)}
+\end{informative*}
+
 This document only specifies the decoding of arithmetic coded data. 
 However whilst it is clearly vital that an encoding process matches the decoding
 process, it is not straightforward to derive an implementation of the
@@ -6,7 +55,7 @@ informative section describes a possible implementation for an
 arithmetic encoding engine that will produce output decodeable by
 the Dirac arithmetic decoding engine.
 
-\subsection{Encoder variables}
+\subsubsection{Encoder variables}
 
 An arithmetic encoder would require the following integer variables:
 
@@ -110,4 +159,441 @@ flush_encoder():
 \end{verbatim}
 
 Where the ``write\_bit(bit)'' function outputs a single bit.
+\end{comment}
+
+
+\subsection{Arithmetic decoding engine}
+
+This section is a normative specification of the operation of the arithmetic
+decoding engine.
+
+\label{arithdecodingengine}
+
+This section specifies the arithmetic decoding engine and
+processes for using it to extract data from coded streams.
+
+The arithmetic decoding engine consists of two elements: 
+
+\begin{itemize}
+\item a collection of state variables representing the state of the arithmetic 
+decoder (Section \ref{initarith})
+\item a function for extracting binary values from the decoder 
+and updating the decoder state (Section \ref{extractarith})
+\end{itemize}
+
+\subsubsection{State and contexts}
+\label{arithcontexts}
+
+The arithmetic decoder state consists of the following decoder state variables:
+
+\begin{itemize}
+\item $\ALow$, an integer representing the beginning of the current coding interval
+\item $\ARange$, an integer representing the size of the current coding interval
+\item $\ACode$, an integer within the interval from $\ALow$ to $\AHigh$, determined from the encoded bitstream
+\item $\ABitsLeft$, a decrementing count of the number of bits yet to be read in
+\item $\AContexts$, a map of all the contexts used in the Dirac decoder
+\end{itemize}
+
+A context $context$ is an integer array with a single value which encapsulates
+the probability of zero in that context represented as a 16 bit number, such that
+\[0<context[prob0]<\text{0xFFFF}\]
+
+Contexts are accessed by decoding functions via the indices defined in Section \ref{contextindices}. 
+
+\subsubsection{Initialisation}
+\label{initarith}
+
+At the beginning of the decoding of any data unit, the arithmetic
+decoding state is initialised as follows:
+
+\begin{pseudo}{initialise\_arithmetic\_decoding}{block\_data\_length}
+\bsCODE{\ABitsLeft=8*block\_data\_length}
+\bsCODE{\ALow = \text{0x0}}
+\bsCODE{\ARange =\text{0x10000}}
+\bsCODE{\ACode =\text{ 0x0}}
+\bsFOR{i=0}{15}
+    \bsCODE{\ACode <<= 1}
+    \bsCODE{\ACode+= read\_bitb()} 
+\bsEND
+\bsCODE{init\_contexts()}
+\end{pseudo}
+
+Contexts are initialised by the $init\_contexts()$ function as follows:
+
+\begin{pseudo}{init\_contexts}{}
+\bsFOR{i=0}{length(\AContexts)-1}
+  \bsCODE{\AContexts[i][prob0]=0x8000}
+\bsEND
+\end{pseudo}
+
+\subsubsection{Data input}
+\label{inputarith}
+
+The arithmetic decoding process accesses data in a contiguous block of bytes
+whose size is set on initialisation (Section \ref{initarith}). The bits in this
+block are sufficient to allow for the
+decoding of all coefficients. However, the specification of arithmetic
+decoding operations in this section may occasionally cause further bits to be read,
+even though they are not required for determining decoded values. For this
+reason the bounded-block read function $read\_bitb()$ (Section \ref{blockreadbit}) is 
+used for data access.
+
+Since the length of arithmetically coded data elements is given in bytes within the Dirac
+stream, there may be bits left unread when all values have been extracted. These
+are flushed as desribed in Section \ref{blockreadbit}. Since arithmetically coded blocks
+are byte-aligned and a whole number of bytes, this aligns data input with the beginning of the byte 
+after the arithmetically coded data i.e. at the end of the
+data chunk. $flush\_inputb()$ is always called at the end of decoding an arithmetically encoded
+data element.
+
+\begin{informative}
+The Dirac arithmetic decoding engine uses 16 bit words, and so if all coefficients are
+coded no more than 16 additional bits should be read beyond the end of the block. Hence it 
+would seem sufficient to read in the entire block of data and pad the end with two bytes of value 0xFF,
+to avoid a branch condition on inputting data
+However, an arithmetically encoded block may end with a string of 1s, which an encoder could
+conceivably strip out to save bits, in the knowledge that $read\_bitb()$ will re-insert them. Terminating
+strings of 1s can occur (but not exclusively) in coding many zero wavelet subband coefficients at the end
+of a subband. So a larger number of pad bytes may be required in practice.
+\end{informative}
+
+\subsubsection{Decoding boolean values}
+\label{arithreadbool}
+
+The arithmetic decoding engine is a multi-context, adaptive binary
+arithmetic decoder, performing binary renormalisation and producing
+binary outputs. For each bit decoded, the semantics of the relevant
+calling decoder function determine which contexts are passed to the
+arithmetic decoding operations. 
+
+This section specifies the operation of the $read\_boola()$ function
+for extracting a boolean value from the Dirac stream. The overall decoding
+process for extracting a symbol is as defined by the following
+pseudocode:
+
+\begin{pseudo}{read\_boola}{context\_index}
+\bsCODE{context=\AContexts[context\_index]}
+\bsCODE{count = \ACode-\ALow+1}
+\bsCODE{range\_times\_prob = (\ARange * context[prob0])\gg 16}
+\bsIF{ count > range\_times\_prob }
+  \bsCODE{value = \true}
+  \bsCODE{\ALow +=  range\_times\_prob}
+  \bsCODE{\ARange -= range\_time\_prob}
+\bsELSE
+  \bsCODE{value = \false}
+  \bsCODE{\ARange = range\_times\_prob}
+\bsEND
+\bsCODE{update\_context(\AContexts[context\_index],value)}
+\bsWHILE{\ARange<=\text{0x4000}}
+    \bsCODE{renormalise()}{\ref{renormalisation}}
+\bsEND
+\bsRET(value)
+\end{pseudo}
+
+\begin{informative}
+The function scales the probability of the symbol $0$ from the decoding context
+so that if this probability were $1$, then the interval would equal that between
+ $\ALow$ and 
+ \[high=\ALow+\ARange-1\]
+and $count$ is set to the normalised cut-off between 0 and 1 within this range.
+\end{informative}
+
+\subsubsection{Renormalisation}
+\label{renormalisation}
+
+Renormalisation is applied to stop the arithmetic decoding 
+engine from losing accuracy: the range must not get too small,
+ in order that 0 and 1 may be distinguished. Renormalisation is
+ applied while the range is less than or equal to a quarter of 
+ the total available 16-bit range ($\text{0x4000}$). 
+
+For convenience let $low=\ALow$ and $high=\ALow+\ARange-1$ 
+represent the upper and lower bounds of the interval. If the
+range is $<=\text{0x4000}$ then
+one of three possibilities must obtain:
+\begin{enumerate}
+\item the msbs of $low$ and $high$ are both 0
+\item the msbs of $low$ and $high$ are both 1
+\item $low=b01...$, $high=b10....$,  and the interval straddles the half-way point 0x8000. 
+\end{enumerate}
+
+Renormalisation doubles the interval and reads a bit into the codeword
+as follows:
+
+\begin{pseudo}{renormalise}{}
+\bsIF{(\ALow+\ARange-1)^\ALow>=\text{0x8000}}
+    \bsCODE{\ACode ^= \text{0x4000}}
+    \bsCODE{\ALow ^= \text{0x4000}}
+\bsEND
+\bsCODE{\ALow  <<=  1}
+\bsCODE{\ARange  <<=  1}
+\bsCODE{\ALow \&= \text{0xFFFF}}
+\bsCODE{\ACode <<= 1}
+\bsCODE{\ACode+= read\_bitb()}
+\bsCODE{\ACode \&= \text{0xFFFF}}
+\end{pseudo}
+
+The second bit is flipped if there is a straddle condition (case 3). The renormalisation
+process has the effect that: in case 1, the interval $[low,high]$ is doubled from 0 ($x\mapsto 2*x$); 
+in case 2 it is doubled from 1 ($x\mapsto 2*x-1$); and in case 3 it is doubled from 1/2 ($x\mapsto 2x-0.5$).
+ 
+\begin{informative}
+Note that if 16-bit words (unsigned shorts) are used for decoder state variables $\ALow$,
+ and $\ACode$ then there is no need for {\&}-ing with 0xFFFF. However, the 
+operations specified here are defined in terms of integers, since intermediate calculations
+ require higher dynamic range. In software, the efficiency of using short word lengths may
+or may not be offset by the requirement to cast to other data types for these calculations.
+\end{informative}
+
+\begin{comment}
+\subsection{Alternative arithmetic decoding engines}
+
+to
+16 consisting of three positive values:
+\begin{itemize}
+\item $context[count0]$ is a count of the number of zeroes
+\item $context[count1]$ is a count of the number of ones
+\item $context[prob0]$ is an estimate of the probability of zero to 16 bit accuracy
+\end{itemize}
+
+Contexts are accessed by decoding functions
+via the indices defined in Section \ref{contextindices}. 
+
+Although counts are updated with each symbol decoded, the probability is only updated occasionally, as it is computationally
+expensive (see Section \ref{rescalecontext} below).
+
+\subsubsection{Rescaling contexts and probabilities}
+\label{rescalecontext}
+
+Contexts maintain counts to 8 bit accuracy, and contexts are rescaled when the total count (count0+count1) reaches 256. In addtion, prob0 is recalculated every
+8 symbols in each context. A context is rescaled by halving the counts of $0$ and $1$.
+
+\begin{pseudo}{update\_context}{context,value}
+\bsIF{value==\true}
+    \bsCODE{context[count1] += 1}
+\bsELSE
+    \bsCODE{context[count0] += 1}
+\bsEND
+\bsIF( (context[count0]+context[count1])\%8==0)
+    \bsIF{context[0]+context[1]== 256}
+      \bsCODE{context[0] += 1}
+      \bsCODE{context[0] \gg= 1}
+      \bsCODE{context[1] += 1}
+      \bsCODE{context[1] \gg= 1}
+    \bsEND
+    \bsCODE{calc\_prob0(context)}
+\bsEND
+\end{pseudo}
+
+The probability of zero is recalculated to approximate
+\[ \frac{context[count0]*2^{16}}{context[count0]+context[count1]}\]
+to 16 bit accuracy:
+
+\begin{pseudo}{calc\_prob0}{context}
+\bsCODE{weight = context[count0]+context[count1]}
+\bsCODE{inverse\_weight=(2^{16}+(weight//2))//weight}
+\bsCODE{context[prob0]=context[count0]*inverse\_weight}
+\end{pseudo}
+
+\begin{informative}
+Note that since $context[count0]<weight$, $context[prob0]$ is always a 16 bit unsigned quantity.
+The inverse weight may easily be stored within a look-up table.
+\end{informative}
+
+\subsection{Initialisation}
+\label{initarith}
+
+At the beginning of the decoding of any data unit, the arithmetic
+decoding state is initialised as follows:
+
+\begin{pseudo}{initialise\_arithmetic\_decoding}{block\_data\_length}
+\bsCODE{\ABitsLeft=8*block\_data\_length}
+\bsCODE{\ALow = \text{0x0}}
+\bsCODE{\ARange =\text{0x10000}}
+\bsCODE{\ACode =\text{ 0x0}}
+\bsFOR{i=0}{15}
+    \bsCODE{\ACode <<= 1}
+    \bsCODE{\ACode+= read\_bitb()} 
+\bsEND
+\bsCODE{init\_contexts()}
+\end{pseudo}
+
+Contexts are initialised by the $init\_contexts()$ function as follows:
+
+\begin{pseudo}{init\_contexts}{}
+\bsFOR{i=0}{length(\AContexts)-1}
+  \bsCODE{\AContexts[i][count0]=1}
+  \bsCODE{\AContexts[i][count1]=1}
+  \bsCODE{\AContexts[i][prob0]=0x8000}
+\bsEND
+\end{pseudo}
+
+\subsection{Data input}
+\label{inputarith}
+
+The arithmetic decoding process accesses data in a contiguous block of bytes
+whose size is set on initialisation (Section \ref{initarith}). The bits in this
+block are sufficient to allow for the
+decoding of all coefficients. However, the specification of arithmetic
+decoding operations in this section may occasionally cause further bits to be read,
+even though they are not required for determining decoded values. For this
+reason the bounded-block read function $read\_bitb()$ (Section \ref{blockreadbit}) is 
+used for data access.
+
+Since the length of arithmetically coded data elements is given in bytes within the Dirac
+stream, there may be bits left unread when all values have been extracted. These
+are flushed as desribed in Section \ref{blockreadbit}. Since arithmetically coded blocks
+are byte-aligned and a whole number of bytes, this aligns data input with the beginning of the byte 
+after the arithmetically coded data i.e. at the end of the
+data chunk. $flush\_inputb()$ is always called at the end of decoding an arithmetically encoded
+data element.
+
+\begin{informative}
+The Dirac arithmetic decoding engine uses 16 bit words, and so if all coefficients are
+coded no more than 16 additional bits should be read beyond the end of the block. Hence it 
+would seem sufficient to read in the entire block of data and pad the end with two bytes of value 0xFF,
+to avoid a branch condition on inputting data
+However, an arithmetically encoded block may end with a string of 1s, which an encoder could
+conceivably strip out to save bits, in the knowledge that $read\_bitb()$ will re-insert them. Terminating
+strings of 1s can occur (but not exclusively) in coding many zero wavelet subband coefficients at the end
+of a subband. So a much larger number of pad bytes may be required in practice.
+\end{informative}
+
+\subsection{Decoder functions}
+\label{extractarith}
+The arithmetic decoding engine is a multi-context, adaptive binary
+arithmetic decoder, performing binary renormalisation and producing
+binary outputs. For each bit decoded, the semantics of the relevant
+calling decoder function determine which contexts are passed to the
+arithmetic decoding operations.
+
+\subsubsection{Decoding boolean values}
+
+\label{arithreadbool}
+
+This section specifies the operation of the $read\_boola()$ function
+for extracting a boolean value from the Dirac stream. The overall decoding
+process is defined for extracting a symbol is as defined by the following
+pseudocode:
+
+\begin{pseudo}{read\_boola}{context\_index}
+\bsCODE{context=\AContexts[context\_index]}
+\bsCODE{count = \ACode-\ALow+1}
+\bsCODE{range\_times\_prob = (\ARange * context[prob0])\gg 16}
+\bsIF{ count > range\_times\_prob }
+  \bsCODE{value = \true}
+  \bsCODE{\ALow +=  range\_times\_prob}
+  \bsCODE{\ARange -= range\_time\_prob}
+\bsELSE
+  \bsCODE{value = \false}
+  \bsCODE{\ARange = range\_times\_prob}
+\bsEND
+\bsCODE{update\_context(\AContexts[context\_index],value)}
+\bsCODE{renormalise()}{\ref{renormalisation}}
+\bsEND
+\bsRET(value)
+\end{pseudo}
+
+\begin{informative}
+[Describe what's going on here]
+\end{informative}
+
+\subsubsection{Renormalisation}
+\label{renormalisation}
+
+Renormalisation is applied to stop the arithmetic decoding engine from losing accuracy: the range
+must not get too small to allow 0 and 1 to be distinguished. Renormalisation is applied while the
+range is less than or equal to a quarter of the total available 16-bit  range:
+
+\begin{pseudo}{renormalise}{}
+\bsWHILE{\ARange<=\text{0x4000}}
+    \bsIF{(\ALow+\ARange-1)^\ALow>=\text{0x8000}}
+        \bsCODE{resolve\_straddle()}
+    \bsEND
+    \bsCODE{shift\_bits()}
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+Let the bottom of the arithmetic coding interval is represented by $low=\ALow$ and the top by $high=\ALow+\ARange-1$.
+When the range is one quarter or less of the original range ($2^{16}$), then one of three possibilities occurs:
+\begin{enumerate}
+\item the top bits of $low$ and $high$ are both 0
+\item the top bits of $low$ and $high$ are both 1
+\item $low=b01...$, $high=b10....$,  and the interval straddles the half-way point 0x8000. 
+\end{enumerate}
+
+In all of these cases the interval can be doubled in size to increase accuracy. In the first case, it is doubled from zero ($x\mapsto 2*x$); 
+in the second it is doubled from 1 ($x\mapsto 2*x-1$); and in the third it is doubled from 1/2 ($x\mapsto 2x-0.5$).
+ 
+\end{informative}
+
+\begin{pseudo}{resolve\_staddle}{}
+\bsCODE{\ACode ^= \text{0x4000}}
+\bsCODE{\ALow ^= \text{0x4000}}
+\end{pseudo}
+
+\begin{pseudo}{shift\_bits}{}
+\bsCODE{\ALow  <<=  1}
+\bsCODE{\ARange  <<=  1}
+\bsCODE{\ALow \&= \text{0xFFFF}}
+\bsCODE{\ACode <<= 1}
+\bsCODE{\ACode+= read\_bitb()}
+\bsCODE{\ACode \&= \text{0xFFFF}}
+\end{pseudo}
+
+\begin{comment}
+
+\begin{informative}
+The function scales the probability of the symbol $0$ from the decoding context
+so that if this probability were $1$, then the interval would equal that between
+ $\ALow$ and $\AHigh$. If $\ACode$ is greater than this cut-off, then 1 ($\true$) has
+been encoded, else 0 ($\false$) has.
+\end{informative}
+
+\subsubsection{Shifting bits in}
+
+\label{arithshiftin}
+
+This section defines the operation of the $shift\_bit\_in()$ 
+and $shift\_all\_bits()$ functions
+for reading bits into the arithmetic decoding state variables.
+
+\begin{pseudo}{shift\_bit\_in}{}
+\bsCODE{\AHigh \ll= 1}
+\bsCODE{\AHigh \&= \text{0xFFFF}}
+\bsCODE{\AHigh += 1}
+\bsCODE{\ALow \ll= 1}
+\bsCODE{\ALow \&= \text{0xFFFF}}
+\bsCODE{\ACode \ll= 1}
+\bsCODE{\ACode \&= \text{0xFFFF}}
+\bsCODE{\ACode += read\_bitb()}{\ref{blockreadbit}}
+\end{pseudo}
+
+$shift\_all\_bits()$ expands the interval between $\ALow$ and $\AHigh$
+until the msbs (bit 15) differ and the interval no longer
+straddles the half-way point 0x8000.
+
+\begin{pseudo}{shift\_all\_bits}{}
+\bsWHILE{ \AHigh\&\text{0x8000})==\text{0x0} \text{ and } (\ALow\&\text{0x8000})==\text{0x0}}
+  \bsCODE{shift\_bit\_in()}
+\bsEND
+\bsWHILE{ (\AHigh\&\text{0x4000})==\text{0x0} \text{ and } (\ALow\&\text{0x4000})==\text{0x4000} }
+  \bsCODE{\ACode \wedge= \text{0x4000}}
+  \bsCODE{\AHigh \wedge= \text{0x4000}}
+  \bsCODE{\ALow \wedge= \text{0x4000}}
+  \bsCODE{shift\_bit\_in()}
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+Note that if 16-bit words (unsigned shorts) are used for decoder state variables $\ALow$,
+ $\AHigh$ and $\ACode$ then there is no need for {\&}-ing with 0xFFFF. However, the 
+operations specified here are defined in terms of integers, since intermediate calculations
+ require higher dynamic range. In software, the efficiency of using short word lengths may
+or may not be offset by the requirement to cast to other data types for these calculations.
+\end{informative}
+
+
+
 \end{comment}

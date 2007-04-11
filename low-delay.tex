@@ -73,6 +73,13 @@ not the picture. These sets are called slices. A single quantiser, weighted by a
 a slice is  of fixed dimensions within a picture and is also of fixed length in bytes. Each slice interleaves all three components, and hence
 the transform parameters for the components are placed in the picture header.
 
+\begin{figure}[!ht]
+\centering
+%\includegraphics[width=0.7\textwidth]{figs/wavelet-slice.eps}
+\caption{Partition of wavelet coefficients into slices}
+\label{fig:waveletslice}
+\end{figure}
+
 This section specifies the syntax and parsing operations only: picture decoding operations are as
 specified in Section \ref{picturedec}, \ref{idwt} and \ref{motioncompensate}. However, the slice
 structure implies that in practice incremental picture decoding can be easily achieved without

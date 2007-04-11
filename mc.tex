@@ -98,7 +98,7 @@ each block at a horizontal separation $xbsep$ and a vertical separation $ybsep$
 from its neighbours, where these values are less than the corresponding block dimensions.
 \end{informative*}
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \centering
 \includegraphics[width=0.7\textwidth]{figs/block-coverage.eps}
 \caption{Block coverage of the predicted picture}
@@ -205,7 +205,7 @@ weights assigned to references:
 
 {\bf 1.} Note that the number of bits $total\_wt\_bits$ used for 
 the OBMC weighting matrix depends upon the block sizes - specifically
-the block overlaps - selected. A Dirac decoder level (\ref{levels}) 
+the block overlaps - selected. A Dirac decoder level (Section \ref{profilelevel}) 
 specifies the maximum block overlaps allowable, and hence 
 the word widths necessary for processing OBMC. If we assume that 
 the picture weights are complementary (i.e. the weights
@@ -360,7 +360,7 @@ This is to compensate for the lack of blocks making weight contributions on thes
 the total contribution for the pixels in the blocks is $2^{\alpha}$. In section ($i=0$), the profile of the matrix 
 for interior blocks is as shown in Figure \ref{fig:weightprofile}.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \centering
 \includegraphics[width=0.7\textwidth]{figs/obmc-profile}
 \caption{Profile of overlapped-block motion compensation matrix}

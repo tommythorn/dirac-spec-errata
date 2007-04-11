@@ -8,8 +8,8 @@ bit-wise and byte-wise encodings; variable-length codes; and arithmetic encoding
 
 This section defines how data bits are extracted from the bitstream and how
 sequences of bits are interpreted as values of various types using fundamental
-data-reading functions, covering encodings of the first two sorts. The extraction
-of arithmetic-encoded data is defined in Section \ref{arithdecoding}.
+data-reading functions. The extraction of arithmetic-encoded data makes use of
+an arithmetic decoding engine which is specified in Appendix \ref{arithengine}.
 
 \subsection{Bit-packing and data input}
 \label{bitpacking}
@@ -281,3 +281,160 @@ operation is employed:
 \end{pseudo}
 
 Note that when $\ABitsLeft==0$, all subsequent values read by $read\_sintb()$ will be 0.
+
+\subsection{Arithmetic decoding}
+
+\label{arithdecoding}
+
+This section defines the operations for reading and writing arithmetically-coded
+data. These make use of an arithmetic decoding engine defined in Appendix 
+\ref{arithengine}. 
+
+Arithmetically-coded data is present in the Dirac stream in data blocks which consist of
+a whole number of bytes and are byte aligned. Where arithmetic coding is used, each such
+block is preceded by data which includes a length code $length$, which is equal to the length in
+bytes of the data block. The function $initialise\_arithmetic\_decoding(length)$
+(Section \ref{initarith}) then initialises the arithmetic decoder. Once the arithmetic
+decoder is initialised, boolean and integer values may be extracted.
+
+After all values in a particular arithmetic coded block have been parsed, and remaining data
+is purged by calling $flush\_inputb()$ (Section \ref{blockreadbit}).
+
+\subsubsection{Contexts}
+
+
+Values are extracted by using binary {\em contexts}, which are estimates of the 
+probability of the binary values extracted being 0 ($\false$) or 1 ($\true$).
+Contexts are determined prior to values being extracted, based on previously
+decoded data, and are updated by the arithmetic decoding engine to track 
+statistics. The structure of contexts and how they are initialised and updated 
+is specified in Section \ref{arithcontexts}.
+
+The set of contexts is $\AContexts$, and an individual context is accessed via
+an index $\AContexts[i]$. 
+
+\paragraph{Context indices\\}
+\label{contextindices}
+
+The following context indices are used within the Dirac decoder:
+
+Wavelet coefficient contexts:
+
+\SignZero\\
+\SignPos\\
+\SignNeg\\
+\ZPZNFollowOne\\
+\ZPNNFollowOne\\
+\ZPFollowTwo\\
+\ZPFollowThree\\
+\ZPFollowFour\\
+\ZPFollowFive\\
+\ZPFollowSixPlus\\
+\NPZNFollowOne\\
+\NPNNFollowOne\\
+\NPFollowTwo\\
+\NPFollowThree\\
+\NPFollowFour\\
+\NPFollowFive\\
+\NPFollowSixPlus\\
+\CoeffData\\
+\ZeroCodeblock\\
+\QOffsetFollow\\
+\QOffsetData\\
+\QOffsetSign\\
+
+Motion data contexts:
+
+\SBSplitFollowOne\\
+\SBSplitFollowTwo\\
+\SBSplitData\\
+\PredModeOne\\
+\PredModeTwo\\
+\BlockGlobal\\
+\VectorFollowOne\\
+\VectorFollowTwo\\
+\VectorFollowThree\\
+\VectorFollowFour\\
+\VectorFollowFivePlus\\
+\VectorData\\
+\VectorSign\\
+\DCFollowOne\\
+\DCFollowTwoPlus\\
+\DCData\\
+\DCSign\\
+
+\subsubsection{Arithmetic decoding of boolean values}
+
+Given a context index $i$, the arithmetic decoding engine supports a function
+$read\_boola(i)$, specified in Section \ref{arithreadbool}, which returns the 
+boolean value $\true$ or $\false$.
+
+\subsubsection{Arithmetic decoding of integer values}
+
+\label{arithreadint}
+
+This section defines the operation of the $read\_sinta(context\_set)$ and
+$read\_uinta(context\_set)$ function
+ for extracting integer values from a block of arithmetically coded data.
+
+\paragraph{Binarisation and contexts \\}
+
+Signed and unsigned integer values are binarised using interleaved exp-Golomb
+ binarisation as per Section \ref{vlc}: the $read\_sinta()$ and $read\_uinta()$
+processes are essentially identical to the 
+$read\_sint()$ and $read\_uint()$ processes, except that instances of $read\_bool()$ are replaced
+by instances of $read\_boola()$ (Section \ref{arithreadbool}) using suitable contextualisation. 
+
+A choice of context depends upon whether the bit is a data bit, follow bit, 
+or sign bit, and upon the position of the bit within the binarisation: 
+$context\_set$ consists of three parts -
+\begin{itemize}
+\item an array of follow context indices, $context\_set[follow]$ (indexed from 0 to 
+$\length(context\_set[follow])-1$)
+\item a single data context index, $context\_set[data]$ 
+\item a sign context index, $context\_set[sign]$ (ignored for unsigned integer decoding)
+\end{itemize}
+
+Each follow context is used for decoding the corresponding follow bit, with the
+last follow context being used for all subsequent follow bits (if any) also. 
+The follow context selection function $follow\_context()$ is defined by:
+
+\begin{pseudo}{follow\_context}{index, context\_set}
+\bsCODE{pos= max(index, length(context\_set[follow])-1 }
+\bsCODE{ctx\_index = context\_set[follow][pos]}
+\bsRET{\AContexts[ctx\_index]}
+\end{pseudo}
+
+So the last follow context is used for all the remaining follow bits also.
+
+\paragraph{Unsigned integer decoding \\}
+
+Unsigned integers are decoded by:
+
+\begin{pseudo}{read\_uinta}{context\_set}
+\bsCODE{value = 1}
+\bsCODE{index = 0}
+\bsWHILE{read\_boola(follow\_context(index,context\_set) )== \false}
+  \bsCODE{value \ll = 1}
+  \bsIF{read\_boola(\text{state[contexts]}[context\_set[data])])}
+    \bsCODE{value += 1}
+  \bsEND
+  \bsCODE{index += 1}
+\bsEND
+\bsCODE{value -= 1}
+\bsRET{value}
+\end{pseudo}
+
+\paragraph{Signed integer decoding \\}
+
+$read\_sinta()$ decodes first the magnitude then the sign, as necessary:
+
+\begin{pseudo}{read\_sinta}{context\_set}
+\bsCODE{value=read\_uinta(context\_set)}
+\bsIF{value != 0}
+  \bsIF{read\_boola(\AContexts[context\_set[sign])]) == \true}
+    \bsCODE{value=-value}
+  \bsEND
+\bsEND
+\bsRET{value}
+\end{pseudo}
