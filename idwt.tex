@@ -123,7 +123,7 @@ from the wavelet index $\WaveletIndex$.
 \bsCODE{shift = filtershift()}
 \bsFOR{y=0}{\height(synth)-1}
     \bsFOR{x=0}{\width(synth)-1}
-        \bsCODE{synth[y][x] = synth[y][x]\gg shift}
+        \bsCODE{synth[y][x] = (synth[y][x] + (1<<(shift-1)))\gg shift}
     \bsEND
 \bsEND
 \end{pseudo*}
@@ -161,12 +161,11 @@ number of reversible integer lifting filter operations. An integral lifting filt
 \item a set of taps $t_{-N}, \hdots,t_M$
 \item a scale factor $s$
 \item a parity (odd or even)
-\item whether it is an ``update`` or ``predict`` filter
+\item whether it is an ``update" or ``predict" filter
 \end{itemize}
 
 An even lifting filtering operation modifies the even coefficients
 by the odd coefficients:
-
 \begin{eqnarray*}
   A[2*n]& +=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Update)} \\
   A[2*n]& -=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Predict)}
@@ -174,7 +173,6 @@ by the odd coefficients:
 
 An odd lifting filtering operation modifies the odd coefficients
  by the even coefficients:
-
 \begin{eqnarray*}
   A[2*n+1]& +=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)]+(1\ll (s-1)) \big) \gg s \mbox{ (Update)} \\
   A[2*n+1]& -=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)] +(1\ll (s-1))\big) \gg s \mbox{ (Predict)} \\
@@ -182,8 +180,9 @@ An odd lifting filtering operation modifies the odd coefficients
 
 \begin{informative}
 Note that the distinction between update and predict filters is necessary
-because integer rounding is being used, and the filters are non-linear.
-A predict filter with taps $t_i$ is not equivalent to an update filter with taps $-t_i$.
+because integer rounding is being used, and so the filters are non-linear.
+In particular, a predict filter with taps $t_i$ is {\em not} equivalent to 
+an update filter with taps $-t_i$.
 \end{informative}
 
 These formulae are deemed to be applied for all applicable $n$
@@ -251,32 +250,20 @@ The following the lifting filters and bitshift operations that
 apply for each value of $\WaveletIndex$ are specified in Tables \ref{filtertable0} to
 \ref{filtertable7}.
 
-\begin{informative}
-This specification contains an implementation of the Daubechies (9,7) filter 
-($\WaveletIndex==7$). Daubechies (9,7), like any other FIR biorthogonal wavelet, possesses a lifting
-implementation. However, to produce a perfect reconstruction filter, the lifting stages 
-require real-valued filter taps, and a final coefficient scaling stage. Any realisable implementation
-is therefore an approximation. The implementation specified here is fully integral, yet (other than omitting
-the final scaling stages), it is a very close approximation. These filters can therefore
-(unlike the JPEG2000 implementation) be used for lossless as well as lossy compression, whilst lossy
-compression performance is near-indentical to the real-valued filter. The integer lifting implementaiton
-also allows for much more efficient implementation.
-\end{informative}
-
-
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
-\hline
+Lifting steps:  \\
 \begin{tabular}{l}
 1. Even, Predict, $s=2, t_0=1, t_1=1$ i.e. \\
 \quad $ A[2*n]     -=  (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
 2. Odd, Update, $s=4$, $t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
 \quad $ A[2*n+1]  +=  (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]-A[2*n+4]+8)\gg 4$
 \end{tabular}
-& 1 \\
+\\
+\\
+$filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
@@ -285,10 +272,9 @@ also allows for much more efficient implementation.
 
 \begin{table}[!ht]
 
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
-\hline
+Lifting steps: \\
 
 \begin{tabular}{l}
 1. Even, Predict, $s=2, t_0=1, t_1=1$ i.e. \\
@@ -296,7 +282,9 @@ also allows for much more efficient implementation.
 2. Odd, Update, $s=1$, $t_0=1, t_1=1$ i.e. \\
 \quad $ A[2*n+1]  += (A[2*n]+A[2*n+2]+1)\gg 1$
 \end{tabular}
-& 1 \\ 
+\\
+\\
+$filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
@@ -304,10 +292,10 @@ also allows for much more efficient implementation.
 \end{table}
 
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
+Lifting steps: \\
 \hline
 \begin{tabular}{l}
 1. Even, Predict, $s=5, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
@@ -315,8 +303,9 @@ also allows for much more efficient implementation.
 2. Odd, Update, $s=4, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
 \quad $ A[2*n+1]  += (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]+A[2*n+4]+8)\gg 4$
 \end{tabular}
-
-& 1 \\
+\\
+\\
+$filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
@@ -324,19 +313,19 @@ also allows for much more efficient implementation.
 \end{table}
 
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
-\hline
+Lifting steps:\\
 \begin{tabular}{l}
 1. Even, Predict, $s=1, t_1=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
 2. Odd, Update, $s=0, t_0=1$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
-
-& 0 \\
+\\
+\\
+$filtershift()$ returns 0\\
 \hline
 
 \end{tabular}
@@ -344,19 +333,19 @@ also allows for much more efficient implementation.
 \end{table}
 
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
-\hline
+Lifting steps:\\
 \begin{tabular}{l}
 1. Even, Predict, $s=1, t_1=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
 2. Odd, Update, $s=0, t_0=1$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
-
-& 1 \\
+\\
+\\
+$filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
@@ -364,19 +353,20 @@ also allows for much more efficient implementation.
 \end{table}
 
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
-\hline
+Lifting steps:\\
+
 \begin{tabular}{l}
 1. Even, Predict, $s=1, t_1=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
 2. Odd, Update, $s=0, t_0=1$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
-
-& 2\\
+\\
+\\
+$filtershift()$ returns 2\\
 \hline
 
 \end{tabular}
@@ -384,9 +374,9 @@ also allows for much more efficient implementation.
 \end{table}
 
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
+Lifting steps:\\
 \hline
 \begin{tabular}{l}
 1. Odd, Update, $s=8, t_{-3}=-2, t_{-2}=10, t_{-1}=-25, t_0=81, t_1=81, t_2=-25, t_3=10, t_4=-2$ i.e. \\
@@ -396,7 +386,9 @@ $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+
  $ \begin{array}{rcl}A[2*n]  & -= & (-8*(A[2*n-7]+A[2*n+7])+21*(A[2*n-5]+A[2*n+5]) \\
                                           & &      -46*(A[2*n-3]+A[2*n+3])+161*(A[2*n-1]+A[2*n+1])+128)\gg 8 \end{array}$ 
 \end{tabular}
-& 0 \\
+\\
+\\
+$filtershift()$ returns 0\\
 \hline
 
 \end{tabular}
@@ -404,10 +396,10 @@ $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+
 \end{table}
 
 \begin{table}[!ht]
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|}
 
 \hline
-{\bf Lifting steps} & $filtershift()$ \\
+Lifting steps:\\
 \hline
 \begin{tabular}{l}
 1. Even, Predict, $s=12, t_0=1817, t_1=1817$ i.e. \\
@@ -419,19 +411,33 @@ $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+
 4. Odd, Update, $s=12, t_0=6497, t_1=6497$ i.e. \\
 \quad $ A[2*n+1] += (6497*A[2*n]+6497*A[2*n+2]+2048)\gg 12$
 \end{tabular}
-& 1 \\
+\\
+\\
+$filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
 \caption{$\WaveletIndex==7$: Integer lifting approximation to Daubechies (9,7)}\label{filtertable7}
 \end{table}
 
+\begin{informative}
+This specification contains an implementation of the Daubechies (9,7) filter 
+($\WaveletIndex==7$). Daubechies (9,7), like any other FIR biorthogonal wavelet, possesses a lifting
+implementation. However, to produce a perfect reconstruction filter, the lifting stages 
+require real-valued filter taps, and a final coefficient scaling stage. Any realisable implementation
+is therefore an approximation. The implementation specified here is fully integral, yet (other than omitting
+the final scaling stages), it is a very close approximation. Unlike the JPEG2000 implementation, 
+these filters can therefore be used for lossless as well as lossy compression, and lossy
+compression performance is near-indentical to the real-valued filter. The integer lifting implementation
+also allows for much more efficient implementation.
+\end{informative}
+
 \clearpage
 \subsection{Removal of IDWT pad values}
 \label{paddingremoval}
 
 This section defines the decoding process $idwt\_pad\_removal(pic, c)$. This
-is invoked subsequent to $idwt\_synthesis$.
+is invoked subsequent to $idwt\_synthesis()$.
 
 Subband data elements have been padded to ensure that the reconstructed 
 data array $pic$ has dimensions divisible by $2^\WaveletDepth$.
@@ -445,7 +451,7 @@ of the component data:
 width & =& \LumaWidth \\
 height & =& \LumaHeight
 \end{eqnarray*}
-\item else if $c=U$ or $c=V$,
+\item else if $c=C1$ or $c=C2$,
 \begin{eqnarray*}
 width & =& \ChromaWidth \\
 height & =& \ChromaHeight

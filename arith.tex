@@ -123,8 +123,8 @@ whether a value lies in one interval or another. If constraints are placed on th
 renormalisation (for example, by renormalising often enough and by having a fixed
 smallest allowable probability), then this can be accomplished within a fixed word width.
 
-\end{informative*}
-\begin{informative*}
+%\end{informative*}
+%\begin{informative*}
 \subsection{Arithmetic encoding (Informative)}
 
 This document only normatively specifies the decoding of arithmetic coded data. 
@@ -195,14 +195,14 @@ If $0$ is to be encoded, the real interval $[l,h)$
 should be rescaled so that $l$ is unchanged and the
 width $r=h-l=range/2^{16}$ is scaled to $r*p0$ where $p0=prob\_zero/2^{16}$.
 This operation is approximated by setting
-\[range=(range*prob\_zero)>>16\]
+\[range=(range*prob\_zero)\gg 16\]
 
 If 1 is to be encoded, $[l,h)$ should be rescaled so that $h$ is
 unchanged and $r$ is scaled to $(1-p0)*r$. This operation is
 approximated by setting
 \begin{eqnarray*}
-range & -= & (range*prob\_zero)>>16 \\
-low &+= & (range*prob\_zero)>>16 
+range & -= & (range*prob\_zero)\gg 16 \\
+low &+= & (range*prob\_zero)\gg 16 
 \end{eqnarray*}
 
 \paragraph*{Updating contexts\\}
@@ -226,7 +226,7 @@ In pseudocode, this is as follows:
     \bsELSE
         \bsCODE{write\_bit( low\&\text{0x8000} )}
         \bsWHILE{ carry>0}
-            \bsCODE{write\_bit( ~(low\&\text{0x8000}) )}
+            \bsCODE{write\_bit( !(low\&\text{0x8000}) )}
             \bsCODE{carry -= 1}
         \bsEND
     \bsEND
@@ -258,7 +258,7 @@ The remaining msbs are output as follows:
     \bsIF{(low+range-1)\wedge low<\text{0x8000}}
         \bsCODE{write\_bit( low\&\text{0x8000} )}
         \bsWHILE{ carry>0}
-            \bsCODE{write\_bit( ~(low\&\text{0x8000}) )}
+            \bsCODE{write\_bit( !(low\&\text{0x8000}) )}
             \bsCODE{carry -= 1}
         \bsEND
     \bsEND
@@ -290,7 +290,7 @@ the final straddles:
 \begin{pseudo*}
 \bsCODE{write\_bit(m_low_code \& \text{0x4000})}
 \bsWHILE{carry >= 0}
-    \bsCODE{write\_bit(~(low \& \text{0x4000}))}
+    \bsCODE{write\_bit(!(low \& \text{0x4000}))}
     \bsCODE{carry-=1}
 \bsEND
 \end{pseudo*}
@@ -488,9 +488,9 @@ or incrementing the probability of zero based on the first
 
 \begin{pseudo}{update\_context}{ctx,value}
 \bsIF{value==\true}
-    \bsCODE{ctx[prob0] -= \ALUT[ctx[prob0]>>8]}{Table \ref{table:lut}}
+    \bsCODE{ctx[prob0] -= \ALUT[ctx[prob0]\gg 8]}{Table \ref{table:lut}}
 \bsELSE
-    \bsCODE{ctx[prob0] += \ALUT[255-(ctx[prob0]>>8)]}{Table \ref{table:lut}}
+    \bsCODE{ctx[prob0] += \ALUT[255-(ctx[prob0]\gg 8)]}{Table \ref{table:lut}}
 \bsEND
 \end{pseudo}
 

@@ -485,7 +485,7 @@ Utility functions returning the chroma subsampling factors are also defined:
 \bsEND
 \end{pseudo}
 
-\begin{pseudo}{chroma\_h\_ratio}{}
+\begin{pseudo}{chroma\_v\_ratio}{}
 \bsIF{\SChromaFormatIndex==0}
     \bsRET{1}
 \bsELSEIF{\SChromaFormatIndex==1}
@@ -512,8 +512,17 @@ If a flag is set, the default video depth specified by the video format is overr
 \subsection{Access unit source parameters}
 \label{sourceparameters}
 
-The Access Unit source parameters consist of: the scan format, frame rate,
-aspect ratio, clean area, signal range and colour specification. These parameters
+The Access Unit source parameters consist of: 
+\begin{itemize}
+\item scan format
+\item frame rate
+\item aspect ratio
+\item clean area
+\item signal range
+\item colour specification
+\end{itemize}
+
+These parameters
 have been grouped together as they directly influence how a downstream
 display device will display decoded pictures produced by a Dirac decoder.
 Access Unit source parameter data shall remain constant throughout a Dirac sequence.
@@ -791,7 +800,11 @@ This Section specifies the operation of the $picture()$ parsing process. The pro
 decoding and outputting pictures is specified in Section \ref{picturedec}.
 
 Picture data may be successfully parsed after parsing any Access Unit header
-within the same Dirac sequence. The parsing process is:
+within the same Dirac sequence. Picture data encapsulates data for each of three
+components -- one luma component (labelled $Y$) and two chroma components (labelled
+$C1$ and $C2$)) -- and, optionally, motion vector data.
+
+The parsing process is:
 
 \begin{pseudo}{picture}{}
 \bsCODE{init\_decode\_params()}{\ref{initdecodeparams}}
@@ -808,6 +821,8 @@ within the same Dirac sequence. The parsing process is:
     \bsCODE{byte\_align()}
     \bsCODE{low\_delay\_picture()}{\ref{ldpicture}}
 \end{pseudo}
+
+
 
 \subsubsection{Initialising decoding parameters}
 \label{initdecodeparams}
@@ -992,8 +1007,7 @@ These block constraints are now implemented in the software and non-overlapped b
 
 \begin{informative}
 Note that these requirements do not preclude length from equalling separation, i.e.
-motion compensation blocks are not overlapped. This may improve quality at higher
-bitrates.
+motion compensation blocks are not overlapped. 
 \begin{comment}
 [NB: software currently crashes in this case!]
 \end{comment}
@@ -1187,7 +1201,7 @@ transform (including filters, wavelet depth, and code block structures)
 together with the transformed wavelet coefficients.
 
 Decoded wavelet transform coefficient data is stored in the state
-variables $\YTransform$, $\UTransform$ and $\VTransform$ for subsequent
+variables $\YTransform$, $\COneTransform$ and $\CTwoTransform$ for subsequent
 processing using the inverse wavelet transform (Section \ref{idwt}).
 
 \begin{pseudo}{wavelet\_transform}{}
@@ -1200,8 +1214,8 @@ processing using the inverse wavelet transform (Section \ref{idwt}).
     \bsCODE{transform\_parameters()}{\ref{transformparameters}}
     \bsCODE{byte\_align()}
     \bsCODE{\YTransform = transform\_data(Y)}{\ref{transformdata}}
-    \bsCODE{\UTransform = transform\_data(U)}{\ref{transformdata}}
-    \bsCODE{\VTransform = transform\_data(V)}{\ref{transformdata}}
+    \bsCODE{\COneTransform = transform\_data(C1)}{\ref{transformdata}}
+    \bsCODE{\CTwoTransform = transform\_data(C2)}{\ref{transformdata}}
 \end{pseudo}
 
 If $\ZeroResidual=\true$ then all component pixels will be set to zero prior to

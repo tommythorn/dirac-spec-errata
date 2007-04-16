@@ -152,11 +152,13 @@ The following bitwise operations are defined on non-negative integer values:
 \paragraph*{\&} Logical AND is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13\&6$ is $\text{b1101}\&\text{b110}$, which equals $\text{b100}$, or 4.
 
-\paragraph*{$\mathbf{|}$} Logical OR is applied between the corresponding bits in the binary representation of two numbers, e.g.
+\paragraph*{${\mathbf |}$} Logical OR is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13|6$ is $\text{b1101}\text{|}\text{b110}$, which equals $\text{b1111}$, or 15.
 
-\paragraph*{$\mathbf{\wedge}$} Logical XOR is applied between the corresponding bits in the binary representation of two numbers, e.g.
+\paragraph*{${\mathbf \wedge}$} Logical XOR is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13\wedge 6$ is $\text{b1101}\wedge\text{b110}$, which equals $\text{b1011}$, or 11.
+
+\paragraph*{!} Logical NOT is applied to all bits in the representation of a number e.g. $!(b010)=b101$.
 
 These operations are also defined on boolean values, interpreted as single-bit integers, 
 where 0 is interpreted as $\false$ and 1 as $\true$ and vice-versa. Logical NOT is 
@@ -271,9 +273,9 @@ and so on apply.
 \paragraph*{Map}
 
 A map is a set accessed by token names. For example
-$p[Y]$, $p[U]$, $p[V]$ might give the value of the different video components
-(Y, U and V) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
-so that $\args(p)=\{Y,U,V\}$.
+$p[Y]$, $p[C1]$, $p[C2]$ might give the value of the different video components
+(Y, C1 and C2) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
+so that $\args(p)=\{Y,C1,C2\}$.
 
 \paragraph*{Array} 
 
@@ -288,10 +290,12 @@ $a[1]=v$ and so on.
 
 These basic variable types may be combined. For example, picture data may be considered
 to be a map of arrays $pic$, where $pic[Y]$ is a 2-dimensional array storing luma data,
-and $pic[U]$ and $pic[V]$ are two-dimensional arrays storing chroma data.
+and $pic[C1]$ and $pic[C2]$ are two-dimensional arrays storing chroma data.
 
 Variables within processes are not explicitly declared, and their type is determined from
 context or defined in the surrounding description.
+
+\paragraph*{Assignment and equality\\}
 
 Assignment between variables $a$ and $b$ is denoted by $a=b$, and is a copy
 operation between the data contained within $b$ to $a$. 
@@ -313,7 +317,7 @@ means $x=x|\text{0x4B}$.
 \label{controlflow}
 
 The pseudocode comprises a series of statements, linked by functions and
-flow control statements such as if, while, and for.
+flow control statements such as {\bf if}, {\bf while}, and {\bf for}.
 
 The statements do not have a termination character, unlike the ; in C
 for example.  Blocks of statements are indicated by indentation:
@@ -365,7 +369,7 @@ calls $foo()$ with value $i$, as $i$ steps through from 0 to $n-1$ inclusive.
 a list:
 
 \begin{pseudo*}
-\bsFOREACH{c}{Y,U,V}
+\bsFOREACH{c}{Y,C1,C2}
     \bsCODE{block}
 \bsEND
 \end{pseudo*}

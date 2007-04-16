@@ -9,8 +9,7 @@ This section specifies the process for decoding a picture from the Dirac stream.
 correctly parsing the Dirac bitstream, and decoding operations are dependent upon the parsing operations
 set out in Sections \ref{streamstructure}, \ref{motiondec} and \ref{transformdec}.
 
-This section does not specify how pictures are encoded, nor how pictures are reordered and presented for display, 
-which is described in Section \ref{profilelevel}. 
+This section does not specify how pictures are encoded, nor how pictures are reordered and presented for display, which is described in Section \ref{profilelevel}. 
 
 \subsection{Introduction}
 
@@ -33,7 +32,9 @@ buffer are set out in Section \ref{refbuffer}.
 \label{picdataconventions}
 
 Picture data from the current picture being decoded is stored in the $\CurrentPicture$ state
-variable, which is a structure with indices $pic\_num$, $Y$, $U$ and $V$.
+variable, which is a structure with indices $pic\_num$, $Y$, $C1$ and $C2$ representing
+luma and chroma data (typically Y, Cb and Cr, although other formats are supported too -- see
+Appendix \ref{vidsys}).
 
 
 The $init\_picture\_data()$ initialises the current picture data so that:
@@ -41,8 +42,8 @@ The $init\_picture\_data()$ initialises the current picture data so that:
 \item $\CurrentPicture[pic\_num]=\PictureNumber$
 \item $\CurrentPicture[Y]$ is a 2-dimensional array of width $\LumaWidth$ and height$\LumaHeight$, 
 all values $\CurrentPicture[Y][y][x]$ set to 0
-\item $\CurrentPicture[U]$ and $CurrentPicture[V]$ are 2-dimensional arrays of width $\ChromaWidth$ and height $\ChromaHeight$, 
-all values $\CurrentPicture[U][y][x]$ and $\CurrentPicture[V][y][x]$ set to 0
+\item $\CurrentPicture[C1]$ and $\CurrentPicture[C2]$ are 2-dimensional arrays of width $\ChromaWidth$ and height $\ChromaHeight$, 
+all values $\CurrentPicture[C1][y][x]$ and $\CurrentPicture[C2][y][x]$ set to 0
 \end{itemize}
 
 \subsubsection{Initialisation}
@@ -73,8 +74,8 @@ $n$ in a Dirac sequence consists of:
 \bsCODE{init\_picture\_data()}{\ref{picturedecodinginit}}
 \bsIF{\ZeroResidual==\false}
     \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
-    \bsCODE{\CurrentPicture[U]=idwt(\UTransform)}{\ref{idwt}}
-    \bsCODE{\CurrentPicture[V]=idwt(\VTransform)}{\ref{idwt}}
+    \bsCODE{\CurrentPicture[C1]=idwt(\COneTransform)}{\ref{idwt}}
+    \bsCODE{\CurrentPicture[C2]=idwt(\CTwoTransform)}{\ref{idwt}}
 \bsEND
 \bsIF{is\_inter()}
     \bsCODE{ref1=get\_ref(\RefOneNum)}
@@ -82,8 +83,8 @@ $n$ in a Dirac sequence consists of:
         \bsCODE{ref2=get\_ref(\RefTwoNum)}
     \bsEND
     \bsCODE{motion\_compensate(ref1[Y], ref2[Y],  \CurrentPicture[Y], c)}{\ref{motioncompensate}}
-    \bsCODE{motion\_compensate(ref1[U], ref2[U],  \CurrentPicture[U], c)}{\ref{motioncompensate}}
-    \bsCODE{motion\_compensate(ref1[V], ref2[V],  \CurrentPicture[V], c)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[C1], ref2[C1],  \CurrentPicture[C1], c)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[C2], ref2[C2],  \CurrentPicture[C2], c)}{\ref{motioncompensate}}
 \bsEND
 \bsCODE{\clip\_picture()}{\ref{pictureclip}}
 \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
@@ -100,9 +101,9 @@ decoders may be designed to produce an output.
 A Dirac sequence shall be so constructed so that if
 pictures are decoding commences from the beginning of the stream and pictures are decoded in 
 stream order, there shall be no undecodeable pictures i.e. the reference pictures associated with
-any picture in the sequence stall have occurred prior to that picture in the sequence.
+any picture in the sequence shall have occurred prior to that picture in the sequence.
 
-Picture numbers within the stream may not be in numerical, and subsequent reordering may be
+Picture numbers within the stream may not be in numerical order, and subsequent reordering may be
 required: the size of the decoded picture buffer required to perform any such reordering is specified
 as part of the application profile and level (Appendix \ref{profilelevel}).
 
@@ -161,7 +162,7 @@ Picture data must be clipped to the video range prior to being output or being
 used as a reference:
 
 \begin{pseudo}{clip\_picture}{}
-\bsFOREACH{c}{Y,U,V}
+\bsFOREACH{c}{Y,C1,C2}
     \bsCODE{clip\_comp(\CurrentPicture[c])}
 \bsEND
 \end{pseudo}

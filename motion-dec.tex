@@ -35,7 +35,7 @@ $\BlockData$ of block data structures. A block motion data element ${\bf b}=\Blo
 vertical element ${\bf b}[ref1][1]$
 \item A motion vector for reference 2, ${\bf b}[ref2]$, with integral horizontal element ${\bf b}[ref2][0]$ and 
 vertical element ${\bf b}[ref2][1]$
-\item A set of integral DC values, ${\bf b}[dc][Y]$, ${\bf b}[dc][U]$, and ${\bf b}[dc][V]$ for each component
+\item A set of integral DC values, ${\bf b}[dc][Y]$, ${\bf b}[dc][C1]$, and ${\bf b}[dc][C2]$ for each component
 \item A prediction mode, ${\bf b}[mode]$, consisting of two flags ${\bf b}[mode][1]$ and ${\bf b}[mode][2]$ 
 indicating whether the corresponding reference is to be used for predicting block $(i,j)$
 \item A global motion flag, ${\bf b}[global]$, which is set to $\true$ if global motion prediction is to be used for
@@ -77,13 +77,13 @@ motion data element is consists of an entropy coded block preceded by a length c
 \bsCODE{prediction\_modes()}{\ref{blockpredmodes}}
 \bsCODE{vector\_elements(1, 0)}{\ref{blockmvelements}}
 \bsCODE{vector\_elements(1, 1)}{\ref{blockmvelements}}
-\bsIF{\NumRefs>0}
+\bsIF{\NumRefs==2}
     \bsCODE{vector\_elements(2,0)}{\ref{blockmvelements}}
     \bsCODE{vector\_elements(2,1)}{\ref{blockmvelements}}
 \bsEND
 \bsCODE{dc\_values(Y)}{\ref{DCvalues}}
-\bsCODE{dc\_values(U)}{\ref{DCvalues}}
-\bsCODE{dc\_values(V)}{\ref{DCvalues}}
+\bsCODE{dc\_values(C1)}{\ref{DCvalues}}
+\bsCODE{dc\_values(C2)}{\ref{DCvalues}}
 \end{pseudo}
 
 \begin{informative}
@@ -202,7 +202,7 @@ bit of the block prediction mode is decoded separately.
 \bsCODE{\BlockData[ypos][xpos][mode][1] =pred\_mode\_residue}
 \bsCODE{\BlockData[ypos][xpos][mode][1] \wedge=mode\_prediction(ypos, xpos, 1)}{\ref{modeprediction}}
 \bsIF{\NumRefs == 2}
-    \bsCODE{pred\_mode\_residue = read\_boola(\PredModeOne)}
+    \bsCODE{pred\_mode\_residue = read\_boola(\PredModeTwo)}
     \bsCODE{\BlockData[ypos][xpos][mode][2] =pred\_mode\_residue}
     \bsCODE{\BlockData[ypos][xpos][mode][2]\wedge= mode\_prediction(ypos, xpos, 2)} {\ref{modeprediction}}
 \bsEND
@@ -508,13 +508,13 @@ and
 
 $\BlockData[ypos-1][xpos][mode][ref]==\true$
 
-then vector element $\BlockData[ypos-1][xpos][ref][dirn].x$ is returned.
+then vector element $\BlockData[ypos-1][xpos][ref][dirn]$ is returned.
 
    \item Otherwise, $0$ is returned
 \end{enumerate}
 
 {\bf Case 4.} If both $xpos>0$ and $ypos>0$ then all 3 blocks in the prediction aperture may potentially
-contribute to the prediction. Define sets $values=\emptyset$. The prediction is the 
+contribute to the prediction. Define the set $values=\emptyset$. The prediction is the 
 median of the available vector elements:
 
 \begin{pseudo*}

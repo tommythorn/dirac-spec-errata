@@ -43,10 +43,9 @@ rapidly and accurately, and approach design compromises knowledgably.
 \label{introstatus}
 
 This is version \SpecVersion of the Dirac specification. The document includes
-a full description of the core Dirac stream syntax and decoder operations. It does
-not yet contain a specification of profiles and levels supported by Dirac, or the
-compatible extensions required to support the Dirac Pro toolset. These shall
-be added shortly. 
+a full description of the core Dirac stream syntax and decoder operations, together
+with compatible extensions to support low-delay operation (professional profiles). It does
+not yet contain a full specification of profiles and levels supported by Dirac.
 
 \subsection{Document structure}
 \label{introdocstruct}
@@ -67,16 +66,12 @@ representations), variable-length codes, and data entropy coded using arithmetic
 encoding. Stream data access methods are used both by parsing and decoding operations.
 
 Parsing and interpretation defines the structure of Dirac streams, and defines
-intermediate decoder data structures in which extracted data is stored, which 
-encapsulate {\em both} meta-data used to control picture decoding processes (for 
-example, motion compensation block sizes and overlaps, picture dimensions and
-so forth) {\em and} the blocks of (arithmetically coded) data used as input to 
-these processes.
+intermediate decoder data structures in which extracted data is stored, 
+used to control picture decoding processes.
 
 Picture decoding operations produce decoded pictures from these populated
-data structures by applying specified functions to them. They are not necessary
-for navigating the stream or reading any of the stream data, but only
-for outputting pictures.
+data structures by applying specified functions to them. These operations
+are logically distinct from those for navigating the stream or reading the stream data.
 
 Note in particular that the distinction between parsing and picture decoding is
 {\em not} exactly that between syntax and semantics: complex semantics are
@@ -85,7 +80,7 @@ required for correct parsing of the stream as well as for decoding pictures.
 It is perhaps unusual in a specification to separate these layers quite so distinctly, 
 and our purpose in doing so is to provide much greater clarity. For implementors,
 we hope that the decoupling of the stream structure from the (computationally intensive)
-picture decoding processes will (we hope) avoid imposing
+picture decoding processes will avoid imposing
 implicit design decisions merely through the style of the specification. Many
 other users of the specification will not be interested in the precise format
 of stream elements but in how the underlying algorithm works - or vice-versa.
@@ -94,26 +89,12 @@ frame skipping in video playback applications, extremely simply and without
 requiring comprehension of the entire specification.
 
 This layered structure is reflected in the structure of the specification,
-which, after defining conventions used in the specification is divided into three
+which, after defining conventions used, is divided into three
 corresponding parts: stream data access, defining functions for data types; 
 accessing and parsing the Dirac bitstream and populating data
 structures (including the wavelet coefficients and motion data); and 
 high-level decoder operations and picture output, specifically the
 inverse wavelet transform and motion compensation.
 
-\begin{comment}
-This layered structure is reflected in the structure of the specification,
-which is divided into four parts. The first part introduces Dirac concepts,
-both informatively, in terms of describing Dirac video coding processes, and
-normatively, in terms of defining terms, concepts and conventions used 
-throughout the specification.
-
-The second part defines stream data access functions for data types. Part III
-deals with accessing, parsing the Dirac bitstream and populating data
-structures, including the wavelet coefficient and motion data.
-
-Part IV defines high-level decoder operations and picture output, specifically the
-inverse wavelet transform and motion compensation.
-\end{comment}
 In addition to these parts, appendices deal with standard settings, parameter
 presets and levels and profiles.

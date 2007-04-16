@@ -146,10 +146,10 @@ If $is\_low\_delay==\true$, the following constraints are placed upon the slice 
 \item If $is\_inter()==\true$, $\SliceWidth$ shall be divisible by $4*\LumaXBsep$ and $\SliceHeight$ shall be divisible by $4*\LumaYBsep$
 \item Chroma and luma subbands must contain corresponding levels of padding, i.e. for all orientations $orient$ and levels $l$,
 \begin{eqnarray*}
-\width(\YTransform[l][orient]) & = & chroma\_h\_factor*\width(\UTransform[l][orient]) \\
-& = & chroma\_h\_factor*\width(\VTransform[l][orient]) \\
-\height(\YTransform[l][orient]) & = & chroma\_h\_factor*\height(\UTransform[l][orient]) \\
-& = & chroma\_h\_factor*\height(\VTransform[l][orient]) \\
+\width(\YTransform[l][orient]) & = & chroma\_h\_factor*\width(\COneTransform[l][orient]) \\
+& = & chroma\_h\_factor*\width(\CTwoTransform[l][orient]) \\
+\height(\YTransform[l][orient]) & = & chroma\_h\_factor*\height(\COneTransform[l][orient]) \\
+& = & chroma\_h\_factor*\height(\CTwoTransform[l][orient]) \\
 \end{eqnarray*}
 \end{itemize}
 
@@ -200,8 +200,8 @@ is merely a concatenation of slices. The number of slices in a picture is determ
 
 \begin{pseudo}{low\_delay\_picture}{}
 \bsCODE{\YTransform = initialise\_wavelet\_data(Y)}{\ref{wltinit}}
-\bsCODE{\UTransform = initialise\_wavelet\_data(U)}{\ref{wltinit}}
-\bsCODE{\VTransform = initialise\_wavelet\_data(V)}{\ref{wltinit}}
+\bsCODE{\COneTransform = initialise\_wavelet\_data(C1)}{\ref{wltinit}}
+\bsCODE{\CTwoTransform = initialise\_wavelet\_data(C2)}{\ref{wltinit}}
 \bsCODE{ph=2^{\TransformDepth}*\left\lceil\frac{\LumaHeight}{2^{\TransformDepth}}\right\rceil}
 \bsCODE{pw= 2^{\TransformDepth}*\left\lceil\frac{\LumaWidth}{2^{\TransformDepth}}\right\rceil}
 \bsCODE{\SlicesX=ph//\SliceWidth}
@@ -213,8 +213,8 @@ is merely a concatenation of slices. The number of slices in a picture is determ
 \bsEND
 \bsIF{is\_intra()}
     \bsCODE{intra\_dc\_prediction(\YTransform[0][\LL])}{\ref{intradcprediction}}
-    \bsCODE{intra\_dc\_prediction(\UTransform[0][\LL])}{\ref{intradcprediction}}
-    \bsCODE{intra\_dc\_prediction(\VTransform[0][\LL])}{\ref{intradcprediction}}
+    \bsCODE{intra\_dc\_prediction(\COneTransform[0][\LL])}{\ref{intradcprediction}}
+    \bsCODE{intra\_dc\_prediction(\CTwoTransform[0][\LL])}{\ref{intradcprediction}}
 \bsEND
 \end{pseudo}
 
@@ -324,8 +324,8 @@ where $c=Y$ for luma coefficients, and $U$ or $V$ for chroma coefficients.
 \begin{pseudo}{luma\_slice\_band}{level, orinet, sy, sx}
 \bsFOR{y=bottom}{top-1}
   \bsFOR{x=left}{right-1}
-    \bsITEM{\UTransform[level][orient]=0}{sintb}{\ref{segol}}
-    \bsITEM{\VTransform[level][orient]=0}{sintb}{\ref{segol}}
+    \bsITEM{\COneTransform[level][orient]=0}{sintb}{\ref{segol}}
+    \bsITEM{\CTwoTransform[level][orient]=0}{sintb}{\ref{segol}}
   \bsEND
 \bsEND
 \end{pseudo}

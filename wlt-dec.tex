@@ -137,18 +137,18 @@ ph = 2^{\TransformDepth}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
 
 If $level==0$,
 \begin{eqnarray*}
-subband\_height(level) & = & ph//2^{\TransformDepth} \\
-& = & \left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil \\
 subband\_width(level) & = & pw//2^{\TransformDepth} \\
-& = & \left\lceil\frac{w}{2^{\TransformDepth}}\right\rceil
+& = & \left\lceil\frac{w}{2^{\TransformDepth}}\right\rceil \\
+subband\_height(level) & = & ph//2^{\TransformDepth} \\
+& = & \left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
 \end{eqnarray*}
 
 If $level>0$
 \begin{eqnarray*}
-subband\_height(level) & = & ph//2^{\TransformDepth-level+1} \\
-& = & 2^{level-1}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil \\
 subband\_width(level) & = & pw//2^{\TransformDepth-level+1} \\
-& = & 2^{level-1}*\left\lceil \frac{w}{2^{\TransformDepth}}\right\rceil
+& = & 2^{level-1}*\left\lceil \frac{w}{2^{\TransformDepth}}\right\rceil \\
+subband\_height(level) & = & ph//2^{\TransformDepth-level+1} \\
+& = & 2^{level-1}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
 \end{eqnarray*}
 
 \begin{informative}
@@ -171,7 +171,7 @@ bottom and right edges at high levels of compression.
 
 This section specifies the overall operation of the $transform\_data(comp)$ process
 for parsing and decoding the set of coefficient subbands corresponding
-to a video picture component (Y, U or V), according to the conventions set out
+to a video picture component (Y, C1 or C2), according to the conventions set out
 in Section \ref{wltdecodeconventions}.
 
 In the Dirac stream, subband data is arranged by level and orientation, from
@@ -267,7 +267,7 @@ arithmetic decoding engine, and setting quantisers. There is a different code bl
 process for Intra DC bands, since values are coded using spatial prediction.
 
 \begin{pseudo*}
-\bsIF{level>1}
+\bsIF{level>=2}
 \bsCODE{parent = data[level-1][orient]}
 \bsELSE
     \bsCODE{parent = \emptyset}
