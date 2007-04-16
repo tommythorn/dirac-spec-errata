@@ -104,7 +104,7 @@ if $low=b1xyz...$ and $high=b1pqr...$ we can output $1$ and shift to get
 $low=bxyz...$ and $high=bpqr...$ again: this is equivalent to doubling the interval
 from 1 ($x\mapsto 2x-1$).
 
-One problem remains, when the interval resolutely sits on the fence, straddling
+One problem remains: suppose the interval resolutely sits on the fence, straddling
 1/2 whilst getting smaller and smaller, with the most 
 significant bits of low and high staying as 0 and 1 respectively. 
 In this case, when the straddle is finally resolved, $low$ and $high$ will
@@ -132,18 +132,24 @@ However whilst it is clearly vital that an encoding process matches the decoding
 process, it is not entirely straightforward to derive an implementation of the
 encoder by only looking only at the decoder specification. Therefore this
 informative section describes a possible implementation for an
-arithmetic encoding engine that will produce output decodeable by
-the Dirac arithmetic decoding engine.
+arithmetic encoder that will produce output decodeable by
+the Dirac arithmetic decoder. This section should be read in conjunction with
+Section \ref{arithengine}.
 
 \subsubsection{Encoder variables}
 
 An arithmetic encoder would require the following unsigned integer variables:
 \begin{itemize}
-\item $\text{low}$, a value indicating the bottom of the encoding interval
-\item $\text{range}$, a value indicating the width of the encoding interval
-\item $\text{carry}$, a value tracking the number of unresolved ``straddle" conditions 
+\item $low$, a value indicating the bottom of the encoding interval
+\item $range$, a value indicating the width of the encoding interval
+\item $carry$, a value tracking the number of unresolved ``straddle" conditions 
 (described below)
+\item a set of 16-bit probability contexts, as described in Section \ref{arithdecoding}
 \end{itemize}
+
+Boolean values are encoded using an estimate $prob0$ of the probability of zero
+for that value: $prob0$ is 16 bits, i.e. the probability of zero is $prob0/2^{16}$. 
+The process for updating this probability is described in Section \ref{contextupdate}
 
 A Dirac binary arithmetic encoder implementation will code a set of data in three stages:
 \begin{enumerate}
@@ -157,99 +163,150 @@ A Dirac binary arithmetic encoder implementation will code a set of data in thre
 Initialisation of the arithmetic encoder is very simple -- the internal variables are
 set as:
 \begin{eqnarray*}
-\text{low}&=&\text{0x0} \\
-\text{range}&=&\text{0x10000} \\
-\text{underflow}&=&0
+low&=&\text{0x0} \\
+range&=&\text{0x10000} \\
+carry&=&0
 \end{eqnarray*}
 
-With 16 bit accuracy, $0x10000$ corresponds to an interval width value of 1.
+With 16 bit accuracy, $0x10000$ corresponds to an interval width value of 1. All
+context probabilities are initialised to probability $1/2$ (0x8000).
 
-\subsubsection{Processing of binary values}
-\begin{comment}
-Bits are encoded one at a time based on an estimated probability
-embodied in a ``context''. As with decoding, the context simply relates to
-counts of the number of zeros or ones that have been previously encoded.
+\subsubsection{Encoding binary values}
+\label{arithwritebool}
+The encoding process for a binary value must precisely mirror
+that for the decoding process (Section \ref{arithreadbool}), in
+particular the interval variables $low$ and $range$ must be
+updated in the same way.
 
-A possible algorithm for encoding a single bit, given a context, is:
+Coding a boolean value consists of three sub-stages (in order): 
+\begin{enumerate}
+\item{scaling the interval $[low,low+range)$}
+\item{updating contexts}
+\item{renormalising and outputting data}
+\end{enumerate}
 
-Encode Binary Arithmetic Coded Bit
-\begin{verbatim}
-write_ba(symbol, context):
-    while ( ((high&0x4000)==0x0) and
-           ((low&0x4000)==0x4000) ):
-        code ^= 0x4000
-        high ^= 0x4000
-        low ^= 0x4000
-        shift_bit_out()
-    weight = context[0] + context[1]
-    scaler = (0x10000+weight//2)//weight
+\paragraph*{Scaling the interval\\}
+The integer interval $[low,low+range)$ represents the real interval
+$[l,h)=[low/2^{16},(low+range)/2^{16})$. In a given context with index $i$,
+the probability of zero can be extracted as 
+\[prob\_zero=\AContexts[i][prob0]\]
 
-    probability0 = context[0]*scaler
-    range = high-low+1
-    range_x_prob = (range * probability0)>>16
-    if ( symbol )
-        context[1] += 1
-        low = low + range_x_prob
-    else
-        context[0] += 1
-        high = low  + range_x_prob - 1
-    if ( (context[0] + context[1]) > 255 ):
-        #Halve counts in the context
-        context[0] >> 1
-        context[0] += 1
-        context[1] >> 1
-        context[1] += 1
-    while (((high&0x8000)==0x0) and ((low&0x8000)==0x0)):
-        output_bits()
-        shift_bit_out()
-\end{verbatim}
+If $0$ is to be encoded, the real interval $[l,h)$
+should be rescaled so that $l$ is unchanged and the
+width $r=h-l=range/2^{16}$ is scaled to $r*p0$ where $p0=prob\_zero/2^{16}$.
+This operation is approximated by setting
+\[range=(range*prob\_zero)>>16\]
 
-Shift Bit Out
-\begin{verbatim}
-shift_bit_out():
-    high << 1
-    high &= 0xFFFF
-    high += 1
-    low << 1
-    low &= 0xFFFF
-\end{verbatim}
+If 1 is to be encoded, $[l,h)$ should be rescaled so that $h$ is
+unchanged and $r$ is scaled to $(1-p0)*r$. This operation is
+approximated by setting
+\begin{eqnarray*}
+range & -= & (range*prob\_zero)>>16 \\
+low &+= & (range*prob\_zero)>>16 
+\end{eqnarray*}
 
-Output Bits
-\begin{verbatim}
-output_bits():
-    write_bit( (high&0x8000)==0x8000 )
-    while ( underflow > 0 ):
-        write_bit( high&0x8000)==0x0 )
-        underflow -= 1
-\end{verbatim}
+\paragraph*{Updating contexts\\}
+Contexts are updated in exactly the same way as the 
+decoder (Section \ref{contextupdate}).
 
-Flush Encoder
-\begin{verbatim}
-flush_encoder():
 
-    write_bit( (high&0x4000)==0x4000 )
-    while ( underflow >= 0 ):
-        write_bit( high&0x4000)==0x0 )
-        underflow -= 1
-\end{verbatim}
+\paragraph*{Renormalisation and output\\}
+Renormalisation must cause $low$ and $range$ to be modified exactly
+as in the decoder (Section \ref{renormalisation}). In addition, 
+during renormalisation bits are output when $low$ and $low+range$ 
+agree in their msbs, taking into account carries accumulated when a
+straddle condition is accumulated. 
+In pseudocode, this is as follows:
 
-Where the ``write\_bit(bit)'' function outputs a single bit.
-\end{comment}
+\begin{pseudo*}
+\bsWHILE{range<=\text{0x4000}}
+    \bsIF{(low+range-1)\wedge low>=\text{0x8000}}
+        \bsCODE{low \wedge= \text{0x4000}}
+        \bsCODE{carry+=1}
+    \bsELSE
+        \bsCODE{write\_bit( low\&\text{0x8000} )}
+        \bsWHILE{ carry>0}
+            \bsCODE{write\_bit( ~(low\&\text{0x8000}) )}
+            \bsCODE{carry -= 1}
+        \bsEND
+    \bsEND
+    \bsCODE{low  <<=  1}
+    \bsCODE{range  <<=  1}
+    \bsCODE{low \&= \text{0xFFFF}}
+\bsEND
+\end{pseudo*}
+
+\paragraph*{Flushing the encoder\\}
+After encoding, there may still be insufficient bits for a decoder
+to determine the final few encoded symbols, partly because further 
+renormalisation is required -- for example, msbs may agree but the range
+may still be larger than 0x4000) -- and partly because there may be 
+unresolved carries.
+
+A four-stage process will adequately flush the encoder:
+\begin{enumerate}
+\item{output remaining resolved msbs}
+\item{resolve remaining straddle conditions}
+\item{flush carry bits}
+\item{byte align the output with padding bits}
+\end{enumerate}
+
+The remaining msbs are output as follows:
+
+\begin{pseudo*}
+\bsWHILE{range<=\text{0x8000}}
+    \bsIF{(low+range-1)\wedge low<\text{0x8000}}
+        \bsCODE{write\_bit( low\&\text{0x8000} )}
+        \bsWHILE{ carry>0}
+            \bsCODE{write\_bit( ~(low\&\text{0x8000}) )}
+            \bsCODE{carry -= 1}
+        \bsEND
+    \bsEND
+    \bsCODE{low  <<=  1}
+    \bsCODE{range  <<=  1}
+    \bsCODE{low \&= \text{0xFFFF}}
+\bsEND
+\end{pseudo*}
+
+Note that this renormalisation is invoked if the range is less than
+or equal to 1/2 the total range. Remaining straddles can then
+be resolved in the same way:
+
+\begin{pseudo*}
+\bsWHILE{range<=\text{0x8000}}
+    \bsIF{(low+range-1)\wedge low>=\text{0x8000}}
+        \bsCODE{low \wedge= \text{0x4000}}
+        \bsCODE{carry+=1}
+    \bsEND
+    \bsCODE{low  <<=  1}
+    \bsCODE{range  <<=  1}
+    \bsCODE{low \&= \text{0xFFFF}}
+\bsEND
+\end{pseudo*}
+
+Carry bits can be discharged by picking a resolution of
+the final straddles:
+
+\begin{pseudo*}
+\bsCODE{write\_bit(m_low_code \& \text{0x4000})}
+\bsWHILE{carry >= 0}
+    \bsCODE{write\_bit(~(low \& \text{0x4000}))}
+    \bsCODE{carry-=1}
+\bsEND
+\end{pseudo*}
+
+Finally, 0-7 padding bits are added to the encoded output to make
+a whole number of bytes. These are not necessary for decoding, but
+for stream compliance.
+
 \end{informative*}
-
 \subsection{Arithmetic decoding engine}
 \label{arithengine}
 
 This section is a normative specification of the operation of the arithmetic
-decoding engine.
-
-
-
-This section specifies the arithmetic decoding engine and
-processes for using it to extract data from coded streams.
+decoding engine and the processes for using it to extract binary values from coded streams.
 
 The arithmetic decoding engine consists of two elements: 
-
 \begin{itemize}
 \item a collection of state variables representing the state of the arithmetic 
 decoder (Section \ref{initarith})
@@ -348,9 +405,9 @@ process for extracting a symbol is as defined by the following
 pseudocode:
 
 \begin{pseudo}{read\_boola}{context\_index}
-\bsCODE{context=\AContexts[context\_index]}
+\bsCODE{prob\_zero=\AContexts[context\_index][prob0]}
 \bsCODE{count = \ACode-\ALow}
-\bsCODE{range\_times\_prob = (\ARange * context[prob0])\gg 16}
+\bsCODE{range\_times\_prob = (\ARange * prob\_zero)\gg 16}
 \bsIF{ count >= range\_times\_prob }
   \bsCODE{value = \true}
   \bsCODE{\ALow +=  range\_times\_prob}
@@ -397,9 +454,9 @@ Renormalisation doubles the interval and reads a bit into the codeword
 as follows:
 
 \begin{pseudo}{renormalise}{}
-\bsIF{(\ALow+\ARange-1)^\ALow>=\text{0x8000}}
-    \bsCODE{\ACode ^= \text{0x4000}}
-    \bsCODE{\ALow ^= \text{0x4000}}
+\bsIF{(\ALow+\ARange-1)\wedge\ALow>=\text{0x8000}}
+    \bsCODE{\ACode \wedge= \text{0x4000}}
+    \bsCODE{\ALow \wedge= \text{0x4000}}
 \bsEND
 \bsCODE{\ALow  <<=  1}
 \bsCODE{\ARange  <<=  1}
@@ -409,7 +466,7 @@ as follows:
 \bsCODE{\ACode \&= \text{0xFFFF}}
 \end{pseudo}
 
-The second bit is flipped if there is a straddle condition (case 3). The renormalisation
+The second bit (0x4000) is flipped if there is a straddle condition (case 3). The renormalisation
 process has the effect that: in case 1, the interval $[low,high]$ is doubled from 0 ($x\mapsto 2*x$); 
 in case 2 it is doubled from 1 ($x\mapsto 2*x-1$); and in case 3 it is doubled from 1/2 ($x\mapsto 2x-0.5$).
  
@@ -424,19 +481,19 @@ or may not be offset by the requirement to cast to other data types for these ca
 \subsubsection{Updating contexts}
 \label{contextupdate}
 
-Contexts are updated according to a probability look-up table:
+Contexts are updated according to a probability look-up table
+$\ALUT$ (Table \ref{table:lut}), which supplies a value for decrementing
+or incrementing the probability of zero based on the first 
+8 bits of its current value, according to Table \ref{table:lut}.
 
 \begin{pseudo}{update\_context}{ctx,value}
 \bsIF{value==\true}
-    \bsCODE{ctx[prob0] -= \ALUT[ctx[prob0]>>8]}
+    \bsCODE{ctx[prob0] -= \ALUT[ctx[prob0]>>8]}{Table \ref{table:lut}}
 \bsELSE
-    \bsCODE{ctx[prob0] += \ALUT[255-(ctx[prob0]>>8)]}
+    \bsCODE{ctx[prob0] += \ALUT[255-(ctx[prob0]>>8)]}{Table \ref{table:lut}}
 \bsEND
 \end{pseudo}
 
-The look-up table $\ALUT$ supplies a value for decrementing
-or incrementing the probability of zero based on the first 
-8 bits of its current value, according to Table \ref{table:lut}.
 
 \begin{table}[!ht]
 \begin{tabular}{|cccccccc|}
@@ -492,12 +549,15 @@ i.e. and if 1 is coded, $prob0=\dfrac{n_0}{w+1}$. In other words,
 \[prob0+=\left(\dfrac{1-prob0}{w+1}\right)\]
 if a 0 is coded, and 
 \[prob0-=\left(\dfrac{prob0}{w+1}\right)\]
-
+if a 1 is coded.
 The LUT updates $prob0$ by implicitly defining $w$ as a function of
-$prob0$. The values have been chosen so that if $prob0$ is close
+$prob0$ in the formulae above. The values have been chosen so that if $prob0$ is close
 to 0, $w=256$, and if $prob0$ is close to $0.5$, $w=32$. This allows
 for fast initial adaptation and good representation of highly biased
 probabilities. 
+
+Note that a single 512-element LUT taking $value$ as an argument can
+avoid the branch in $update\_contexts()$.
 \end{informative}
 
 \begin{comment}
