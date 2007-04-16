@@ -1,7 +1,7 @@
 \label{vidsys}
 
-The interpretation of Display Parameters by a display mechanism
-interfacing with a compliant decoder is non-normative. However, it
+The interpretation of sequence source parameters (Section \ref{sourceparameters})
+by a display mechanism interfacing with a compliant decoder is non-normative. However, it
 should where possible follow the recommendations and interpretations
 specified in this section. Likewise, encoders should ensure that
 accurate display parameter information is encoded to maximise the
@@ -10,13 +10,81 @@ quality of displayed video.
 [Include discussion of YCgCo here. Different matrixing requirements]
 
 \begin{informative*}
-\subsection{Colour}\input{vidsys-colour}
-\subsection{Frame rate}\input{vidsys-framerate}
-\subsection{Aspect ratios and clean area}\input{vidsys-aspect}
+\subsection{Colour}
+All current video systems use the following model for YUV coding of the
+RGB values (computer systems often omit coding to and from YUV). 
+
+The R, G and B are tristimulus values (e.g. candelas/meter2). Their
+relationship to CIE XYZ tristimulus values can be derived from the set
+of primaries and white point defined in the colour primaries part of the
+colour specification below using the method described in SMPTE RP
+177-1993. In this discussion the RGB values are normalised to the range
+[0,1], so that RGB=[1,1,1] represents the peak white of the display device
+and RGB=0,0,0 represents black.
+
+Values $E_R$, $E_G$ and $E_B$ are are defined which are related to the RGB 
+values by non-linear forward and inverse transfer functions $f()$ and $g()$ respectively
+(Figure \ref{fig:transferchar}).
+
+[figure \label{fig:transferchar}]
+
+Normally, $E_R$, $E_G$ and $E_B$ also fall in the range $[0,1]$, but in the
+case of extended gamut, negative values may be allowed also. The
+transfer function $f()$ is typically performed in the camera and
+is specified in the Transfer Characteristic part of the
+Colour Specification. For aesthetic and psychovisual reasons
+the transfer function $g()$ is not quite the inverse of
+$f()$. In fact the combined effect of $f()$ and
+$g()$ is such that:
+\[g(f(x))=x^\gamma\]
+
+where $\gamma$ is the ''rendering intent"' or end to end gamma of the
+system, which may vary between about 1.1 and 1.6 depending on viewing
+conditions. The rationale for this is given in ''Digital Video and HDTV"',
+Charles Poynton 2003, Morgan Kaufmann Publishers, ISBN 1-55860-792-7.
+
+The non-linear $E_R$, $E_G$ and $E_B$ values are subject to a matrix operation
+(known as ''non-constant luminance coding"), which transforms
+them into luma ($E_Y$) and chroma (normally $E_{Cb}$ and $E_{Cr}$) values. 
+$E_Y$ is normally limited to the 
+range $[0,1]$ and the chroma
+values to the range $[-0.5, 0.5]$. This is YUV coding and
+sometimes the chroma components are subsampled, either horizontally or
+both horizontally and vertically. UV sampling is specified by the
+$\ChromaFormat$ value. 
+
+\subsubsection{Conventional YUV coding}
+In conventional YUV coding, the $E_Y$, $E_{Cb}$ and $E_{Cr}$ values are
+mapped to a range of integers denoted $Y$, $C1$ and $C2$ within this
+specification. In this way, $C1$ typically corresponds to $Cb$ and
+$C2$ to $Cr$. The way this mapping occurs is defined by the signal
+range parameters (Section \ref{signalranges}). It is these integer values 
+that are actually output from the decoder. In order to display video, the inverse to the above
+operations must be performed to convert this data to $E_Y$, $E_{Cb}$, $E_Cr$, then
+to $E_R$, $E_G$, $E_B$ and thence to R, G and B.  
+
+\subsubsection{YCgCo coding}
+The E values can be viewed as something of a mathematical abstraction.
+For example in digital display devices, R, G and B values are specified
+in terms of integer levels which are derived from the integral luma and
+chroma values by direct operations subsuming and approximating all the
+real-number operations described here. Generally, these approximations
+cause loss through quantisation of intermediate values, and the
+restriction of values to particular ranges also restricts the colour
+gamut. 
+
+In the case of YCgCo coding, the $E_R$, $E_G$ and $E_B$ values are directly
+linearly scaled to integer ranges $[0,2^\VideoDepth-1]$ before a lossless 
+direct integer transform is applied to convert this data to $Y$, $C1$ (representing
+Cg) and $C2$ (representing $Co$) data. This transform is described in Section
+\ref{colourmatrix}. This supports efficient lossless RGB coding.
+
 \subsection{Signal range}\input{vidsys-sigrange}
 \subsection{Colour primaries}\input{vidsys-colourprimaries}
 \subsection{Colour matrix}\input{vidsys-colourmatrix}
 \subsection{Transfer charactaristics}\input{vidsys-transfer}
+\subsection{Frame rate}\input{vidsys-framerate}
+\subsection{Aspect ratios and clean area}\input{vidsys-aspect}
 \end{informative*}
 \subsection{Source parameter presets}\input{sourcepresets}
 
