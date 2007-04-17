@@ -7,14 +7,12 @@ specified in this section. Likewise, encoders should ensure that
 accurate display parameter information is encoded to maximise the
 quality of displayed video.
 
-[Include discussion of YCgCo here. Different matrixing requirements]
-
 \begin{informative*}
 \subsection{Colour}
-All current video systems use the following model for YUV coding of the
-RGB values (computer systems often omit coding to and from YUV). 
+All current video systems use the following model for luminance/chrominance 
+(`YUV')coding of RGB values (computer systems often omit coding to and from YUV). 
 
-The R, G and B are tristimulus values (e.g. candelas/meter2). Their
+The R, G and B are tristimulus values (e.g. candelas/$m^2$). Their
 relationship to CIE XYZ tristimulus values can be derived from the set
 of primaries and white point defined in the colour primaries part of the
 colour specification below using the method described in SMPTE RP
@@ -38,13 +36,13 @@ $f()$. In fact the combined effect of $f()$ and
 $g()$ is such that:
 \[g(f(x))=x^\gamma\]
 
-where $\gamma$ is the ''rendering intent"' or end to end gamma of the
+where $\gamma$ is the `rendering intent' or end to end gamma of the
 system, which may vary between about 1.1 and 1.6 depending on viewing
-conditions. The rationale for this is given in ''Digital Video and HDTV"',
+conditions. The rationale for this is given in `Digital Video and HDTV',
 Charles Poynton 2003, Morgan Kaufmann Publishers, ISBN 1-55860-792-7.
 
 The non-linear $E_R$, $E_G$ and $E_B$ values are subject to a matrix operation
-(known as ''non-constant luminance coding"), which transforms
+(known as `non-constant luminance coding'), which transforms
 them into luma ($E_Y$) and chroma (normally $E_{Cb}$ and $E_{Cr}$) values. 
 $E_Y$ is normally limited to the 
 range $[0,1]$ and the chroma
@@ -63,7 +61,7 @@ that are actually output from the decoder. In order to display video, the invers
 operations must be performed to convert this data to $E_Y$, $E_{Cb}$, $E_Cr$, then
 to $E_R$, $E_G$, $E_B$ and thence to R, G and B.  
 
-\subsubsection{YCgCo coding}
+\subsubsection{YCoCg coding}
 The E values can be viewed as something of a mathematical abstraction.
 For example in digital display devices, R, G and B values are specified
 in terms of integer levels which are derived from the integral luma and
@@ -73,18 +71,283 @@ cause loss through quantisation of intermediate values, and the
 restriction of values to particular ranges also restricts the colour
 gamut. 
 
-In the case of YCgCo coding, the $E_R$, $E_G$ and $E_B$ values are directly
+In the case of YCoCg coding, the $E_R$, $E_G$ and $E_B$ values are directly
 linearly scaled to integer ranges $[0,2^\VideoDepth-1]$ before a lossless 
 direct integer transform is applied to convert this data to $Y$, $C1$ (representing
-Cg) and $C2$ (representing $Co$) data. This transform is described in Section
+Co) and $C2$ (representing $Cg$) data. This transform is described in Section
 \ref{colourmatrix}. This supports efficient lossless RGB coding.
 
-\subsection{Signal range}\input{vidsys-sigrange}
-\subsection{Colour primaries}\input{vidsys-colourprimaries}
-\subsection{Colour matrix}\input{vidsys-colourmatrix}
-\subsection{Transfer charactaristics}\input{vidsys-transfer}
-\subsection{Frame rate}\input{vidsys-framerate}
-\subsection{Aspect ratios and clean area}\input{vidsys-aspect}
+\subsection{Signal range}
+\label{signalranges}
+
+When $YCoCg$ coding is not being applied, offset and excursion values 
+$\LumaOffset$, $\LumaExcursion$, $\ChromaOffset$ and
+$\ChromaExcursion$ should be used to convert the
+integer-valued decoded luma and chroma data $Y$, $C1$ ($Cb$) and $C2$ ($Cr$) 
+to intermediate values $E_Y$, $E_{Cb}$, and $E_{Cr}$ by the recipe
+\begin{eqnarray*}
+E_Y & = & \dfrac{Y-\LumaOffset}{\LumaExcursion} \\
+E_{Cb} & = & \dfrac{C1-\ChromaOffset}{\ChromaExcursion} \\
+E_{Cr} & = & \dfrac{C2-\ChromaOffset}{\ChromaExcursion}
+\end{eqnarray*}
+
+$E_Y$ is normally clipped to the range $[0,1]$ and $E_{Cb}$, $E_{Cr}$
+to the range $[-0.5,0.5]$. This effectively clips integer $Y$ values to 
+the interval
+\[ [\LumaOffset,\LumaOffset+\LumaExcursion] \]
+and $C1$, $C2$ values to
+\[ [\ChromaOffset-\ChromaExcursion/2,\ChromaOffset+\ChromaExcursion/2] \]
+
+However, maintaining an extended RGB gamut may mean that either such
+clipping is not done, or non-standard offset and excursion values are
+used to extract the extended gamut from the non-negative decoded $Y$, $C1$,
+and $C2$ values.
+
+Signal range values are not used in the case of $YCoCg$ coding.[True??]
+
+\begin{comment}
+Non-default offset and excursion values cannot be coded if the chroma
+format is YCoCg: default parameters should be used. However, even in
+this case, EY, ECo, and ECg should not be calculated. Instead, direct
+integer conversion to RGB should be done as described in Section . (In
+fact, excursion values will be ignored in this integer conversion.)
+\end{comment}
+
+\subsection{Colour primaries}
+\label{colourprimaries}
+The colour primaries allow device dependent linear RGB colour
+co-ordinates to be mapped to device independent linear CIE XYZ space.
+The primaries specified below are the CIE (1931) XYZ chromaticity
+co-ordinates of the primaries and the white point of the device. The
+maths required to convert between RGB and XYZ is reproduced below. $V_X$,
+$V_Y$ and $V_Z$ are the XYZ coordinates of value $V$, for $V$ equal to
+the device-dependent red, green, blue or white value.
+
+\begin{eqnarray*}
+F & = &
+\left(
+    \begin{array}{ccc}
+    \dfrac{R_X}{R_Y} & \dfrac{G_X}{G_Y} & \dfrac{B_X}{B_Y} \\
+    1 & 1 & 1 \\
+    \dfrac{1-R_X-R_Y}{R_Y} & \dfrac{1-G_X-G_Y}{G_Y} & \dfrac{1-B_X-B_Y}{B_Y}
+    \end{array}
+\right)
+\\
+\left(
+    \begin{array}{c}
+    s_r \\
+    s_g \\
+    s_b
+    \end{array}
+\right ) & = & F^{-1}
+\left(
+    \begin{array}{c}
+    \dfrac{W_X}{W_Y} \\
+    1 \\
+    \dfrac{1-W_X-W_Y}{W_Y}
+    \end{array}
+\right) 
+\\
+\left(
+    \begin{array}{c}
+    X \\
+    Y \\
+    Z
+    \end{array}
+\right) & = & 
+\left(
+    \begin{array}{c}
+    s_r*R \\
+    s_g*G \\
+    s_b*B
+    \end{array}
+\right)
+\end{eqnarray*}
+
+The colour primary specification therefore allows exact colour
+reproduction of decoded RGB values on different displays with different
+display primaries. (Although it has to be said that often conversion between
+encoded primaries and display primaries is not done.)
+
+\subsection{Colour matrix}
+\label{colourmatrix}
+\subsubsection{Conventional YUV coding}
+
+Unit-scale luma and chroma values $E_Y$, $E_{Cb}$ and $E_{Cr}$ should be
+derived from decoded $Y$, $C1$ and $C2$ values using the signal range parameters
+as per Section \ref{signalranges}. Given these values, $E_R$, $E_G$ and $E_B$ are
+determined as follows:
+\begin{eqnarray*}
+E_R & = & E_Y + 2*(1-K_R)*E_{Cr} \\
+E_G & = & E_Y - \dfrac{2*K_R*(1-K_R)*E_{Cr}}{K_G}-\dfrac{2*K_B*(1-K_B)*E_{Cb}}{K_G} \\
+E_B & = & E_Y + 2*(1-K_R)*E_{Cb} 
+\end{eqnarray*}
+where $K_G=1-K_R-K_B$.
+This follows by inverting the equations 
+\begin{eqnarray*}
+K_R+K_G+K_B & = & 1 \\
+E_Y & = & K_R*E_R+K_G*E_G+K_B*E_B \\
+E_{Cb} & = & \dfrac{E_B - E_Y}{2*(1-K_B)} \\
+E_{Cr} & = & \dfrac{E_R - E_Y}{2*(1-K_R)} \\
+\end{eqnarray*}
+
+\subsubsection{YCoCg coding}
+In the case of YCoCg coding, integer $I_R$, $I_G$, $I_B$ should be directly computed from
+the decoded $Y$, $C1$ ($Co$) and $C2$ ($Cg$) values by
+\begin{eqnarray*}
+Y & -= & \LumaOffset \\
+Y &\gg=& 1 \\
+Co=C1 & -= & \ChromaOffset \\
+Cg=C2 & -= & \ChromaOffset \\
+t & = & Y-(Cg\gg1) \\
+I_G & = & t+Cg \\
+I_B & = & t-(Co\gg1) \\
+I_R & = & I_B+Co
+\end{eqnarray*}
+The integer values are converted to unit-scale $E_R$, $E_G$, $E_B$ by dividing by 
+$2^\VideoDepth$ and clipping to $[0,1]$.
+If the inverse transform has been correctly
+applied prior to coding and lossless coding employed, then clipping will
+be unnecessary, and reversing the above operations will reproduce $Y$, $Co$ and $Cg$
+losslessly from $I_R$, $I_G$ and $I_R$ yielding a transparent RGB to RGB coding system:
+\begin{eqnarray*}
+Co & = & I_R-I_B \\
+t & = & I_B+(I_R-I_B)\gg1 \approx (I_R+I_B)/2\\
+Cg & = & I_G-t = \approx I_G-(I_R+I_B)/2\\
+Y & = & 2*(t+(Cg\gg1)) \approx I_G-(I_R+I_B)/2+(I_R+I_B)=I_R/2+I_G+I_B/2
+\end{eqnarray*}
+
+Note that these matrix operations involve a doubling of the luma range in
+order to give it the same range as chroma, which gains a bit through
+the subtraction. So for 8-bit RGB ($I_R$, $I_G$, $I_B$) values, $Y$, $Co$ and
+$Cg$ will be 9 bits. (Note that this may differ from other implementations
+which contain different resolutions for luma and chroma data).
+
+Note also that $\LumaExcursion$ and $\ChromaExcursion$ are not required for
+these scaling operations. They should be set to $2^\VideoDepth$.
+
+\subsection{Transfer characteristics}
+\subsubsection{TV transfer characteristic}
+
+Denoting R or G or B as `$L$' (light) and $E_R$, $E_G$, $E_B$ as
+`$E$' then $E=f(L)$ such that
+\[
+E=\left\{
+        \begin{array}{ll}
+        4.5L & 0\leq L<0.18\\
+        1.099*L^{0.45} &0.18\leq L \leq 1
+        \end{array}
+  \right.
+\]
+
+All modern TV systems use this transfer characteristic at present. ITU-R
+BT 470 (`Conventional Television systems PAL, NTSC and SECAM') specifies
+an ``assumed gamma value of the receiver for which the primary
+signals are pre-corrected'' as 2.2 for NTSC and 2.8 for PAL. This
+specification is incomplete, incorrect and obsolete and modern PAL and
+NTSC systems use the `TV' transfer characteristic above.
+
+\subsubsection{Extended Colour Gamut}
+
+ITU-R BT 1361, `Worldwide unified colorimetry of future TV systems'
+defines a transfer characteristic for systems with an extended colour
+gamut as follows.
+
+Denoting R or G or B as `$L$' (light) and $E_R$, $E_G$, $E_B$ as
+`$E$' then $E=f(L)$ such that
+\[
+E=\left\{
+        \begin{array}{ll}
+        -\dfrac{1.099*(-4*L)^{0.45}-0.099}{4} & -0.25\leq L<-0.0045\\
+        4.5L & -0.0045\leq L<0.18\\
+        1.099*L^{0.45} &0.18\leq L \leq 1.33
+        
+        
+        \end{array}
+  \right.
+\]
+
+This transfer characteristic is intended to be used with systems using
+an extended colour gamut.
+
+\subsubsection{Linear}
+
+A linear transfer characteristic has $f(x)=x$. 
+
+
+\subsection{Frame rate}
+The ratio of the frame rate values $\FrameRateNumerator$ and $\FrameRateDenominator$
+ encodes the intended rate at which frames should be
+displayed subsequent to decoding. If $\Interlaced$ is $\true$, then fields are
+displayed at double the frame rate, in the order specified by the
+$\TopFieldFirst$ flag.
+
+\subsection{Aspect ratios and clean area}
+The PIXEL\_ASPECT\_RATIO value of an image is the ratio of the intended
+spacing of horizontal samples (pixels) to the spacing of vertical
+samples (picture lines) on the display device. Pixel aspect ratios are
+fundamental properties of sampled images because they determine the
+displayed shape of objects in the image. Failure to use the right value
+of PIXEL\_ASPECT\_RATIO will result in distorted images – for example,
+circles will be displayed as ellipses and so forth. 
+
+
+Some HDTV standards and computer image formats are defined to have pixel
+aspect ratios that are exactly 1:1.
+
+The clean area is intended to define an area within which picture
+information is subjectively uncontaminated by all edge transient (and
+other) distortions. It may only be appropriate to display the clean area
+rather than the whole picture, which may be distorted at the edge. 
+
+The top-left corner of the clean area has coordinates (CLEAN\_TL\_X,
+CLEAN\_TL\_Y) and dimensions CLEAN\_WIDTHxCLEAN\_HEIGHT.
+
+The clean area and the pixel aspect ratio determine the
+IMAGE\_ASPECT\_RATIO which is the ratio of the width of the intended
+display area to the height of the intended display area. 
+
+Given two separate sequences, with identical IMAGE\_ASPECT\_RATIO, if the
+top left corner and bottom left corners of their clean apertures are
+coincident when displayed, then the images as a whole should be exactly
+coincident. This is regardless of the actual pixel dimensions of the
+images or their clean areas. This allows sequences to be combined
+together appropriately if they are appropriately scaled.
+
+
+The defined pixel aspect ratios are designed to give standard image
+aspect ratios for typical TV broadcasts. For example, for a 525 line
+(American) 704 x 480 (clean area)  picture the image aspect ratio is
+(704 x 10)/(480 x 11) which is exactly 4:3.
+
+
+For 625 line systems the 59:54 pixel aspect ratio means (less
+conveniently) that a 702.9x576 image would have an exact 4:3 image
+aspect ratio. It might be argued that the pixel aspect ratio for 625
+line systems should be such that a 702x576 image would have an exact 4:3
+image aspect ratio. It could be said that this corresponds to the
+analogue 625 line TV specification. This requirement would lead to a
+pixel aspect ratio of 128:117. However, the tolerance of the analogue
+line length is 702 3 pixels, which does not really seem to justify a
+ratio of exactly 128:117.
+
+The values specified here are generally agreed to be the
+“correct” values. Then again not everyone agrees with this
+consensus. These arise from the “industry standard” sampling
+frequencies used for square pixels, which were originally designed for
+digitising composite analogue video signals. These “industry
+standard” sampling frequencies are 11+3/11 MHz for 525 line systems
+and 14.75MHz for 625 line systems. The ratio of these frequencies to the
+(standardised) 13.5MHz sampling frequency used for broadcasting yields
+the pixel aspect ratios given in  and .
+
+You are strongly advised to use one of the default pixel aspect ratios.
+However, if you know what you are doing and don’t like the default
+values you can define your own ratio. You should be aware that many
+display devices may ignore your decision and may use different and
+unsuitable values. 
+
+
 \end{informative*}
 \subsection{Source parameter presets}\input{sourcepresets}
 
