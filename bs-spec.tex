@@ -6,8 +6,7 @@
 
 A Dirac stream can have two alternative basic syntaxes: a core syntax used for conventional
 coding applications and a low-delay syntax used for applications where decoding (and encoding) delay is 
-required to be less than a picture. The low-delay profiles comprise some (but not all) of the Dirac Pro
-application profiles.
+required to be less than a picture.
 
 This section specifies the Dirac stream and stream parsing operations,
 excepting the decoding of wavelet coefficients and motion data,
@@ -125,7 +124,7 @@ is no subsequent Parse Info header, it shall be be 0
 
 Parse codes are divided into two sets. The first set of parse codes relate to the core Dirac syntax,
 used for conventional coding applications. The second set of parse codes relate to the low-delay
-syntax, used for professional (Dirac Pro) profiles Dirac Link and Dirac Wireless. These are suitable
+syntax, used for professional applications. These are suitable
 for applications where the required delay is less than a picture -- perhaps much less.
 
 \begin{table}[!ht]
@@ -138,7 +137,7 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 0x10 & 0001 0000 & End of Sequence & -- \\
 \hline
-0x10 & 0010 0000 & Auxiliary data & -- \\
+0x20 & 0010 0000 & Auxiliary data & -- \\
 \hline
 \multicolumn{4}{|c|}{\bf Core syntax} \\
 \hline
@@ -256,15 +255,25 @@ the test.
 The probability of a spurious Parse Info Prefix is low: 1 in $2^{32}$ since the prefix is 4 bytes
 long. This is the probability of finding two Parse Info Prefix sequences separated by Next
 Parse Offset. The test outlined in the previous paragraph is, therefore, more than adequate in practice.
-For the paranoid the test may of course be extended.
+For the paranoid the test may of course be extended, for example by testing that the Next Parse Offset
+of one parse unit is equal to the Previous Parse Offset of the next parse unit.
 
 The test for two appropriately separated Parse Info Prefixes is, anyway, prudent in any
 channel subject to bit errors even in the absence of spurious Prefixes.
-
-This defintion of Dirac only includes three types of Parse code: the AU header, those for different picture
- sorts, and that indicating the end of the sequence. It is envisaged that other codes may be introduced in future 
-to indicate data such as user data or extension data.
 \end{informative}
+
+\subsection{Auxiliary data}
+Auxiliary data parse units consist of a parse info header, decoded by the $parse\_info()$ function
+defined in the previous section, followed by zero or more bytes of unspecified data. Auxiliary data
+parse units may be interposed between any two other legitimate parse units in the stream, and
+may safely be skipped by a compliant decoder. 
+
+For the purposes of subsequent parts of this specification, the potential presence of auxiliary data is ignored. 
+
+Note that the most appropriate location for most forms of auxiliary data (subtitles, closed signing,
+audio, other metadata) is almost certainly within a wrapping format/transport stream, and auxiliary
+data units within the Dirac stream should be used with circumspection, and certainly not for any
+data that might be displayed or otherwise directly consumed by end-users.
 
 \subsection{Access Units}
 \label{accessunit}
@@ -458,6 +467,10 @@ The supported chroma formats are specified in Table \ref{tab:chromaformats}:
 \caption{Supported chroma formats}\label{tab:chromaformats}
 \end{table}
 
+MPEG-2 conventions are adopted for chroma subsampling: 4:2:2 video will have
+chroma samples co-sited at horizontal even positions; 4:2:0 video will have 
+for chroma sample at position $(m,n$) located at position $(2*m,2*n+1/2)$.
+
 Chroma dimensions are set according to the scaling implied by the chroma format:
 
 \begin{pseudo}{chroma\_dimensions}{}
@@ -585,23 +598,6 @@ fields rather than frames. Even picture numbers will in this case refer to even 
 odd picture numbers to odd fields. In pseudo-progressive mode, picture dimensions are
  frame dimensions.
 \end{informative}
-
-\begin{pseudo}{scan\_format}{}
-\bsITEM{scan\_format\_flag}{bool}{}
-\bsIF{scan\_format\_flag==\true}
-    \bsITEM{\SInterlaced}{bool}{}
-    \bsIF{\SInterlaced}
-        \bsITEM{field\_dominance\_flag}{bool}{}
-        \bsIF{field\_dominance\_flag==\true}
-            \bsITEM{\STopFieldFirst}{bool}{}
-        \bsEND
-        \bsITEM{field\_interleaving\_flag}{bool}{}
-        \bsIF{field\_interleaving\_flag==\true}
-            \bsITEM{\SSequentialFields}{bool}{}
-        \bsEND
-    \bsEND
-\bsEND
-\end{pseudo}
 
 \subsubsection{Frame rate}
 \label{framerate}
@@ -1192,6 +1188,11 @@ $\dfrac{\RefTwoWeight}{2^\RefsWeightPrecision}$
 
 (see Section \ref{pixelpredict}). 
 
+\begin{informative}
+Note that the picture weights are signed integers and may be negative. In
+addition, they may not sum to $2^\RefsWeightPrecision$, to accomodate fade
+prediction.
+\end{informative}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Wavelet transform}
@@ -1336,19 +1337,19 @@ $\Codeblocks[level][h]$ respectively.
             \bsITEM{\Codeblocks[level][h]}{uint}
             \bsITEM{\Codeblocks[level][v]}{uint}
         \bsEND
+    \bsELSE
+        \bsIF{is\_intra()==\true}
+            \bsCODE{\Codeblocks=\SCodeblocks[\Intra]}
+        \bsELSE
+            \bsCODE{\Codeblocks=\SCodeblocks[\Inter]}
+        \bsEND
     \bsEND
     \bsITEM{index}{uint}
     \bsCODE{\CodeblockMode=codeblock\_mode(index)}
-\bsELSE
-    \bsIF{is\_intra()==\true}
-        \bsCODE{\Codeblocks=\SCodeblocks[\Intra]}
-    \bsELSE
-        \bsCODE{\Codeblocks=\SCodeblocks[\Inter]}
-    \bsEND
 \bsEND
 \end{pseudo}
 
-$index$ shall lie in the range 0 to 2, and $codeblock\_mode$ sets the codeblock mode
+$index$ shall lie in the range 0 to 1, and $codeblock\_mode$ sets the codeblock mode
 according to Table \ref{codeblockmodes}. 
 
 \begin{comment}
@@ -1366,8 +1367,6 @@ $index$ & $\CodeblockMode$ \\
 0 & \SingleQuantiser \\
 \hline
 1 & \MultipleQuantiser \\
-\hline
-2 & Undefined \\
 \hline
 \end{tabular}
 \caption{Codeblock modes}\label{codeblockmodes}

@@ -213,76 +213,66 @@ The overall $transform\_data()$ decoding process is as follows:
 
 \label{subbanddecodeprocess}
 
-This section specifies the process $subband(level,orient)$ for coefficients
+This section specifies the process $subband(data, level,orient)$ for coefficients
 within a subband at level $level$ ($0$ to \TransformDepth) and of orientation $orient$
 (\LL, \LH, \HL, or \HH). 
 
-\subsubsection{Subband header and codeblock loop}
-
-This section specifies the operation of the $subband(data, level, orient)$
-function for decoding a subband at level $level$ and of orientation $orient$.
-
-\paragraph{Initialisation\newline}
-
-The $subband()$ process begins by reading a length code. If this length is
-zero, then the subband is deemed to be skipped and all coefficients are set to zero
-before the process exits:
+The overall process consists of reading a byte-aligned header for each
+subband, including a length code for the subsequent arithmetically-coded data.
+If this length code is 0, the subband may be skipped and all data set to zero.
+Intra DC bands are predicted, and so must additionally be reconstructed.
 
 \begin{pseudo}{subband}{data, level, orient}
 \bsITEM{length}{uint}
 \bsIF{length == 0}
-  \bsFOR{y=0}{\height(data[level][orient])-1}
-    \bsFOR{x=0}{\width(data[level][orient])-1}
-    \bsCODE{data[level][orient][y][x] = 0}
-    \bsEND
-  \bsEND
-  \bsRET{}
+  \bsCODE{zero\_subband\_data(data[level][orient])}{\ref{zerosubband}}
+  \bsCODE{byte\_align()}
+\bsELSE
+    \bsCODE{quant\_index = read\_uint()}
+    \bsCODE{byte\_align()}
+    \bsCODE{subband\_coeffs(data,level,orient,length,quant\_index)}{\ref{subbandcoeffs}}
+\bsEND 
+\bsIF{is\_intra() \text{ and } level==0}
+    \bsCODE{intra\_dc\_prediction(data[level][orient])}{\ref{intradcprediction}}
 \bsEND
-\bsCODE{\hdots}
 \end{pseudo}
 
-If $length>0$ then the subband coefficient decoding process is initialised by
-setting up arithmetic decoding, reading
-the quantisation index and byte-aligning the subsequent read operations.
+\subsubsection{Skipped subbands}
+\label{zerosubband}
 
-\begin{pseudo*}
-\bsIF{length>0}
-    \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-    \bsCODE{vol=\height(data[level][orient])*\width(data[level][orient])}
-    \bsCODE{quant\_index = read\_uint()}
+The $zero\_subband()$ process sets all subband coefficients to 0 when
+a subband is skipped:
+
+\begin{pseudo}{zero\_subband\_data}{band}
+\bsFOR{y=0}{\height(band)-1}
+  \bsFOR{x=0}{\width(band)-1}
+    \bsCODE{band[y][x] = 0}
+  \bsEND
 \bsEND
-\bsCODE{byte\_align()}
-\bsCODE{\hdots}
-\end{pseudo*}
+\end{pseudo}
 
-\paragraph{Codeblocks\newline}
+\subsubsection{Non-skipped subbands}
+\label{subbandcoeffs}
 
-Data within a subband is divided into code blocks,
-representing rectangular blocks of coefficients. The numbers of codeblocks
-in each subband are determined in decoding the transform header, as specified
-in Section \ref{spatialpartition}.
+Data within subbands is split into one or more rectangular codeblocks (Figure \ref{codeblocks}).
+Codeblocks are decoded in raster order across the subband and coefficients are scanned in raster order
+within each codeblock. 
 
-The overall subband decoding process loops over all the code blocks after initialising the
-arithmetic decoding engine, and setting quantisers. There is a different code block decoding
-process for Intra DC bands, since values are coded using spatial prediction.
+\begin{figure}
+[Include codeblock figure \label{codeblocks}]
+\end{figure}
 
-\begin{pseudo*}
-\bsIF{level>=2}
-\bsCODE{parent = data[level-1][orient]}
-\bsELSE
-    \bsCODE{parent = \emptyset}
-\bsEND
+The overall decoding process is therefore:
+
+\begin{pseudo}{subband\_data}{data,level,orient,length}
+\bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
 \bsFOR{y=0}{\Codeblocks[level][v]-1}
     \bsFOR{x=0}{\Codeblocks[level][h]-1}
-        \bsCODE{codeblock(data[level][orient],parent,level, orient,quant\_index,y,x)}{\ref{codeblocks}}
+        \bsCODE{codeblock(data,level,orient,quant\_index,y,x)}{\ref{codeblocks}}
     \bsEND
 \bsEND
-
-\bsIF{is\_intra() \text{ and } level==0}
-    \bsCODE{intra\_dc\_prediction(band)}{\ref{intradcprediction}}
-\bsEND
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
-\end{pseudo*}
+\end{pseudo}
 
 \subsubsection{Decoding subband codeblocks}
 
@@ -312,18 +302,18 @@ range $bottom$ to $top-1$ where these values are defined by:
 
 The codeblock decoding process is defined as:
 
-\begin{pseudo}{codeblock}{band, parent,orient,quant\_index,y,x}
+\begin{pseudo}{codeblock}{data,level,orient,quant\_index,y,x}
 \bsIF{zero\_flag()}{\ref{zeroblockflag}}
   \bsFOR{v=bottom}{top-1}
     \bsFOR{h=left}{right-1}
-      \bsCODE{band[v][h] = 0}
+      \bsCODE{data[level][orient][v][h] = 0}
     \bsEND
   \bsEND
 \bsELSE
   \bsCODE{quant\_idx += quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{v=bottom}{top-1}
     \bsFOR{h=left}{right-1}
-      \bsCODE{coeff\_decode(band,parent,orient,quant_idx,v,h)}{\ref{wltcoeff}}
+      \bsCODE{coeff\_decode(data,level,orient,quant_idx,v,h)}{\ref{wltcoeff}}
     \bsEND
   \bsEND
 
@@ -366,32 +356,6 @@ for reconstructing values within Intra picture DC bands using spatial prediction
 Intra DC values are derived by spatial prediction using the mean of the
 three values to the left, top-left and above a coefficient (if available).
 
-\begin{comment}
-\begin{pseudo}{intra\_dc\_prediction}{band}
-\bsFOR{v=0}{\height(band)-1}
-  \bsFOR{h=0}{\width(band)-1}
-    \bsCODE{prediction = 0 }
-    \bsCODE{N = 0 }
-    \bsIF{v>0}
-      \bsCODE{prediction += band[v-1][h]}
-      \bsCODE{N+=1}
-      \bsIF{h>0}
-        \bsCODE{prediction += band[v-1][h-1]+band[v][h-1]}
-        \bsCODE{N+=1}
-      \bsEND
-    \bsELSE
-      \bsIF{h>0}
-        \bsCODE{prediction += band[0][h-1]}
-        \bsCODE{N+=1}
-      \bsEND
-    \bsEND
-    \bsCODE{prediction = prediction//N}
-    \bsCODE{band[v][h] += prediction}
-  \bsEND
-\bsEND
-\end{pseudo}
-\end{comment}
-
 \begin{pseudo}{intra\_dc\_prediction}{band}
 \bsCODE{prediction = 0 }
 \bsFOR{v=0}{subband\_height(level)-1}
@@ -418,14 +382,11 @@ three values to the left, top-left and above a coefficient (if available).
 \label{wltcoeff}
 
 This section describes the operation of the 
-$coeff\_decode(band,parent,orient,quant\_idx,v,h)$ process
-for decoding a coefficient in position $(h,v)$ in the subband $band$ with
-parent band $parent$ and orientation $orient$.
+$coeff\_decode(data,level,orient,quant\_idx,v,h)$ process
+for decoding a coefficient in position $(h,v)$ in the subband $data[level][orient]$.
 
 Decoding a coefficient makes use of arithmetic decoding, inverse quantisation
 and, in the case of DC (level 0) bands of Intra frames, neighbourhood prediction.
-The decoding process periodically refreshes the contexts, by
-halving the context counts every time a count is reached.
 
 Arithmetic coding uses a highly compact set of contexts, 
 with magnitudes contextualised on whether parent values
@@ -436,25 +397,29 @@ and neighbouring values are zero or non-zero.
 Two different processes are used for decoding coefficients, depending
 upon whether spatial prediction is required or not.
 
-\begin{pseudo}{coeff\_decode}{band,parent,orient,quant\_index,v,h}
-    \bsCODE{parent = parent\_val(parent, v, h)}{\ref{parentval}}
-    \bsCODE{nhood = zero\_nhood(band,v,h)}{\ref{zeronhood}}
-    \bsCODE{sign\_pred = sign\_predict(band,orient,v,h)}{\ref{signpredict}}
+\begin{pseudo}{coeff\_decode}{data,level,orient,quant\_index,v,h}
+    \bsCODE{parent = parent\_val(data,level,orient, v, h)}{\ref{parentval}}
+    \bsCODE{nhood = zero\_nhood(data[level][orient],v,h)}{\ref{zeronhood}}
+    \bsCODE{sign\_pred = sign\_predict(data[level][orient],orient,v,h)}{\ref{signpredict}}
     \bsCODE{context\_set = select\_coeff\_ctxs(nhood, parent, sign\_pred)}{\ref{selectcoeffcontext}}
     \bsCODE{quant\_coeff = read\_sinta( context\_set )}{}
-    \bsCODE{band[v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
+    \bsCODE{data[level][orient][v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
 \end{pseudo}
-
 
 \subsubsection{Parent values}
 \label{parentval}
-The function $parent\_val(v, h)$ returns the parent value of a coefficient in a subband,
-which is the co-located coefficient in the parent subband. If there is a parent band 
-($parent!=\emptyset$), then
+The function $parent\_val(data,level,orient,v, h)$ returns the parent value of a coefficient in a subband,
+which is the co-located coefficient in the parent subband, if there is one. There is deemed to be a 
+parent subband if $level\geq 2$:
 
-$parent[v//2][h//2]$
-
-is returned. If there is no parent ($parent=\emptyset$), then 0 is returned.
+\begin{pseudo}{parent}{data,level,orient,v,h}
+\bsIF{level>=2}
+    \bsCODE{parent = data[level-1][orient][v//2][h//2]}
+\bsELSE
+    \bsCODE{parent = 0}
+\bsEND
+\bsRET{parent}
+\end{pseudo}
 
 \subsubsection{Zero neighbourhood}
 \label{zeronhood}
@@ -663,11 +628,11 @@ Quantisation factors are set as follows:
 \bsIF{ (q\%4)==0 }
   \bsRET{4*base}
 \bsELSEIF{ (q\%4)==1 }
-  \bsRET{503829*base+52958)//105917}
+  \bsRET{(503829*base+52958)//105917}
 \bsELSEIF{ (q\%4)==2 }
-  \bsRET{665857*q+58854)//117708}
+  \bsRET{(665857*q+58854)//117708}
 \bsELSEIF{ (q\%4)==3 }
-  \bsRET{440253*base+32722)//65444}
+  \bsRET{(440253*base+32722)//65444}
 \bsEND
 \end{pseudo}
 

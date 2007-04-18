@@ -38,10 +38,10 @@ Since wavelet filtering operates on both rows and columns of two-dimensional arr
 it is useful to define operators $\row(a,k)$ and $\column(a,k)$ for extracting rows and columns
 with index $k$ from a 2-dimensional array $a$:
 
-If $b=\row(a,k)$ then $b[r]$ is a $reference to$ the value of $a[k][r]$. This means that modifying the
+If $b=\row(a,k)$ then $b[r]$ is a {\em reference} to the value of $a[k][r]$. This means that modifying the
 value of $b[r]$ modifies the value of $a[k][r]$.
 
-If $b=\column(a,k)$ then $b[r]$ is a $reference to$ the value of $a[r][k]$. This means that modifying the
+If $b=\column(a,k)$ then $b[r]$ is a {\em reference} the value of $a[r][k]$. This means that modifying the
 value of $b[r]$ modifies the value of $a[r][k]$.
 
 \begin{informative}

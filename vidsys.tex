@@ -308,7 +308,7 @@ IMAGE\_ASPECT\_RATIO which is the ratio of the width of the intended
 display area to the height of the intended display area. 
 
 Given two separate sequences, with identical IMAGE\_ASPECT\_RATIO, if the
-top left corner and bottom left corners of their clean apertures are
+top left corner and bottom right corners of their clean apertures are
 coincident when displayed, then the images as a whole should be exactly
 coincident. This is regardless of the actual pixel dimensions of the
 images or their clean areas. This allows sequences to be combined
@@ -328,21 +328,21 @@ line systems should be such that a 702x576 image would have an exact 4:3
 image aspect ratio. It could be said that this corresponds to the
 analogue 625 line TV specification. This requirement would lead to a
 pixel aspect ratio of 128:117. However, the tolerance of the analogue
-line length is 702 3 pixels, which does not really seem to justify a
+line length is $702\pm 3$ pixels, which does not really seem to justify a
 ratio of exactly 128:117.
 
 The values specified here are generally agreed to be the
-“correct” values. Then again not everyone agrees with this
-consensus. These arise from the “industry standard” sampling
+`correct' values. Then again not everyone agrees with this
+consensus. These arise from the `industry standard' sampling
 frequencies used for square pixels, which were originally designed for
-digitising composite analogue video signals. These “industry
-standard” sampling frequencies are 11+3/11 MHz for 525 line systems
+digitising composite analogue video signals. These `industry
+standard' sampling frequencies are 11+3/11 MHz for 525 line systems
 and 14.75MHz for 625 line systems. The ratio of these frequencies to the
 (standardised) 13.5MHz sampling frequency used for broadcasting yields
 the pixel aspect ratios given in  and .
 
 You are strongly advised to use one of the default pixel aspect ratios.
-However, if you know what you are doing and don’t like the default
+However, if you know what you are doing and don't like the default
 values you can define your own ratio. You should be aware that many
 display devices may ignore your decision and may use different and
 unsuitable values. 

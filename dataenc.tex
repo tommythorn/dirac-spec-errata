@@ -35,13 +35,11 @@ The $read\_byte()$ function performs the following steps --
 The $read\_bit()$ function is defined by
 
 \begin{pseudo}{read\_bit}{}
-\bsIF{\NextBit == 7}
-\bsCODE{read\_byte()}
-\bsEND
 \bsCODE{bit = ( \CurrentByte \gg \NextBit ) \& 1 }
 \bsCODE{\NextBit -= 1}
 \bsIF{\NextBit<0}
     \bsCODE{\NextBit == 7}
+    \bsCODE{read\_byte()}
 \bsEND
 \bsRET{bit}
 \end{pseudo}
@@ -50,7 +48,9 @@ The $byte\_align()$ function discards data in the current byte and begins data a
 at the next byte, unless input is already at the beginning of a byte: 
 
 \begin{pseudo}{byte\_align}{}
-\bsCODE{\NextBit = 7}
+\bsIF{\NextBit != 7}
+    \bsCODE{read\_byte()}
+\bsEND
 \end{pseudo}
 
 This is used to ensure that a whole number of bytes are read before
@@ -59,11 +59,14 @@ beginning reading a new stream element.
 \subsection{Fixed-length code formats}
 \subsubsection{Bool}
 
-The $read\_bool()$ function returns --
-\begin{itemize}
-\item $\true$ if $read\_bit()$ is $1$
-\item $\false$ if $read\_bit()$ is $0$
-\end{itemize}
+The $read\_bool()$ function identifies 1 with $\true$ and 0 with $\false$
+\begin{pseudo}{read\_bool}{}
+\bsIF{read\_bit()==1}
+    \bsRET{\true}
+\bsELSE
+    \bsRET{\false}
+\bsEND
+\end{pseudo}
 
 \subsubsection{n-bit literal}
 An $n$-bit number in literal format shall be decoded by extracting $n$ bits

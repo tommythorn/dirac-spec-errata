@@ -288,7 +288,7 @@ Carry bits can be discharged by picking a resolution of
 the final straddles:
 
 \begin{pseudo*}
-\bsCODE{write\_bit(m_low_code \& \text{0x4000})}
+\bsCODE{write\_bit(low \& \text{0x4000})}
 \bsWHILE{carry >= 0}
     \bsCODE{write\_bit(!(low \& \text{0x4000}))}
     \bsCODE{carry-=1}
