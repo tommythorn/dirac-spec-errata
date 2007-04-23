@@ -254,30 +254,24 @@ A four-stage process will adequately flush the encoder:
 The remaining msbs are output as follows:
 
 \begin{pseudo*}
-\bsWHILE{range<=\text{0x8000}}
-    \bsIF{(low+range-1)\wedge low<\text{0x8000}}
-        \bsCODE{write\_bit( low\&\text{0x8000} )}
-        \bsWHILE{ carry>0}
-            \bsCODE{write\_bit( !(low\&\text{0x8000}) )}
-            \bsCODE{carry -= 1}
-        \bsEND
+\bsWHILE{(low+range-1)\wedge low<\text{0x8000}}
+    \bsCODE{write\_bit( low\&\text{0x8000} )}
+    \bsWHILE{ carry>0}
+        \bsCODE{write\_bit( !(low\&\text{0x8000}) )}
+        \bsCODE{carry -= 1}
     \bsEND
     \bsCODE{low  <<=  1}
-    \bsCODE{range  <<=  1}
     \bsCODE{low \&= \text{0xFFFF}}
+    \bsCODE{range  <<=  1}
 \bsEND
 \end{pseudo*}
 
-Note that this renormalisation is invoked if the range is less than
-or equal to 1/2 the total range. Remaining straddles can then
-be resolved in the same way:
+Remaining straddles can then be resolved by:
 
 \begin{pseudo*}
-\bsWHILE{range<=\text{0x8000}}
-    \bsIF{(low+range-1)\wedge low>=\text{0x8000}}
-        \bsCODE{low \wedge= \text{0x4000}}
-        \bsCODE{carry+=1}
-    \bsEND
+\bsWHILE{(low+range-1)\wedge low>=\text{0x8000}}
+    \bsCODE{carry+=1}
+    \bsCODE{low \wedge= \text{0x4000}}
     \bsCODE{low  <<=  1}
     \bsCODE{range  <<=  1}
     \bsCODE{low \&= \text{0xFFFF}}
