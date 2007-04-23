@@ -113,8 +113,8 @@ integer conversion to RGB should be done as described in Section . (In
 fact, excursion values will be ignored in this integer conversion.)
 \end{comment}
 
-\subsection{Colour primaries}
-\label{colourprimaries}
+\subsection{Primaries}
+\label{primaries}
 The colour primaries allow device dependent linear RGB colour
 co-ordinates to be mapped to device independent linear CIE XYZ space.
 The primaries specified below are the CIE (1931) XYZ chromaticity
@@ -169,8 +169,8 @@ reproduction of decoded RGB values on different displays with different
 display primaries. (Although it has to be said that often conversion between
 encoded primaries and display primaries is not done.)
 
-\subsection{Colour matrix}
-\label{colourmatrix}
+\subsection{Matrix}
+\label{matrix}
 \subsubsection{Conventional YUV coding}
 
 Unit-scale luma and chroma values $E_Y$, $E_{Cb}$ and $E_{Cr}$ should be
@@ -196,7 +196,6 @@ In the case of YCoCg coding, integer $I_R$, $I_G$, $I_B$ should be directly comp
 the decoded $Y$, $C1$ ($Co$) and $C2$ ($Cg$) values by
 \begin{eqnarray*}
 Y & -= & \LumaOffset \\
-Y &\gg=& 1 \\
 Co=C1 & -= & \ChromaOffset \\
 Cg=C2 & -= & \ChromaOffset \\
 t & = & Y-(Cg\gg1) \\
@@ -214,17 +213,19 @@ losslessly from $I_R$, $I_G$ and $I_R$ yielding a transparent RGB to RGB coding 
 Co & = & I_R-I_B \\
 t & = & I_B+(I_R-I_B)\gg1 \approx (I_R+I_B)/2\\
 Cg & = & I_G-t = \approx I_G-(I_R+I_B)/2\\
-Y & = & 2*(t+(Cg\gg1)) \approx I_G-(I_R+I_B)/2+(I_R+I_B)=I_R/2+I_G+I_B/2
+Y & = & t+(Cg\gg1) \approx I_G/2-(I_R+I_B)/4+(I_R+I_B)/2=I_R/4+I_G/2+I_B/4
 \end{eqnarray*}
 
-Note that these matrix operations involve a doubling of the luma range in
-order to give it the same range as chroma, which gains a bit through
-the subtraction. So for 8-bit RGB ($I_R$, $I_G$, $I_B$) values, $Y$, $Co$ and
-$Cg$ will be 9 bits. (Note that this may differ from other implementations
-which contain different resolutions for luma and chroma data).
+Note that these matrix operations give that the chroma ranges are twice the
+size of the luma range, due to the subtractions used to create chroma components. 
+So for 8-bit RGB ($I_R$, $I_G$, $I_B$) values, $Y$ will be 8 bits and $Co$ and
+$Cg$ will be 9 bits. 
+
+Hence $\VideoDepth$ should be set to 1 plus the original RGB resolution.
 
 Note also that $\LumaExcursion$ and $\ChromaExcursion$ are not required for
-these scaling operations. They should be set to $2^\VideoDepth$.
+these scaling operations. They should be set to $2^\VideoDepth-1$ and $2^\VideoDepth$
+respectively..
 
 \subsection{Transfer characteristics}
 \subsubsection{TV transfer characteristic}

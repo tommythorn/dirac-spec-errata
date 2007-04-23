@@ -1,64 +1,3 @@
-\begin{comment}
-\section{Dirac Pro profiles}
-
-Dirac Pro consists of a set of profiles of Dirac for professional, high-quality, high-bitrate use, 
-specifically in television and digital cinema production. Dirac Pro applications cover:
-\begin{itemize}
-\item Editing and post production
-\item Archiving
-\item Low-delay links and digital distribution
-\item Wireless cameras 
-\end{itemize}
-
-
-The first two application areas do not require a modified syntax, and are defined in Section \ref{editingarchive}.
-
- The remaining areas require a different
-syntax suitable for low delay. In particular, Dirac Pro may be used as a serial-link replacement, and in
-that case, parse info, access unit and picture headers may be omitted from the stream. In such a 
-configuration the system may not be used in a networked fashion but in point-to-point links
-where encoders and decoders are configured pair-wise to use the same video format and other
-parameters. 
-
-The syntax in these cases is defined in Section \ref{lowdelay}. Although different from the baseline
-Dirac syntax defined in preceding sections, heavy use is made of the individual syntax elements
-and decoder functions specified for the baseline profile. In particular the stream access functions
-defined in Part \ref{streamaccess} are used for low-level access to the stream.
-
-\section{Editing and archive profiles}
-\label{editingarchive}
-
-\subsection{Dirac Edit}
-\label{editing}
-
-\subsection{Dirac Archive}
-\label{archive}
-
-\section{Low-delay profiles}
-\label{lowdelay}
-
-The primary feature of the low-delay profile stream syntax is to group both wavelet coefficients and 
-motion vectors into small chunks so that pictures may be decoded progressively. Both the wavelet
-transform and motion compensation are specified exactly (i.e. in terms of operations over
-the whole picture) as for the baseline profile, and the decoding process is equivalent to obtaining
-all motion vectors and all wavelet coefficients for a picture and proceeding as specified in Sections
-\ref{idwt} and \ref{mc}. 
-
-However since all the data relating to small areas of the picture is presented together, both the wavelet
-transform and motion compensation may be performed bit-by-bit as data arrives. Note that the data is
-chunked into slices in the {\em compressed} domain, which may mean that a number of subsequent slices
-may also need to be parsed in order to correctly decode the current slice -- due to long wavelet filters
-and block overlaps.
-
-
-\subsection{Dirac Link}
-\label{diraclink}
-
-\subsection{Dirac Wireless}
-\label{diraclink}
-
-\end{comment}
-
 \section{Low-delay stream parsing}
 \label{lowdelayparsing}
 
@@ -204,7 +143,7 @@ is merely a concatenation of slices. The number of slices in a picture is determ
 \bsCODE{\CTwoTransform = initialise\_wavelet\_data(C2)}{\ref{wltinit}}
 \bsCODE{ph=2^{\TransformDepth}*\left\lceil\frac{\LumaHeight}{2^{\TransformDepth}}\right\rceil}
 \bsCODE{pw= 2^{\TransformDepth}*\left\lceil\frac{\LumaWidth}{2^{\TransformDepth}}\right\rceil}
-\bsCODE{\SlicesX=ph//\SliceWidth}
+\bsCODE{\SlicesX=pw//\SliceWidth}
 \bsCODE{\SlicesY=ph//\SliceHeight}
 \bsFOR{sy=0}{\SlicesY-1}
   \bsFOR{sx=0}{\SlicesX-1}
@@ -271,8 +210,8 @@ and the quantisation index.
 
 \begin{pseudo}{set\_band\_quantisers}{qindex}
 \bsCODE{slice\_comp\_quantisers(Y,qindex)}
-\bsCODE{slice\_comp\_quantisers(U,qindex+\UQuantOffset)}
-\bsCODE{slice\_comp\_quantisers(V,qindex+\VQuantOffset)}
+\bsCODE{slice\_comp\_quantisers(C1,qindex+\COneQuantOffset)}
+\bsCODE{slice\_comp\_quantisers(C1,qindex+\CTwoQuantOffset)}
 \end{pseudo}
 
 \begin{pseudo}{slice\_comp\_quantisers}{c,qindex}
@@ -282,8 +221,8 @@ and the quantisation index.
 \bsEND
 \end{pseudo}
 
-U and V quantiser index offsets are determined from the video format defaults and the picture header
-as per Section ?? and Appendix ??.
+$C1$ and $C2$ quantiser index offsets are determined from the video format defaults and the picture header
+as per Appendix \ref{videoformatdefaults}.
 
 \subsubsection{Slice subband parsing}
 \label{sliceband}
@@ -295,7 +234,7 @@ These coefficients populate areas of the coefficient data corresponding to the s
 
 \paragraph{Slice subband area\\}
 
-The rectangular set of coefficients covered by a slice component (Y, U and V) 
+The rectangular set of coefficients covered by a slice component ($Y$, $C1$ and $C2$) 
 is demarcated by the values $left, right, top, bottom$, defined as fractions
 of the subband dimensions (Section \ref{subbandwidthheight}):
 \begin{eqnarray*}
@@ -305,7 +244,7 @@ of the subband dimensions (Section \ref{subbandwidthheight}):
   top & = & (subband\_height(level,c)*(sy+1))//\SlicesY
 \end{eqnarray*}
 
-where $c=Y$ for luma coefficients, and $U$ or $V$ for chroma coefficients.
+where $c=Y$ for luma coefficients, and $C1$ or $C2$ for chroma coefficients.
 
 \paragraph{Luma slice subband data\\}
 \label{lumasliceband}

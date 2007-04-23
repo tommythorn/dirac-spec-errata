@@ -612,14 +612,14 @@ The process for parsing Frame Rate parameters is as follows:
         \bsITEM{\SFrameRateNumerator}{uint}{}
         \bsITEM{\SFrameRateDenominator}{uint}{}
     \bsELSE
-        \bsCODE{preset\_frame\_rate()}{uint}{}
+        \bsCODE{preset\_frame\_rate()}
      \bsEND
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 8.
 
-$preset\_frame\_rate(index)$ sets frame rate values as specified in Table \ref{frameratevalues}
+$preset\_frame\_rate(index)$ sets frame rate values as specified in Table \ref{table:frameratevalues}
 (Appendix \ref{sourceparamspresets}).
 
 The true frame rate is $\dfrac{\SFrameRateNumerator}{\SFrameRateDenominator}$.
@@ -648,7 +648,7 @@ The process for extracting aspect ratio parameters is as follows:
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
-$preset\_aspect\_ratio(index)$ sets aspect ratio values as specified in Table \ref{aspectratiovalues}
+$preset\_aspect\_ratio(index)$ sets aspect ratio values as specified in Table \ref{table:aspectratiovalues}
 (Appendix \ref{sourceparamspresets}).
 
 The true aspect ratio is $\dfrac{\SAspectRatioNumerator}{\SAspectRatioDenominator}$. 
@@ -704,8 +704,9 @@ The process for extracting the signal range parameters is as follows:
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
-$preset\_signal\_ranges(index)$ sets signal range values as specified in Tables \ref{lumasignalrangevalues} and
-\ref{chromasignalrangevalues} (Appendix \ref{sourceparamspresets}).
+$preset\_signal\_ranges(index)$ sets signal range values as specified in Tables 
+\ref{table:lumasignalrangevalues} and
+\ref{table:chromasignalrangevalues} (Appendix \ref{sourceparamspresets}).
 
 The offset and excursion values shall satisfy the following constraints:
 
@@ -739,7 +740,7 @@ are available for all three collectively and individually. The process is:
 $index$ shall fall in the range 0 to 3.
 
 $preset\_colour\_spec(index)$ sets the colour primaries, matrix and transfer function as specified 
-in Table \ref{colourspecvalues} (Appendix \ref{sourceparamspresets}).
+in Table \ref{table:colourspecvalues} (Appendix \ref{sourceparamspresets}).
 
 \paragraph{Colour primaries\\}
 \label{colourprimaries}
@@ -755,7 +756,7 @@ The $colour\_primaries()$ process is as follows:
 \end{pseudo}
 
 $index$ shall fall in the range 0 to 3. $preset\_colour\_primaries(index)$ sets the colour primaries as specified
-in Table \ref{primariesvalues} (Appendix \ref{sourceparamspresets}).
+in Table \ref{table:primariesvalues} (Appendix \ref{sourceparamspresets}).
 
 \paragraph{Colour matrix\\}
 \label{colourmatrix}
@@ -771,7 +772,7 @@ The $colour\_matrix()$ process is as follows:
 \end{pseudo}
 
 $index$ shall fall in the range 0 to 2. $preset\_colour\_matrices(index)$ sets the colour matrix as specified
-in Table \ref{matrixvalues} (Appendix \ref{sourceparamspresets}).
+in Table \ref{table:matrixvalues} (Appendix \ref{sourceparamspresets}).
 
 \paragraph{Transfer function\\}
 \label{transferfunction}
@@ -787,7 +788,7 @@ The $transfer\_function()$ process is as follows:
 \end{pseudo}
 
 $index$ shall fall in the range 0 to 3. $preset\_transfer\_functions(index)$ sets the transfer function as specified
-in Table \ref{transfervalues} (Appendix \ref{sourceparamspresets}).
+in Table \ref{table:transfervalues} (Appendix \ref{sourceparamspresets}).
 
 \subsection{Picture}
 \label{picture}
