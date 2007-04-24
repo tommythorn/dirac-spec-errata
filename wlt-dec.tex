@@ -6,6 +6,7 @@
 \label{transformdec}
 
 This section specifies how wavelet transform coefficients are parsed.
+In the core syntax, wavelet coefficients are arithmetic coded. 
 
 
 \subsection{Decoded subband data conventions}
@@ -47,7 +48,8 @@ Individual subband coefficients are signed integers accessed by vertical and
 horizontal coordinates within the subband
 \[c = data[level][orient][y][x]\]
 
-where the range of allowable coordinates for a subband coefficient is $0\leq x<subband\_width(level,comp)$ and
+where the range of allowable coordinates for a subband coefficient is 
+$0\leq x<subband\_width(level,comp)$ and
 $0\leq y<subband\_height(level,comp)$.
 
 \setlength{\unitlength}{1em}
@@ -324,14 +326,21 @@ The codeblock decoding process is defined as:
 \paragraph{Zero block flag\newline}
 \label{zeroblockflag}
 
-We may set the number of codeblocks in the subband as
+If the number of codeblocks is 1, then $zero\_flag()$ is set to $\false$, else
+it is decoded from the stream.
 
-$num\_blocks = \Codeblocks[level][horizontal]*\Codeblocks[level][vertical]$
-
-If $num\_blocks$ is 1 or $level=0$, then $zero\_flag()$ returns \false.
-
-Otherwise, the flag is decoded from the stream: $read\_boola(\ZeroCodeblock)$
-is returned.
+\begin{pseudo}{zero\_flag}{}
+\bsCODE{num\_blocks=
+\begin{array}{l}
+\Codeblocks[level][horizontal]* \\
+\Codeblocks[level][vertical]
+\end{array} }
+\bsIF{num_blocks==1}
+    \bsRET{\false}
+\bsELSE
+    \bsRET{ read\_boola(\ZeroCodeblock) }
+\bsEND
+\end{pseudo}
 
 \paragraph{Block quantiser offset\newline}
 \label{blockquantidx}

@@ -139,6 +139,8 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 0x20 & 0010 0000 & Auxiliary data & -- \\
 \hline
+0x60 & 0110 0000 & Padding data & -- \\
+\hline
 \multicolumn{4}{|c|}{\bf Core syntax} \\
 \hline
 \ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
@@ -159,17 +161,9 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 \ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
 \hline
-0x8C & 1000 1100 & Intra Reference Picture & 0\\
+0x8C & 1000 1100 & Intra Picture & --\\
 \hline
 0x88 & 1000 1000 & Intra Non Reference Picture & 0\\
-\hline
-0x8D & 1000 1101 & Inter Reference Picture & 1\\
-\hline
-0x8E & 1000 1110 & Inter Reference Picture & 2\\
-\hline
-0x89 & 1000 1001 & Inter Non Reference Picture & 1\\
-\hline
-0x8A & 1000 1010 & Inter Non Reference Picture & 2\\
 \hline
 \end{tabular}
 \caption{Parse codes}\label{parsecodes}
@@ -262,18 +256,26 @@ The test for two appropriately separated Parse Info Prefixes is, anyway, prudent
 channel subject to bit errors even in the absence of spurious Prefixes.
 \end{informative}
 
-\subsection{Auxiliary data}
-Auxiliary data parse units consist of a parse info header, decoded by the $parse\_info()$ function
-defined in the previous section, followed by zero or more bytes of unspecified data. Auxiliary data
+\subsection{Auxiliary data and padding data}
+Auxiliary data and padding data parse units consist of a parse info header, 
+decoded by the $parse\_info()$ function defined in the previous section, 
+followed by zero or more bytes of unspecified data. These
 parse units may be interposed between any two other legitimate parse units in the stream, and
-may safely be skipped by a compliant decoder. 
+may safely be skipped by a compliant decoder. As for any other parse units, the Next Parse
+Offset and Previous Parse Offset values must correctly encode the offset in bytes to the 
+start of the next parse unit and previous parse unit respectively.
 
-For the purposes of subsequent parts of this specification, the potential presence of auxiliary data is ignored. 
+For the purposes of subsequent parts of this specification, the potential presence of auxiliary 
+and padding data is ignored. 
 
 Note that the most appropriate location for most forms of auxiliary data (subtitles, closed signing,
 audio, other metadata) is almost certainly within a wrapping format/transport stream, and auxiliary
 data units within the Dirac stream should be used with circumspection, and certainly not for any
 data that might be displayed or otherwise directly consumed by end-users.
+
+Padding data should not be used for any form of auxiliary data service or content, and should be
+used by an encoder to insert additional data to assist in complying with constant or constrained bit rate 
+requirements.
 
 \subsection{Access Units}
 \label{accessunit}
@@ -385,6 +387,7 @@ the reference picture and decoded picture buffers.
 Applicable values of profile and level and the variables they set are specified in Appendix
 \ref{profilelevel}.
 
+\begin{comment}
 The profile determines, amongst other things, the value of the boolean functions $using\_ac()$ and $using\_mc()$.
 If $using\_ac()==\false$ then arithmetic coding is not used for entropy coding of coefficients.
 If $ using\_mc()==\false$ then all pictures in the sequence shall be Intra pictures.
@@ -392,6 +395,7 @@ If $ using\_mc()==\false$ then all pictures in the sequence shall be Intra pictu
 Main profile has value 0, and $using\_ac()$ and $using\_mc()$ are both set to $\true$. This does
 not mean that an application under Main profile is required to use Inter pictures, but it is
 required to use arithmetic coding.
+\end{comment}
 
 \subsection{Access unit sequence parameters}
 \label{sequenceparameters}

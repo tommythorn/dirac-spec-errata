@@ -89,7 +89,8 @@ The following arithmetic operators are defined on numerical values:
 
 \paragraph*{Minimum} $\min(a,b)$ returns the smallest of values $a$ and $b$.
 
-\paragraph*{Clip} $\clip(a,b,t)$ clips the value $a$ to the range defined by $b$ and $t$:
+\paragraph*{Clip} $\clip(a,b,t)$ clips the value $a$ to the range defined by $b$ (bottom)
+and $t$ (top):
 \[\clip(a,b,t)=\min(\max(a,b),t)\]
 
 \paragraph*{Integer division} Integer division is defined for $a$ and $b$ integer values, $b>0$ by
@@ -125,10 +126,10 @@ integer division of $a$ by $b$, defined by
 \[\left\lfloor\dfrac{a+(b//2)}{b}\right\rfloor\]
 
 \begin{informative}
-Note that $\rounddivide(a,2^b)=(a+2^{b-1})\gg b$. Note also that if $NUM$ is a sufficiently large integer 
+Note that $\rounddivide(a,2^b)=(a+2^{b-1})\gg b$. Note also that if $N$ is any sufficiently large integer 
 (i.e. bigger than $\left\lceil\dfrac{a}{b}\right\rceil$), then
 
-\[\rounddivide(a,b)=(a+b*NUM+(b//2))//b - NUM\]
+\[\rounddivide(a,b)=(a+b*N+(b//2))//b - N\]
 
 which may be used to avoid a branch condition.
 \end{informative}
@@ -169,7 +170,7 @@ not defined bitwise, to avoid ambiguity concerning leading zeroes).
 \label{pseudocode}
 
 The bulk of the normative specification is defined by means of pseudocode. 
-The syntax used is an amalgam of Python and Basic. It is not intended
+The syntax used is an amalgam of Python and BASIC. It is not intended
 to be executable code, but rather both precise and descriptive. 
 In particular, all the arithmetic functions and
 operations defined in the preceding section may be applied to variables within
@@ -266,9 +267,10 @@ The following basic types are defined:
 
 \paragraph*{Integer} A whole number, of arbitrary size.
 
-\paragraph*{Set} A collection of variables or values, with no particular indexing. The usual
-set-theoretic operations such as $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
-and so on apply.
+\paragraph*{Set} A collection of variables or values with no particular indexing. 
+A set containing members $A,B,C,\ldots$ is denoted $\{A,B,C,\ldots\}$. The usual
+set-theoretic operations $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
+apply.
 
 \paragraph*{Map}
 

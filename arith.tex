@@ -76,9 +76,13 @@ into $[low,low+p_0(high-low))$ and $[low+p_0(high-low),b)$, and if there is a 0 
 first interval, and if a 1 the second.
 
 For any integer $N$, this process clearly partitions the interval $[0,1)$ into 
-a set of disjoint intervals that correspond to all the sequences of $N$ bits.
-Identifying such a bit sequence is equivalent to choosing a value in the 
-corresponding interval, and for an interval width $w$ that in general requires 
+a set of disjoint intervals that correspond to all the input sequences of $N$ bits.
+Any number in such an interval will uniquely identify this interval, and may
+serve as the arithmetic code for that sequence of $N$ bits. Arithmetic coding
+engines therefore maintain a numerical representation of a number that must
+lie within the current interval.
+
+{\bf Note: }For an interval width $w$, an identifying number within the interval will in general require 
 \[\left\lceil\log_2(1/w)\right\rceil\]
 bits. With static probabilities, on average,
 \[w=p_0^{Np_0}(1-p_0)^{N(1-p_0)}\]
@@ -105,13 +109,13 @@ $low=bxyz...$ and $high=bpqr...$ again: this is equivalent to doubling the inter
 from 1 ($x\mapsto 2x-1$).
 
 One problem remains: suppose the interval resolutely sits on the fence, straddling
-1/2 whilst getting smaller and smaller, with the most 
+$\dfrac{1}{2}$ whilst getting smaller and smaller, with the most 
 significant bits of low and high staying as 0 and 1 respectively. 
 In this case, when the straddle is finally resolved, $low$ and $high$ will
 both be of the form $b10000...xyz$ or $b01111...pqr$. 
 
 The resolution strategy is to again rescale $low$ and $high$, but this time
-double from 1/2 ($x\mapsto 2x-\frac{1}{2}$), and keep a count of the number $k$
+double from $\dfrac{1}{2}$ (i.e. $x\mapsto 2x-\dfrac{1}{2}$), and keep a count of the number $k$
 of times this is done, as this is the number of carry bits that are
 required. When the straddle is resolved as 1, then 1 followed by $k$ zero bits is 
 output, otherwise 0 followed by k 1s is output. This ensures that the
@@ -138,7 +142,8 @@ Section \ref{arithengine}.
 
 \subsubsection{Encoder variables}
 
-An arithmetic encoder would require the following unsigned integer variables:
+An arithmetic encoder would maintain the following unsigned integer variables, or
+some mathematically equivalent set:
 \begin{itemize}
 \item $low$, a value indicating the bottom of the encoding interval
 \item $range$, a value indicating the width of the encoding interval
@@ -168,7 +173,7 @@ range&=&\text{0x10000} \\
 carry&=&0
 \end{eqnarray*}
 
-With 16 bit accuracy, $0x10000$ corresponds to an interval width value of 1. All
+With 16 bit accuracy, 0x10000 corresponds to an interval width value of 1. All
 context probabilities are initialised to probability $1/2$ (0x8000).
 
 \subsubsection{Encoding binary values}
@@ -201,8 +206,8 @@ If 1 is to be encoded, $[l,h)$ should be rescaled so that $h$ is
 unchanged and $r$ is scaled to $(1-p0)*r$. This operation is
 approximated by setting
 \begin{eqnarray*}
-range & -= & (range*prob\_zero)\gg 16 \\
-low &+= & (range*prob\_zero)\gg 16 
+low &+= & (range*prob\_zero)\gg 16 \\
+range & -= & (range*prob\_zero)\gg 16
 \end{eqnarray*}
 
 \paragraph*{Updating contexts\\}
@@ -226,7 +231,7 @@ In pseudocode, this is as follows:
     \bsELSE
         \bsCODE{write\_bit( low\&\text{0x8000} )}
         \bsWHILE{ carry>0}
-            \bsCODE{write\_bit( !(low\&\text{0x8000}) )}
+            \bsCODE{write\_bit( !low\&\text{0x8000} )}
             \bsCODE{carry -= 1}
         \bsEND
     \bsEND
@@ -269,7 +274,7 @@ The remaining msbs are output as follows:
 Remaining straddles can then be resolved by:
 
 \begin{pseudo*}
-\bsWHILE{(low+range-1)\wedge low>=\text{0x8000}}
+\bsWHILE{ (low \& \text{0x4000}) \text{ and } !((low+range-1) \& \text{0x4000})}
     \bsCODE{carry+=1}
     \bsCODE{low \wedge= \text{0x4000}}
     \bsCODE{low  <<=  1}
@@ -283,9 +288,8 @@ the final straddles:
 
 \begin{pseudo*}
 \bsCODE{write\_bit(low \& \text{0x4000})}
-\bsWHILE{carry >= 0}
-    \bsCODE{write\_bit(!(low \& \text{0x4000}))}
-    \bsCODE{carry-=1}
+\bsFOR{c=0}{carry}
+    \bsCODE{write\_bit(!low \& \text{0x4000})}
 \bsEND
 \end{pseudo*}
 
@@ -373,6 +377,7 @@ after the arithmetically coded data i.e. at the end of the
 data chunk. $flush\_inputb()$ is always called at the end of decoding an arithmetically encoded
 data element.
 
+\begin{comment}
 \begin{informative}
 The Dirac arithmetic decoding engine uses 16 bit words, and so if all coefficients are
 coded no more than 16 additional bits should be read beyond the end of the block. Hence it 
@@ -383,6 +388,7 @@ conceivably strip out to save bits, in the knowledge that $read\_bitb()$ will re
 strings of 1s can occur (but not exclusively) in coding many zero wavelet subband coefficients at the end
 of a subband. So a larger number of pad bytes may be required in practice.
 \end{informative}
+\end{comment}
 
 \subsubsection{Decoding boolean values}
 \label{arithreadbool}

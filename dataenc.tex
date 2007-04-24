@@ -59,7 +59,8 @@ beginning reading a new stream element.
 \subsection{Fixed-length code formats}
 \subsubsection{Bool}
 
-The $read\_bool()$ function identifies 1 with $\true$ and 0 with $\false$
+The $read\_bool()$ function identifies 1 with $\true$ and 0 with $\false$:
+
 \begin{pseudo}{read\_bool}{}
 \bsIF{read\_bit()==1}
     \bsRET{\true}
@@ -113,11 +114,11 @@ described in Section \ref{arithdecoding}.
 When used for coding motion data and coefficients, VLCs are employed within
 a data block of known length. It is possible to gain additional compression by early termination:
 maintaining a count of remaining bits, and returning default values when this length
-is exceeded. This is achieved by use of the $read\_bitb()$, $read\_uintb()$ and $read\_sintb()$
-for reading values from data blocks. A similar early termination facility is a used for
-arithmetic decoding.
+is exceeded. This is achieved by use of the $read\_bitb()$, $read\_boolb()$, 
+$read\_uintb()$ and $read\_sintb()$ for reading values from data blocks. 
+(A similar early termination facility is a used for arithmetic decoding.)
 
-\subsubsection{Data input for block operation}
+\subsubsection{Data input for bounded block operation}
 \label{blockreadbit}
 
 This section specifies the operation of the $read\_bitb()$ process for reading bits from

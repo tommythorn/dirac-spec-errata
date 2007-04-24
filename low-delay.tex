@@ -12,6 +12,9 @@ not the picture. These sets are called slices. A single quantiser, weighted by a
 a slice is  of fixed dimensions within a picture and is also of fixed length in bytes. Each slice interleaves all three components, and hence
 the transform parameters for the components are placed in the picture header.
 
+In the low-delay syntax, all wavelet coefficients are entropy-coded using variable-length
+codes, not arithmetic coding.
+
 \begin{figure}[!ht]
 \centering
 %\includegraphics[width=0.7\textwidth]{figs/wavelet-slice.eps}
