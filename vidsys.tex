@@ -1,14 +1,16 @@
 \label{vidsys}
 
+\begin{informative*}
+\subsection{Video systems model for interpreting source parameters (Informative)}
+\label{vidsysmodel}
+
 The interpretation of sequence source parameters (Section \ref{sourceparameters})
 by a display mechanism interfacing with a compliant decoder is non-normative. However, it
 should where possible follow the recommendations and interpretations
 specified in this section. Likewise, encoders should ensure that
 accurate display parameter information is encoded to maximise the
 quality of displayed video.
-
-\begin{informative*}
-\subsection{Colour}
+\subsubsection{Colour}
 All current video systems use the following model for luminance/chrominance 
 (`YUV')coding of RGB values (computer systems often omit coding to and from YUV). 
 
@@ -51,7 +53,7 @@ sometimes the chroma components are subsampled, either horizontally or
 both horizontally and vertically. UV sampling is specified by the
 $\ChromaFormat$ value. 
 
-\subsubsection{Conventional YUV coding}
+\paragraph{Conventional YUV coding\\}
 In conventional YUV coding, the $E_Y$, $E_{Cb}$ and $E_{Cr}$ values are
 mapped to a range of integers denoted $Y$, $C1$ and $C2$ within this
 specification. In this way, $C1$ typically corresponds to $Cb$ and
@@ -61,7 +63,7 @@ that are actually output from the decoder. In order to display video, the invers
 operations must be performed to convert this data to $E_Y$, $E_{Cb}$, $E_Cr$, then
 to $E_R$, $E_G$, $E_B$ and thence to R, G and B.  
 
-\subsubsection{YCoCg coding}
+\paragraph{YCoCg coding\\}
 The E values can be viewed as something of a mathematical abstraction.
 For example in digital display devices, R, G and B values are specified
 in terms of integer levels which are derived from the integral luma and
@@ -77,7 +79,7 @@ direct integer transform is applied to convert this data to $Y$, $C1$ (represent
 Co) and $C2$ (representing $Cg$) data. This transform is described in Section
 \ref{colourmatrix}. This supports efficient lossless RGB coding.
 
-\subsection{Signal range}
+\subsubsection{Signal range}
 \label{signalranges}
 
 When $YCoCg$ coding is not being applied, offset and excursion values 
@@ -113,7 +115,7 @@ integer conversion to RGB should be done as described in Section . (In
 fact, excursion values will be ignored in this integer conversion.)
 \end{comment}
 
-\subsection{Primaries}
+\subsubsection{Primaries}
 \label{primaries}
 The colour primaries allow device dependent linear RGB colour
 co-ordinates to be mapped to device independent linear CIE XYZ space.
@@ -169,9 +171,9 @@ reproduction of decoded RGB values on different displays with different
 display primaries. (Although it has to be said that often conversion between
 encoded primaries and display primaries is not done.)
 
-\subsection{Matrix}
+\subsubsection{Matrix}
 \label{matrix}
-\subsubsection{Conventional YUV coding}
+\paragraph{Conventional YUV coding\\}
 
 Unit-scale luma and chroma values $E_Y$, $E_{Cb}$ and $E_{Cr}$ should be
 derived from decoded $Y$, $C1$ and $C2$ values using the signal range parameters
@@ -191,7 +193,7 @@ E_{Cb} & = & \dfrac{E_B - E_Y}{2*(1-K_B)} \\
 E_{Cr} & = & \dfrac{E_R - E_Y}{2*(1-K_R)} \\
 \end{eqnarray*}
 
-\subsubsection{YCoCg coding}
+\paragraph{YCoCg coding\\}
 In the case of YCoCg coding, integer $I_R$, $I_G$, $I_B$ should be directly computed from
 the decoded $Y$, $C1$ ($Co$) and $C2$ ($Cg$) values by
 \begin{eqnarray*}
@@ -227,8 +229,8 @@ Note also that $\LumaExcursion$ and $\ChromaExcursion$ are not required for
 these scaling operations. They should be set to $2^\VideoDepth-1$ and $2^\VideoDepth$
 respectively..
 
-\subsection{Transfer characteristics}
-\subsubsection{TV transfer characteristic}
+\subsubsection{Transfer characteristics}
+\paragraph{TV transfer characteristic\\}
 
 Denoting R or G or B as `$L$' (light) and $E_R$, $E_G$, $E_B$ as
 `$E$' then $E=f(L)$ such that
@@ -248,7 +250,7 @@ signals are pre-corrected'' as 2.2 for NTSC and 2.8 for PAL. This
 specification is incomplete, incorrect and obsolete and modern PAL and
 NTSC systems use the `TV' transfer characteristic above.
 
-\subsubsection{Extended Colour Gamut}
+\paragraph{Extended Colour Gamut\\}
 
 ITU-R BT 1361, `Worldwide unified colorimetry of future TV systems'
 defines a transfer characteristic for systems with an extended colour
@@ -271,63 +273,66 @@ E=\left\{
 This transfer characteristic is intended to be used with systems using
 an extended colour gamut.
 
-\subsubsection{Linear}
+\paragraph{Linear\\}
 
 A linear transfer characteristic has $f(x)=x$. 
 
-
-\subsection{Frame rate}
+\subsubsection{Frame rate}
 The ratio of the frame rate values $\FrameRateNumerator$ and $\FrameRateDenominator$
  encodes the intended rate at which frames should be
 displayed subsequent to decoding. If $\Interlaced$ is $\true$, then fields are
 displayed at double the frame rate, in the order specified by the
 $\TopFieldFirst$ flag.
 
-\subsection{Aspect ratios and clean area}
-The PIXEL\_ASPECT\_RATIO value of an image is the ratio of the intended
+\subsubsection{Aspect ratios and clean area}
+The aspect ratio of an image is the ratio of the intended
 spacing of horizontal samples (pixels) to the spacing of vertical
 samples (picture lines) on the display device. Pixel aspect ratios are
 fundamental properties of sampled images because they determine the
 displayed shape of objects in the image. Failure to use the right value
-of PIXEL\_ASPECT\_RATIO will result in distorted images – for example,
-circles will be displayed as ellipses and so forth. 
-
-
-Some HDTV standards and computer image formats are defined to have pixel
+of will result in distorted images for example,
+circles will be displayed as ellipses and so forth. HDTV standards and 
+computer image formats are generally defined to have pixel
 aspect ratios that are exactly 1:1.
 
-The clean area is intended to define an area within which picture
-information is subjectively uncontaminated by all edge transient (and
-other) distortions. It may only be appropriate to display the clean area
-rather than the whole picture, which may be distorted at the edge. 
+The clean area defines an area of pixels within the picture which
+should be displayed -- other pixels outside the area should not be
+displayed. In particular, the clean area can be used to suppress artefacts 
+near the picture edges: at high levels of compression it may only be appropriate
+ to display the clean area rather than the whole picture. 
 
-The top-left corner of the clean area has coordinates (CLEAN\_TL\_X,
-CLEAN\_TL\_Y) and dimensions CLEAN\_WIDTHxCLEAN\_HEIGHT.
+The top-left corner of the clean area has coordinates
+\[(\LeftOffset,\TopOffset)\]
+counting from the top-left corner of the picture data, and
+dimensions $\CleanWidth$ by $\CleanHeight$.
 
-The clean area and the pixel aspect ratio determine the
-IMAGE\_ASPECT\_RATIO which is the ratio of the width of the intended
-display area to the height of the intended display area. 
+Note that these dimensions refer to pixels within a picture, not a frame,
+so a change from interlaced to progressive picture coding will
+necessitate a change of clean area if a custom clean area is used.
 
-Given two separate sequences, with identical IMAGE\_ASPECT\_RATIO, if the
+The clean area and the pixel aspect ratio together determine the
+aspect ratio of the displayed image which is the ratio of the width of the intended
+display area to the height of the intended display area:
+\[\dfrac{\CleanWidth*\AspectRatioNumerator}{\CleanHeight*\AspectRatioDenominator}\]
+
+Given two separate sequences, with identical image aspect ratio, if the
 top left corner and bottom right corners of their clean apertures are
 coincident when displayed, then the images as a whole should be exactly
 coincident. This is regardless of the actual pixel dimensions of the
 images or their clean areas. This allows sequences to be combined
 together appropriately if they are appropriately scaled.
 
-
 The defined pixel aspect ratios are designed to give standard image
 aspect ratios for typical TV broadcasts. For example, for a 525 line
 (American) 704 x 480 (clean area)  picture the image aspect ratio is
 (704 x 10)/(480 x 11) which is exactly 4:3.
 
-
-For 625 line systems the 59:54 pixel aspect ratio means (less
-conveniently) that a 702.9x576 image would have an exact 4:3 image
+For 625 line systems the 12:11 pixel aspect ratio means (less
+conveniently) that a 704x576 image would have an exact 4:3 image
 aspect ratio. It might be argued that the pixel aspect ratio for 625
 line systems should be such that a 702x576 image would have an exact 4:3
-image aspect ratio. It could be said that this corresponds to the
-analogue 625 line TV specification. This requirement would lead to a
+image aspect ratio, corresponding to the nominal sample rate for 625 line TV.
+This requirement would lead to a
 pixel aspect ratio of 128:117. However, the tolerance of the analogue
 line length is $702\pm 3$ pixels, which does not really seem to justify a
 ratio of exactly 128:117.
@@ -339,8 +344,8 @@ frequencies used for square pixels, which were originally designed for
 digitising composite analogue video signals. These `industry
 standard' sampling frequencies are 11+3/11 MHz for 525 line systems
 and 14.75MHz for 625 line systems. The ratio of these frequencies to the
-(standardised) 13.5MHz sampling frequency used for broadcasting yields
-the pixel aspect ratios given in  and .
+(standardised) 13.5MHz sampling frequency used for broadcasting (approximately) 
+yields the pixel aspect ratios given.
 
 You are strongly advised to use one of the default pixel aspect ratios.
 However, if you know what you are doing and don't like the default
@@ -348,8 +353,165 @@ values you can define your own ratio. You should be aware that many
 display devices may ignore your decision and may use different and
 unsuitable values. 
 
-
 \end{informative*}
-\subsection{Source parameter presets}\input{sourcepresets}
+
+\subsection{Source parameter presets}
+\label{sourceparamspresets}
+
+Source parameters are signalled using a range of preset indices into the following
+tables, as specified in Section \ref{sourceparameters}. Their correct
+interpretation by a display device is described in Appendix \ref{vidsysmodel}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SFrameRateNumerator$ & $\SFrameRateDenominator$ \\
+\hline
+1 & 24000 & 1001 \\
+\hline
+2 & 24 & 1 \\
+\hline
+3 & 25 & 1 \\
+\hline
+4 & 30000 & 1001 \\
+\hline
+5 & 30 & 1 \\
+\hline
+6 & 50 & 1 \\
+\hline
+7 & 60000 & 1001 \\
+\hline
+8 & 60 & 1 \\
+\hline
+\end{tabular}
+\caption{Available preset frame rate values}\label{table:frameratevalues}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SAspectRatioNumerator$ & $\SAspectRatioDenominator$ \\
+\hline
+1 (Square Pixels) & 1 & 1 \\
+\hline
+2 (525-line systems) & 10 & 11 \\
+\hline
+3 (625-line systems) & 12 & 11 \\
+\hline
+\end{tabular}
+\caption{Available preset aspect ratio values}\label{table:aspectratiovalues}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SLumaOffset$ & $\SLumaExcursion$ \\
+\hline
+1 (8 Bit Full Range) & 0 & 255 \\
+\hline
+2 (8 Bit Video) & 16 & 235 \\
+\hline
+3 (10 Bit Video) & 64 & 876 \\
+\hline
+\end{tabular}
+\caption{Luma signal range available presets}\label{table:lumasignalrangevalues}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+$index$ & $\SChromaOffset$ & $\SChromaExcursion$ \\
+\hline
+1 (8 Bit Full Range) & 128 & 255 \\
+\hline
+2 (8 Bit Video) & 128 & 224 \\
+\hline
+3 (10 Bit Video) & 512 & 896 \\
+\hline
+\end{tabular}
+\caption{Chroma signal range available presets}\label{table:chromasignalrangevalues}
+\end{table}
+
+\begin{informative}
+The only presets available cover a full 8-bit range or 8- or 10-bit SDI video ranges.
+If other video depths have been selected, custom signal range parameters
+should be signalled, or the resulting video may have an unintended appearance that
+affects video quality adversely on a display device.
+\end{informative}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|l|l|l|}
+\hline
+$index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & {\bf Transfer function}\\
+\hline
+0 & Custom, HDTV, PC \& Internet & 0 - ITU709 \& sRGB & 0 - HDTV/PC & 0 - TV \\ 
+\hline
+1 & NTSC                                    & 1 - SMPTE C           & 1 - SDTV      & 0 - TV \\
+\hline
+2 & PAL                                       & 2 - EBU Tech 3213   & 1 - SDTV      & 0 - TV \\
+\hline
+3 & D-Cinema                              & 3 - CIE XYZ             & 2 - YCoCg     & 3 - DCI \\
+\hline
+\end{tabular}
+\caption{Colour specification presets}\label{table:colourspecvalues}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+$index$ &  {\bf Primaries}      \\
+\hline
+0          &  ITU709 \& sRGB  \\ 
+\hline
+1          &  SMPTE C (as used for NTSC)          \\
+\hline
+2          &  EBU Tech 3213, as used for PAL   \\
+\hline
+3          & CIE XYZ              \\
+\hline
+\end{tabular}
+\caption{Colour primaries presets}\label{table:primariesvalues}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+$index$ &  {\bf Matrix}\\
+\hline
+0 & HDTV, PC \& Internet: $K_R=0.2126$, $K_B=0.0722$ \\ 
+\hline
+1 & SDTV: $K_R=0.299$, $K_B=0.114$ \\
+\hline
+2 & Reversible: YCgCo \\
+\hline
+\end{tabular}
+\caption{Colour matrix presets}\label{table:matrixvalues}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+$index$ & {\bf Transfer function}\\
+\hline
+0 & TV \\ 
+\hline
+1 & Extended Gamut \\
+\hline
+2 & Linear\\
+\hline
+3 & DCI Gamma\\
+\hline
+\end{tabular}
+\caption{Transfer function presets}\label{table:transfervalues}
+\end{table}
+
 
 
