@@ -8,18 +8,14 @@ also affects decoder resources. Level constraints are expressed in terms of pict
 formats 
 
 A particular profile will require that particular syntax/syntax elements be used and that decoder
-variables or functions are set to particular values. Profiles also determine the size of the
-decoded picture buffer $\DecodedBuffer$ and the stream buffer for data entering the decoder. [or is this levels?]
+variables or functions are set to particular values. Currently only two profiles are defined, Main and Low-Delay. Low-delay profile corresponds to a decoder capable of decoding the low-delay syntax only. 
+Main profile corresponds to a decoder capable of decoding the both the core syntax and low-delay syntax.
+
+Levels determine the size of the
+decoded picture buffer $\DecodedBuffer$ and the stream buffer for data entering the decoder. Levels
+apply differently in Low-Delay and Main profile, as buffering requirements are quite different (and much
+less demanding) for Low-Delay operation.
 The operation of these buffers is described in Sections \ref{decodedbufferop} and \ref{streambufferop}.
-
-\begin{comment}
-Main=0, $is\_low\_delay()==false$, $using\_ac()==\true$, $using\_mc()==\true$
-Simple=1, $is\_low\_delay()==false$, $using\_ac()==\false$, $using\_mc()==\false$
-Link=2, $is\_low\_delay()==true$, $using\_ac()==\false$, $using\_mc()==\false$
-Wireless=3, $is\_low\_delay()==true$, $using\_ac()==\true$, $using\_mc()==\true$
-
-If we have Simple or Link then $using\_ac()$ is false and $using\_inter()$ is false.
-\end{comment}
 
 \subsection{Decoded picture buffer model operation}
 \label{decodedbufferop}
@@ -33,9 +29,12 @@ of pictures within a Dirac stream provided that reordering can be carried out wi
 the DPB. The DPB size is the minimum delay required by the decoder, ignoring decoding time and stream
 buffering delays (Section \ref{streambufferop}).
 
+Note that the DPB is distinct from the reference picture buffer, and the removal of pictures from,
+or placement in, the DPB is wholly independent in this specification, although in practice shared
+storage may be employed.
+
 Pictures are deemed to be output from the decoder and placed in the DPB instantaneously at multiples
 of the (real number) picture sample interval $\PictureInterval$. This interval is defined as follows:
-
 \begin{itemize}
 \item if $\Interlaced$ is $\true$ and $\SequentialFields$ is $\true$ (i.e. pictures are fields) then 
 \begin{equation*}
@@ -47,33 +46,102 @@ of the (real number) picture sample interval $\PictureInterval$. This interval i
 \end{equation*}
 \end{itemize}
 
-In modelling the display of a sequence, pictures are deemed not to be output from the DPB until after $\DPBSize$ pictures
-have been placed in the buffer i.e. the first picture is output at the time instant with index $\DPBSize$, counting from 0. 
-A picture is deemed to be output instantaneously and simultaneously with a picture being input to the buffer.
+If a picture is output from the DPB, it is deemed to occur at the same instant as a picture is
+added, resulting in no net increase in DPB occupancy.
 
-Hence if $\DPBSize$ is 0, a picture passes through the DPB with zero delay, and is produced for display at the same
-time instant. 
+A decoder may access a Dirac stream at an AU header. Let $N_n$ denote
+the picture number of the $r$th picture in coded order after
+the AU header, with $N_0=\AUPictureNumber$. Picture decoding/parsing 
+is deemed to start at this point. 
 
-Determining the picture to output at a given time is simple in practice but delicate to specify, since picture numbers
-may wrap around through 0. Define the absolute difference between two pictures with picture numbers $n_1, n_2$
-as
+In case $\DPBSize$ is 0, the picture output at time $t_0+n*\PictureInterval$
+shall be the picture decoded at time $n*\PictureInterval$. In this case
+the picture numbers of pictures output by the decoder shall increment
+by 1 with each picture decoded, and form a contiguous sequence of integers.
 
-\[d(n_1,n_2)=\min\left((n_1-n_2) \% 2^{32}, (n_2-n_1) \% 2^{32} \right)\] 
+In case $\DPBSize>0$, a compliant stream shall satisfy the following
+conditions
+\begin{enumerate}
+\item For $k\geq 0$, there exists some $n$ with $N_n=P_0+k$ with
+\[k\leq n\leq k+\DPBSize+2\]
+\item For $n\geq\DPBSize+2$, picture $N_n$ is decodeable 
+using only data received subsequent to the AU header
+\end{enumerate}
 
-An encoder must ensure that the absolute difference between the picture numbers of two pictures lying in the DPB is 
-always positive and strictly less than $2^{31}$. This determines an unambiguous ordering
-on pictures in the buffer: a picture with picture number $n_1$ is then earlier than a picture with a different picture number 
-$n_2$ if and only if $n_2-n_1=d(n_1,n_2)>0$. The picture output at a given time instant is deemed to be the picture 
-with the earliest picture number according to this metric.
+These conditions are sufficient to ensure that a buffer of size $\DPBSize$
+is sufficient to reorder all pictures to produce a stream of pictures
+with contiguous picture numbers, and these pictures shall be capable of being fully 
+decoded and displayed after a delay equal to at most $\DPBSize+2$ picture intervals.
 
-An encoder is required to so order its pictures that the DPB shall produce pictures whose picture numbers comprise a
-contiguous series, modulo $2^{32}$, when output according to this rule.
+\begin{informative*}
+\subsubsection{Example operation (Informative)}
+Consider a conventional MPEG-2 style `IBBP' Group of Pictures (GOP), consisting
+of intra pictures (I), forward-predicted pictures (P) and bi-directionally
+predicted pictures (B). In picture order, this is
+\[\ldots\ I_{N_0}\ B_{N_0+1}\ B_{N_0+2}\ P_{N_0+3}\ B_{N_0+4}\ B_{N_0+5}\ 
+P_{N_0+6}\ B_{N_0+7}\ B_{N_0+8}\ P_{N_0+9}\ B_{N_0+10}\ B_{N_0+11}\ I_{N_0+12}
+\ B_{N_0+13}\ \ldots\]
 
-\begin{informative}
-Note that, if the DPB is sufficiently large to allow it, a Dirac sequence may contain frames out of order
-even if it is not strictly necessary: for example, a sequence containing only intra frames could be 
-delivered out of order in Main profile, but not in Simple profile which has a zero-sized buffer.
-\end{informative}
+Each P-picture is predicted from the previous P or I picture, and each B-picture
+from the previous and subsequent P- or I-picture. Hence coded order is:
+\[\ldots\ I_{N_0}\ B_{N_0-2}\ B_{N_0-1}\ P_{N_0+3}\ B_{N_0+1}\ B_{N_0+2}\ 
+P_{N_0+6}\ B_{N_0+4}\ B_{N_0+5}\ P_{N_0+9}\ B_{N_0+7}\ B_{N_0+8}\ I_{N_0+12} 
+\ B_{N_0+10}\ B_{N_0+11}\ \ldots\]
+with random access at each intra picture. A decoder accessing the stream at
+$I_{N_0}$ would require a buffer of 2 pictures, since B-pictures can be
+displayed immediately. The DPB would operate as follows:
+\begin{enumerate}
+\item Time $t_0$. \\
+Receive $I_{N_0}$ and store in the DPB.\\
+DPB=$\{I_{N_0}\}$\\
+Displayed picture=
+\item Time $t_0+\PictureInterval$. \\
+Receive $B_{N_0-2}$ (undecoded) and discard:\\
+DPB=$\{I_{N0}\}$\\
+Displayed picture=
+\item Time $t_0+2*\PictureInterval$. \\
+Receive $B_{N_0-1}$ (undecoded) and discard:\\
+DPB=$\{I_{N0}\}$\\
+Displayed picture=
+\item Time $t_0+3*\PictureInterval$. \\
+Receive $P_{N_0+3}$ (decoded) and place in DPB, 
+display $I_{N_0}$ and remove from DPB:\\
+DPB=$\{P_{N_0+3}\}$\\
+Displayed picture=$I_{N_0}$
+\item Time $t_0+4*\PictureInterval$. \\
+Receive $B_{N_0+1}$ (decoded) and display immediately:\\
+DPB=$\{P_{N_0+3}\}$\\
+Displayed picture=$B_{N_0+1}$
+\item Time $t_0+5*\PictureInterval$. \\
+Receive $B_{N_0+2}$ (decoded) and display immediately:\\
+DPB=$\{P_{N_0+3}\}$\\
+Displayed picture=$B_{N_0+2}$
+\item Time $t_0+6*\PictureInterval$. \\
+Receive $P_{N_0+6}$ (decoded) and place in DPB, display 
+$P_{N_0+3}$ and remove from the DPB:\\
+DPB=$\{P_{N_0+6}\}$\\
+Displayed picture=$P_{N_0+3}$
+\item Time $t_0+7*\PictureInterval$. \\
+Receive $B_{N_0+4}$ (decoded) and display immediately:\\
+DPB=$\{P_{N_0+6}\}$\\
+Displayed picture=$B_{N_0+4}$
+\item Time $t_0+8*\PictureInterval$. \\
+Receive $B_{N_0+5}$ (decoded) and display immediately:\\
+DPB=$\{P_{N_0+6}\}$\\
+Displayed picture=$B_{N_0+5}$
+\item Time $t_0+9*\PictureInterval$. \\
+Receive $P_{N_0+9}$ (decoded) and place in DPB, display 
+$P_{N_0+6}$ and remove from the DPB:\\
+DPB=$\{P_{N_0+9}\}$\\
+Displayed picture=$P_{N_0+6}$
+\item $\ldots$
+\end{enumerate}
+
+Note that a better subjective experience can be gleaned if the
+decoder outputs the initial intra frame $I_{N_0}$ whilst buffering
+pictures initially.
+
+\end{informative*}
 
 \subsection{Stream buffer model operation}
 \label{streambufferop}
@@ -87,8 +155,7 @@ operate in mirror-image to output buffers, and so the specification of the ISB i
 how an identically-sized encoder stream buffer (ESB) would operate to ensure correct CBR operation, although
 in practice some encoder-side headroom may be required.
 
-Buffer operation is complicated by random access, which implies that the state of the DSB is not
-wholly known at the encoder. At best, an upper bound on the decoder buffer occupancy is  
- 
+[TBC]
 
-\subsection{Supported profiles}
+\subsection{Supported levels}
+[TBC]
