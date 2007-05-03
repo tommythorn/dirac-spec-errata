@@ -85,7 +85,9 @@ If $is\_low\_delay==\true$, the following constraints are placed upon the slice 
 
 \begin{itemize}
 \item $\SliceWidth$ and $\SliceHeight$ shall both be divisible by $2^\WaveletDepth$
+\begin{comment}
 \item If $is\_inter()==\true$, $\SliceWidth$ shall be divisible by $4*\LumaXBsep$ and $\SliceHeight$ shall be divisible by $4*\LumaYBsep$
+\end{comment}
 \item Chroma and luma subbands must contain corresponding levels of padding, i.e. for all orientations $orient$ and levels $l$,
 \begin{eqnarray*}
 \width(\YTransform[l][orient]) & = & chroma\_h\_factor*\width(\COneTransform[l][orient]) \\
@@ -96,7 +98,7 @@ If $is\_low\_delay==\true$, the following constraints are placed upon the slice 
 \end{itemize}
 
 These restrictions ensure that both wavelet coefficients and (if present) motion data superblocks may be partitioned
-correctly by the slices. For example, the third condition restricts the transform depth to be at most 3 on $720\times 576$ 4:2:2 video
+correctly by the slices. For example, the last condition restricts the transform depth to be at most 3 on $720\times 576$ 4:2:2 video
 since a depth of 4 would lead to padding for chroma coefficients but not for luma, as $2^4=16$ divides 720 but not 360.
 
 \subsubsection{Quantisation matrices}
@@ -118,7 +120,9 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
 \bsEND
 \end{pseudo}
 
-Default quantisation matrices are defined only if $\WaveletDepth$ is 4. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom).
+Default quantisation matrices are defined only for $\WaveletDepth=4$. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom). If $\WaveletDepth=4$ then custom quantisation matrices
+may still be transmitted, for example to apply a different degree of perceptual weighting (see Appendix \ref{quantisationmatrices}.
+ 
 The function $set\_quant\_matrix()$ sets the quantisation matrix based on the wavelet filter and the value of $quant\_matrix\_index$, as per Table
 \ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an ``unweighted" matrix, whose values merely compensate for the differential 
 power gain of the different subband filters. Higher values of $quant\_matrix\_index$ imply greater degrees of perceptual weighting.

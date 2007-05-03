@@ -38,7 +38,7 @@ The $read\_bit()$ function is defined by
 \bsCODE{bit = ( \CurrentByte \gg \NextBit ) \& 1 }
 \bsCODE{\NextBit -= 1}
 \bsIF{\NextBit<0}
-    \bsCODE{\NextBit == 7}
+    \bsCODE{\NextBit = 7}
     \bsCODE{read\_byte()}
 \bsEND
 \bsRET{bit}
@@ -267,8 +267,10 @@ The decoding operation is as follows.
 
 \begin{pseudo}{read\_sint}{}
 \bsCODE{value = read\_uint()}
-\bsIF{read\_bit()==1}
-  \bsCODE{value = -value}
+\bsIF{ value!= 0}
+  \bsIF{read\_bit()==1}
+    \bsCODE{value = -value}
+  \bsEND
 \bsEND
 \bsRET{value}
 \end{pseudo}
@@ -278,8 +280,10 @@ operation is employed:
 
 \begin{pseudo}{read\_sintb}{}
 \bsCODE{value = read\_uintb()}
-\bsIF{read\_bitb()==1}
-  \bsCODE{value = -value}
+\bsIF{value != 0}
+  \bsIF{read\_bitb()==1}
+    \bsCODE{value = -value}
+  \bsEND
 \bsEND
 \bsRET{value}
 \end{pseudo}
