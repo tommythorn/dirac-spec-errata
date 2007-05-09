@@ -9,12 +9,12 @@ This process is invoked for each component in a picture, subsequent to the
 decoding of coefficient data, specified in Section \ref{transformdec}, and the Inverse Wavelet 
 Transform (IWT), specified in Section \ref{idwt}. 
 
-\subsection{Definitions and conventions}
+\subsubsection{Definitions and conventions}
 
 Motion compensation uses the motion block data $\BlockData$ and (optionally) the
 global motion parameters $\GlobalParams$.
 
-\subsection{Dimensions}
+\subsubsection{Dimensions}
 
 Since $motion\_compensate()$ applies to both luma and (potentially subsampled)
 chroma data, for simplicity a number of local variables are defined. If $c=Y$ then:
@@ -55,9 +55,9 @@ larger area produced by padding. The specification of this section fully support
 interpretation.
 \end{informative}
 
-\subsubsection{Chroma subsampling}
+\paragraph{Chroma subsampling}
 \label{chromamvscale}
-
+$\ $\newline
 When motion compensating chroma components, motion vectors are scaled by the
 $chroma\_mv\_scale()$ function:
 
@@ -79,7 +79,7 @@ Throughout this Section, the following conventions are used.
 \end{comment}
 
 \begin{informative*}
-\subsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
+\subsubsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
 
 Motion compensated prediction methods provide methods for determining 
 predictions for pixels in the current picture by using motion vectors to 
@@ -126,7 +126,7 @@ are discarded.
 
 \end{informative*}
 
-\subsection{Overall motion compensation process}
+\subsubsection{Overall motion compensation process}
 \label{mcprocess}
 
 The motion compensation process forms an integer prediction $p[y][x]$ for each pixel in the predicted
@@ -143,7 +143,7 @@ Note that this clipping is {\em in addition} to clipping performed on the output
 \bsEND
 \end{pseudo*}
 
-\subsection{Pixel prediction}
+\subsubsection{Pixel prediction}
 \label{pixelpredict}
 
 In order to specify the $pixel\_predict()$ process, some definitions are required. For block indices $(i,j)$, 
@@ -304,7 +304,7 @@ would be equivalent in the interpolative case, as it gives a better approximatio
 weights do not sum to $2^\RefsWeightPrecision$.
 \end{informative}
 
-\subsection{Spatial weighting matrix}
+\subsubsection{Spatial weighting matrix}
 
 \label{mcspatialweights}
 
@@ -367,7 +367,7 @@ for interior blocks is as shown in Figure \ref{fig:weightprofile}.
 \label{fig:weightprofile}
 \end{figure}
 
-\subsection{Block prediction}
+\subsubsection{Block prediction}
 \label{blockprediction}
 
 This section specifies the operation of the $block\_pred(ref, ref\_num, i, j, x, y, c)$ 
@@ -402,7 +402,7 @@ The value returned is that of the upconverted reference pixel at the derived coo
 \bsRET{upconvert(ref, px, py))}{\ref{upconvert}}
 \end{pseudo*}
 
-\subsection{Global motion vector field generation}
+\subsubsection{Global motion vector field generation}
 \label{globalmv}
 
 This section specifies the operation of the $global\_mv(ref, ref\_num, x,y, c)$ process
@@ -429,7 +429,7 @@ mv[1] & = & y_1\gg (\alpha+\beta)
 
 $mv$ is then returned.
 
-\subsection{Upconversion}
+\subsubsection{Upconversion}
 \label{upconvert}
 
 This section specifies the operation of the $upconvert(ref, u, v)$ function
@@ -452,13 +452,13 @@ and access to the array is via the function $up2by2(ref,u,v)$:
 \bsRET{upref[ypos][xpos]}
 \end{pseudo}
 
-\subsubsection{Pixel- and half-pixel accurate motion vectors}
-
+\paragraph{Pixel- and half-pixel accurate motion vectors}
+$\ $\newline
 If $\MotionVectorPrecision==0$ or $\MotionVectorPrecision==1$ then $up2by2(ref,u,v)$
 is returned.
 
-\subsubsection{Quarter- and eighth-pixel accurate motion vectors}
-
+\paragraph{Quarter- and eighth-pixel accurate motion vectors}
+$\ $\newline
 If $\MotionVectorPrecision==2$ or $\MotionVectorPrecision==3$, upconverted values are derived by linear
 interpolation from the half-pixel interpolated array $upref$, which is calculated as 
 per Section \ref{halfpel}. Given coordinates $(u,v)$, their half-pixel part
@@ -505,9 +505,9 @@ block motion is used.
 \end{informative}
 
 
-\subsubsection{Half-pixel interpolation}
+\paragraph{Half-pixel interpolation}
 \label{halfpel}
-
+$\ $\newline
 This section specifies the operation of the $interp2by2(ref)$ process for generating
 an upconverted reference array $upref$ with double the dimensions of the reference
 array $ref$. 
@@ -601,7 +601,7 @@ edges, consistent with the edge-extension used in motion-compensation itself.
 
 
 \begin{informative*}
-\subsection{Implementation}
+\subsubsection{Implementation}
 \label{mcimplementation}
 [TBC]
 

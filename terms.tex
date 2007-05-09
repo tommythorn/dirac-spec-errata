@@ -1,0 +1,66 @@
+This section defines the acronyms, terms and naming conventions used in the VC-2 specification.
+
+\subsection{Acronyms}
+
+\begin{description}
+\item[4CIF:] Four times Common Image Format
+\item[AU:] Access Unit
+\item[CIE:] Commission internationale de l'éclairage (International Commission on Illumination)
+\item[CIF:] Common Image Format
+\item[DC:] Direct Current
+\item[DCI:] Digital Cinema Initiatives
+\item[DWT:] Discrete Wavelet Transform
+\item[EBU:] European Broadcasting Union
+\item[FIR:] Finite Impulse Response
+\item[HD:] High Definition
+\item[HH:] High-High (subband)
+\item[HL:] High-Low (subband)
+\item[HPF:] High Pass Filter
+\item[IDWT:] Inverse Discrete Wavelet Transform
+\item[ITU:] International Telecommunications Union
+\item[LH:] Low-High
+\item[LL:] Low-Low
+\item[LPF:] Low Pass Filter
+\item[NTSC:] National Television Systems Committee
+\item[PAL:] Phase Alternating Line
+\item[SD:] Standard Definition
+\item[TV:] Television
+\item[QCIF:] Quarter Common Image Format
+\item[VC:] Video Codec
+\end{description}
+
+\subsection{Terms}
+\begin{description}
+\item[AC (sub)Band:] any signal band that is not the DC sub-band.
+\item[Access Unit:] a unit of the Dirac bit-stream that provides points at which the stream may be randomly accessed.
+\item[Codec:] a truncation of the terms "coder" and "decoder".
+\item[DC (sub)Band:] the signal band that represents data composed from the lowest frequency band of a wavelet transform (0-LL).
+\item[Discrete Wavelet Transform (DWT):] a means of transforming an array of values into space-frequency components through the use of a filter bank. 
+(Note: see http://en.wikipedia.org/wiki/Discrete\_wavelet\_transform for a fuller description).
+\item[Entropy Coding:] a term for describing any mathematical process used to encode data in a lossless manner, intended to reduce the required bit rate.
+\item[Exp-Golomb:] a form of variable-length code. This specification uses an interleaved variant.
+\item[Intra-Prediction:] the sample prediction of coefficient data within the dc sub-band.
+\item[Inverse Discrete Wavelet Transform (IDWT):] the inverse of the DWT that converts an array of space- frequency components back into an array of values.
+\item[Inverse Quantisation:] a process whereby each sample of a sub-band has its signal range expanded by a defined value.
+\item[Lifting:] the name given to reducing a DWT filtering operations into a number of elementary
+filters, each operating on half the samples.
+	(Note: see Bibliography item "Ripples in Mathematics", chapter 3, for more information. It is also instructive to view the Wikipedia definition at http://en.wikipedia.org/wiki/Lifting\_scheme).
+\item[Low Delay:] a term used to define the mode of the Dirac codec that can be used to compress video with a delay of less than one frame duration.
+\item[Parse Info header:] identifies the beginning of major Dirac syntax elements (sequence start, picture, sequence end, padding and auxiliary data) with defined parse code values.
+\item[Parsing:] a process by which numerical and text strings within binary data are recognised and used to provide syntactic meaning.
+\item[Picture:] a single frame or field of video or a still image.
+\item[Quantisation:] a process whereby each sample of a sub-band has its signal range compressed by a defined value. 
+\item[Quantiser:] The defined value used for the purposes of quantisation or inverse quantisation.
+\item[Raster scan:] any 2-dimensional array of samples, whether as video samples or as wavelet transformed values, that is scanned in accordance with television systems; namely left to right, then top to bottom.
+\item[Sequence:] the data contained in a Dirac sequence corresponds to a single video sequence with constant video parameters as defined in xxx. A Dirac sequence is preceded by a `Parse Info' header that indicates the beginning of the sequence with a unique parse code. A Dirac sequence can be extracted from a Dirac bit-stream and decoded entirely independently.
+\item[Slice:] a component part of the low-delay syntax that provides for compression of small parts (slices) of a picture in order to reduce delay. It is similar in meaning to the term of the same name in MPEG-2 coding.
+\item[State Machine:] a defined behaviour model for data that is composed of a finite number of states, transitions between those states, and actions. A state stores information about the past, i.e. it reflects the input changes from the system start to the present moment.
+(Note: see http://en.wikipedia.org/wiki/State\_machine for a fuller description).
+\item[Stream:] a concatenation of Dirac sequences
+\item[Subband:] the signal band that represents data composed from a single space-frequency band of a wavelet transform.
+\end{description}
+
+\begin{comment}
+\subsection{Naming Conventions}
+Syntax names and textual names are widely used in this document. A syntax name is expressed as a single text string in a monotype font (such as Courier) with any word spacing using the underscore character. A textual name is expressed with capitalised words and a regular text space between words. Thus VC-2\_syntax is a syntax name used in the syntax definition and VC-2 Syntax is the same entity expressed as a textual name used in the text body.
+\end{comment}

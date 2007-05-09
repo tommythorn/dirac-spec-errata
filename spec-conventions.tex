@@ -2,9 +2,6 @@
 % - This chapter defines specification         - %
 % - conventions                                - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{comment}
-This section is a bit of a jumble and needs reorganising
-\end{comment}
 
 \subsection{State machine decoder representation}
 
@@ -60,10 +57,11 @@ that overflow cannot occur.
 
 The following arithmetic operators are defined on numerical values:
 
-\paragraph*{Absolute value} $|a|=\left\lbrace\begin{array}{l} a \text{ if $a\geq 0$}\\ 
+\begin{description}
+\item[Absolute value] $|a|=\left\lbrace\begin{array}{l} a \text{ if $a\geq 0$}\\ 
                                                                                    -a \text{ otherwise} \end{array}\right.$.
 
-\paragraph*{Sign} $\sign(a)$ is defined by
+\item[Sign] $\sign(a)$ is defined by
 \[\sign(a)=
 \left\{\begin{array}{l} 
 1 \text{ if $a>0$} \\
@@ -71,29 +69,29 @@ The following arithmetic operators are defined on numerical values:
 0 \text{ if $a=0$}
 \end{array}\right.\]
 
-\paragraph*{Addition} The sum of $a$ and $b$ is represented by $a+b$.
+\item[Addition] The sum of $a$ and $b$ is represented by $a+b$.
 
-\paragraph*{Subtraction} $a$ minus $b$ is represented by $a-b$.
+\item[Subtraction] $a$ minus $b$ is represented by $a-b$.
 
-\paragraph*{Multiplication} $a$ times $b$ is represented, for clarity, by $a*b$.
+\item[Multiplication] $a$ times $b$ is represented, for clarity, by $a*b$.
 
-\paragraph*{Real division} The real number value of $a$ divided by $b$ is represented by $a/b$ or $\frac{a}{b}$.
+\item[Real division] The real number value of $a$ divided by $b$ is represented by $a/b$ or $\frac{a}{b}$.
 
-\paragraph*{Exponentiation} For integers $a, b$, $b>0$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
+\item[Exponentiation] For integers $a, b$, $b>0$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
 
-\paragraph*{Ceiling} $\lceil a \rceil$, the least integer greater than or equal to a real number $a$
+\item[Ceiling] $\lceil a \rceil$, the least integer greater than or equal to a real number $a$
 
-\paragraph*{Floor} $\lfloor a \rfloor$, the greatest integer less than or equal to a real number $a$
+\item[Floor] $\lfloor a \rfloor$, the greatest integer less than or equal to a real number $a$
 
-\paragraph*{Maximum} $\max(a,b)$ returns the largest of $a$ and $b$.
+\item[Maximum] $\max(a,b)$ returns the largest of $a$ and $b$.
 
-\paragraph*{Minimum} $\min(a,b)$ returns the smallest of values $a$ and $b$.
+\item[Minimum] $\min(a,b)$ returns the smallest of values $a$ and $b$.
 
-\paragraph*{Clip} $\clip(a,b,t)$ clips the value $a$ to the range defined by $b$ (bottom)
+\item[Clip] $\clip(a,b,t)$ clips the value $a$ to the range defined by $b$ (bottom)
 and $t$ (top):
 \[\clip(a,b,t)=\min(\max(a,b),t)\]
 
-\paragraph*{Integer division} Integer division is defined for $a$ and $b$ integer values, $b>0$ by
+\item[Integer division] Integer division is defined for $a$ and $b$ integer values, $b>0$ by
 
 \[a//b= \left\{ 
 \begin{array}{l} 
@@ -106,24 +104,26 @@ and $t$ (top):
 i.e. round towards zero as per C/C++ conventions. Note that explicit division of potentially negative numbers
 is avoided in this specification for clarity.
 
-\paragraph*{Remainder} For integers $a,b$, with $b>0$, the remainder $a\%b$ is equal to 
+\item[Remainder] For integers $a,b$, with $b>0$, the remainder $a\%b$ is equal to 
 
 \[a-\left\lfloor\dfrac{a}{\left| b \right|}\right\rfloor *\left| b\right| \]
 
  $a\%b$ always lies between 0 and $b-1$.
 
-\paragraph*{Shift down} For integers $a,b$, with $b\geq 0$, $a\gg b$ is defined as 
+\item[Shift down] For integers $a,b$, with $b\geq 0$, $a\gg b$ is defined as 
 
 \[\left\lfloor\dfrac{a}{2^b}\right\rfloor \]
 
 Note that this is {\em not} equivalent to $a//2^b$, since shifting down rounds towards $-\infty$, not 0.
 
-\paragraph*{Shift up} For integers $a,b$, with $b\geq 0$, $a\ll b$ is $a*2^b$.
+\item[Shift up] For integers $a,b$, with $b\geq 0$, $a\ll b$ is $a*2^b$.
 
-\paragraph*{Rounded integer division} For integers $a,b$ with $b>0$, $\rounddivide(a,b)$ is the unbiased
+\item[Rounded integer division] For integers $a,b$ with $b>0$, $\rounddivide(a,b)$ is the unbiased
 integer division of $a$ by $b$, defined by
 
 \[\left\lfloor\dfrac{a+(b//2)}{b}\right\rfloor\]
+
+\end{description}
 
 \begin{informative}
 Note that $\rounddivide(a,2^b)=(a+2^{b-1})\gg b$. Note also that if $N$ is any sufficiently large integer 
@@ -134,12 +134,13 @@ Note that $\rounddivide(a,2^b)=(a+2^{b-1})\gg b$. Note also that if $N$ is any s
 which may be used to avoid a branch condition.
 \end{informative}
 
-\paragraph*{Mean} Given a set  $S=\{s_0, s_1, \hdots, s_{n-1}\}$ of integer values, the integer unbiased mean, $\mean(S)$, is defined
+\begin{description}
+\item[Mean] Given a set  $S=\{s_0, s_1, \hdots, s_{n-1}\}$ of integer values, the integer unbiased mean, $\mean(S)$, is defined
 to be
 
 \[\rounddivide(s_0+s_1+\hdots +s_{n-1},n)\]
 
-\paragraph*{Median} Given a set $S=\{s_0, s_1, \hdots, s_{n-1} \}$ of integer values the median, $\median(S)$, 
+\item[Median] Given a set $S=\{s_0, s_1, \hdots, s_{n-1} \}$ of integer values the median, $\median(S)$, 
 returns the middle value. If $t_0\leq t_1\leq \hdots \leq t_{n-1}$ are the values $s_i$ placed in ascending order, this
 is 
 
@@ -148,23 +149,24 @@ $t_{(n-1)/2}$
 if $n$ is odd and
 
 $\mean(\{ t_{(n-2)/2},t_{n/2}\})$ if $n$ is even. If $S=\emptyset$, $\median(S)$ returns 0.
-
+\end{description}
 The following bitwise operations are defined on non-negative integer values:
-\paragraph*{\&} Logical AND is applied between the corresponding bits in the binary representation of two numbers, e.g.
+\begin{description}
+\item[\&] Logical AND is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13\&6$ is $\text{b1101}\&\text{b110}$, which equals $\text{b100}$, or 4.
 
-\paragraph*{${\mathbf |}$} Logical OR is applied between the corresponding bits in the binary representation of two numbers, e.g.
+\item[${\mathbf |}$] Logical OR is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13|6$ is $\text{b1101}\text{|}\text{b110}$, which equals $\text{b1111}$, or 15.
 
-\paragraph*{${\mathbf \wedge}$} Logical XOR is applied between the corresponding bits in the binary representation of two numbers, e.g.
+\item[${\mathbf \wedge}$] Logical XOR is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13\wedge 6$ is $\text{b1101}\wedge\text{b110}$, which equals $\text{b1011}$, or 11.
-
-\paragraph*{!} Logical NOT is applied to all bits in the representation of a number e.g. $!(b010)=b101$.
-
+\begin{comment}
+\item[!] Logical NOT is applied to all bits in the representation of a number e.g. $!(b010)=b101$.
+\end{comment}
+\end{description}
 These operations are also defined on boolean values, interpreted as single-bit integers, 
 where 0 is interpreted as $\false$ and 1 as $\true$ and vice-versa. Logical NOT is 
 not defined bitwise, to avoid ambiguity concerning leading zeroes).
-
 
 \subsection{Pseudocode}
 \label{pseudocode}
@@ -260,26 +262,26 @@ and $\SeqStateName$. If a variable is not declared as an input to
 the process and is not a state variable, then it is local to the function.
 
 The following basic types are defined:
+\begin{description}
+\item[Boolean] A boolean variable has two possible states, $\true$ and $\false$.
 
-\paragraph*{Boolean} A boolean variable has two possible states, $\true$ and $\false$.
+\item[Unsigned integer] A non-negative ($\geq 0$) whole number, of arbitrary size.
 
-\paragraph*{Unsigned integer} A non-negative ($\geq 0$) whole number, of arbitrary size.
+\item[Integer] A whole number, of arbitrary size.
 
-\paragraph*{Integer} A whole number, of arbitrary size.
-
-\paragraph*{Set} A collection of variables or values with no particular indexing. 
+\item[Set] A collection of variables or values with no particular indexing. 
 A set containing members $A,B,C,\ldots$ is denoted $\{A,B,C,\ldots\}$. The usual
 set-theoretic operations $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
 apply.
 
-\paragraph*{Map}
+\item[Map]
 
 A map is a set accessed by token names. For example
 $p[Y]$, $p[C1]$, $p[C2]$ might give the value of the different video components
 (Y, C1 and C2) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
 so that $\args(p)=\{Y,C1,C2\}$.
 
-\paragraph*{Array} 
+\item[Array] 
 
 A list is a set with an integer index or indices. All arrays are indexed from 0. 
 Elements of a 1-dimensional array $a$ are accessed by $a[n]$ for $n$ in the
@@ -290,6 +292,8 @@ A 1-dimensional array can be explicitly defined by the syntax $a=[u, v, w, \hdot
 Then $a[0]=u$, 
 $a[1]=v$ and so on.
 
+\end{description}
+
 These basic variable types may be combined. For example, picture data may be considered
 to be a map of arrays $pic$, where $pic[Y]$ is a 2-dimensional array storing luma data,
 and $pic[C1]$ and $pic[C2]$ are two-dimensional arrays storing chroma data.
@@ -297,8 +301,8 @@ and $pic[C1]$ and $pic[C2]$ are two-dimensional arrays storing chroma data.
 Variables within processes are not explicitly declared, and their type is determined from
 context or defined in the surrounding description.
 
-\paragraph*{Assignment and equality\\}
-
+\paragraph{Assignment and equality}
+$\ $\newline$\ $\newline
 Assignment between variables $a$ and $b$ is denoted by $a=b$, and is a copy
 operation between the data contained within $b$ to $a$. 
 

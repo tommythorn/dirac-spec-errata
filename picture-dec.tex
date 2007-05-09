@@ -46,8 +46,8 @@ all values $\CurrentPicture[Y][y][x]$ set to 0
 all values $\CurrentPicture[C1][y][x]$ and $\CurrentPicture[C2][y][x]$ set to 0
 \end{itemize}
 
-\subsubsection{Initialisation}
-\label{picturedecodinginit}
+\subsubsection{Decoding process}
+\label{picturedecprocess}
 
 The process for decoding pictures within a Dirac sequence can commence 
 once an Access Unit header has been
@@ -56,22 +56,19 @@ searching for a Parse Info header within the sequence for which
 $is\_au()$ returns $\true$ and then initialising the default state parameters
  by parsing the subsequent Access Unit header as per Section \ref{auheader}.
 
-At this point the reference picture buffer shall be initialised with no reference pictures.
+At this point the reference picture buffer shall be initialised with no 
+reference pictures and picture data initialised as per Section \ref{picdataconventions}.
 
 This initialisation process need only occur once within a sequence, since
 apart from the AU picture number, all AU headers within a sequence are
 identical. 
 
-\subsubsection{Decoding process}
-\label{picturedecprocess}
-
-The process for decoding a picture with picture number 
+After this initialisation process, decoding a picture with picture number 
 $n$ in a Dirac sequence consists of:
 
 \begin{pseudo}{decode\_pic}{n}
 \bsCODE{seek\_picture\_parse(n)}{\ref{seeking}}
-\bsCODE{picture()}{\ref{picture}}
-\bsCODE{init\_picture\_data()}{\ref{picturedecodinginit}}
+\bsCODE{picture\_parse()}{\ref{picture}}
 \bsIF{\ZeroResidual==\false}
     \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
     \bsCODE{\CurrentPicture[C1]=idwt(\COneTransform)}{\ref{idwt}}
@@ -116,6 +113,32 @@ from the stream, there is no need to search for parse codes. The parse offset va
 to make the seeking process greatly more efficient, so that only a single parse code need be located
 initially (Section \ref{parsecodes})
 
+\subsection{Inverse discrete wavelet transform}
+\input{idwt}
+
+\subsection{Motion compensation}
+\input{mc}
+
+\subsection{Clipping}
+\label{pictureclip}
+
+Picture data must be clipped to the video range prior to being output or being
+used as a reference:
+
+\begin{pseudo}{clip\_picture}{}
+\bsFOREACH{c}{Y,C1,C2}
+    \bsCODE{clip\_component(\CurrentPicture[c])}
+\bsEND
+\end{pseudo}
+
+\begin{pseudo}{clip\_component}{comp\_data}
+\bsFOR{y=0}{\height(comp\_data)-1}
+    \bsFOR{x=0}{\width(comp\_data)-1}
+        \bsCODE{data = \clip(comp\_data[y][x], 0, 2^\VideoDepth-1)}
+     \bsEND
+\bsEND
+\end{pseudo}
+
 \subsection{Reference picture buffer management}
 \label{refbuffer}
 
@@ -155,28 +178,10 @@ first (i.e. oldest) element of the buffer, $\RefBuffer[0]$, set
 for $i=0$ to $\RefBufferSize-2$, and set the last element $\RefBuffer[\RefBufferSize-1]$ equal to
 a copy of $\CurrentPicture$.
  
-\subsection{Clipping}
-\label{pictureclip}
-
-Picture data must be clipped to the video range prior to being output or being
-used as a reference:
-
-\begin{pseudo}{clip\_picture}{}
-\bsFOREACH{c}{Y,C1,C2}
-    \bsCODE{clip\_component(\CurrentPicture[c])}
-\bsEND
-\end{pseudo}
-
-\begin{pseudo}{clip\_component}{comp\_data}
-\bsFOR{y=0}{\height(comp\_data)-1}
-    \bsFOR{x=0}{\width(comp\_data)-1}
-        \bsCODE{data = \clip(comp\_data[y][x], 0, 2^\VideoDepth-1)}
-     \bsEND
-\bsEND
-\end{pseudo}
-
 \subsection{Picture output}
 \label{picoutput}
 
 Once decoded, a copy of the current picture is added to the end of the decoded picture buffer
 $\DecodedBuffer$ for display purposes.
+
+

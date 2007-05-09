@@ -4,16 +4,19 @@
 
 \label{streamstructure}
 
-A Dirac stream can have two alternative basic syntaxes: a core syntax used for conventional
-coding applications and a low-delay syntax used for applications where decoding (and encoding) delay is 
-required to be less than a picture.
-
 This section specifies the Dirac stream and stream parsing operations,
-excepting the decoding of wavelet coefficients and motion data,
-which are deferred to Sections \ref{transformdec} and \ref{motiondec},
-and the low-delay syntax elements which are deferred to Section \ref{lowdelayparsing}.
-The decoding operations for extracting decoded pictures from parsed
+excepting the unpacking of wavelet coefficients and motion data,
+which are deferred to Sections \ref{wltunpacking} and \ref{motiondec}.
+The decoding operations for extracting decoded pictures from unpacked
 data are specified in Section \ref{picturedec}.
+
+A Dirac stream has two variant syntaxes: a core syntax used for conventional
+coding applications and a low-delay syntax used for applications where decoding 
+(and encoding) delay is required to be less than a picture. These different
+syntaxes apply primarily to the unpacking of wavelet coefficients, and
+do not affect stream parsing as specified in this section,
+except in terms of some alternative transform metadata 
+(Section {transformparameters}). 
 
 The stream parsing specification is augmented by the parse diagrams
 in Appending \ref{parsediagrams}, which summarise in graphical form
@@ -90,7 +93,8 @@ Parse Info header data. This header is byte-aligned. It occurs:
 \item at the beginning of a sequence
 \item at the end of a sequence
 \item before an Access Unit header
-\item before each set of picture data. 
+\item before each set of picture data
+\item before each unit of padding or auxiliary data
 \end{itemize}
 
 It consists of a whole number of bytes and hence succeeding data elements
@@ -292,7 +296,7 @@ The Access Unit parsing process is given by:
 \bsCODE{access\_unit\_header()}{\ref{auheader}}
 \bsCODE{parse\_info()}{\ref{parseinfo}}
 \bsWHILE{is\_picture()==\true}{\ref{parseinfo}}
-    \bsCODE{picture()}{\ref{picture}}
+    \bsCODE{picture\_parse()}{\ref{picture}}
     \bsCODE{parse\_info()}{\ref{parseinfo}}
 \bsEND
 \end{pseudo}
@@ -746,10 +750,9 @@ $index$ shall fall in the range 0 to 3.
 $preset\_colour\_spec(index)$ sets the colour primaries, matrix and transfer function as specified 
 in Table \ref{table:colourspecvalues} (Appendix \ref{sourceparamspresets}).
 
-\paragraph{Colour primaries\\}
+\paragraph{Colour primaries}
 \label{colourprimaries}
-
-The $colour\_primaries()$ process is as follows:
+$\ $\newline The $colour\_primaries()$ process is as follows:
 
 \begin{pseudo}{colour\_primaries}{}
 \bsITEM{colour\_primaries\_flag}{bool}{}
@@ -762,9 +765,9 @@ The $colour\_primaries()$ process is as follows:
 $index$ shall fall in the range 0 to 3. $preset\_colour\_primaries(index)$ sets the colour primaries as specified
 in Table \ref{table:primariesvalues} (Appendix \ref{sourceparamspresets}).
 
-\paragraph{Colour matrix\\}
+\paragraph{Colour matrix}
 \label{colourmatrix}
-
+$\ $\newline
 The $colour\_matrix()$ process is as follows:
 
 \begin{pseudo}{colour\_matrix}{}
@@ -778,9 +781,9 @@ The $colour\_matrix()$ process is as follows:
 $index$ shall fall in the range 0 to 2. $preset\_colour\_matrices(index)$ sets the colour matrix as specified
 in Table \ref{table:matrixvalues} (Appendix \ref{sourceparamspresets}).
 
-\paragraph{Transfer function\\}
+\paragraph{Transfer function}
 \label{transferfunction}
-
+$\ $\newline
 The $transfer\_function()$ process is as follows:
 
 \begin{pseudo}{transfer\_function}{}
@@ -797,7 +800,7 @@ in Table \ref{table:transfervalues} (Appendix \ref{sourceparamspresets}).
 \subsection{Picture}
 \label{picture}
 
-This Section specifies the operation of the $picture()$ parsing process. The process for
+This Section specifies the operation of the $picture\_parse()$ process. The process for
 decoding and outputting pictures is specified in Section \ref{picturedec}.
 
 Picture data may be successfully parsed after parsing any Access Unit header
@@ -811,16 +814,12 @@ The parsing process is:
 \bsCODE{init\_decode\_params()}{\ref{initdecodeparams}}
 \bsCODE{byte\_align()}
 \bsCODE{picture\_header()}{\ref{pictureheader}}
-\bsIF{is\_low\_delay()==\false}
-    \bsIF{is\_inter()}{\ref{parseinfo}}
-        \bsCODE{byte\_align()}
-        \bsCODE{picture\_prediction()}{\ref{pictureprediction}}
-    \bsEND
+\bsIF{is\_inter()}{\ref{parseinfo}}
     \bsCODE{byte\_align()}
-    \bsCODE{wavelet\_transform()}{\ref{wavelettransform}}
-\bsELSE
-    \bsCODE{byte\_align()}
-    \bsCODE{low\_delay\_picture()}{\ref{ldpicture}}
+    \bsCODE{picture\_prediction()}{\ref{pictureprediction}}
+\bsEND
+\bsCODE{byte\_align()}
+\bsCODE{wavelet\_transform()}{\ref{wavelettransform}}
 \end{pseudo}
 
 
@@ -852,9 +851,6 @@ alignment for clarity). The process for parsing the picture header is as follows
     \bsCODE{reference\_picture\_numbers()}
 \bsEND
 \bsCODE{retired\_picture\_list()}
-\bsIF{is\_low\_delay()==\true}
-    \bsCODE{low\_delay\_header()}{\ref{ldpictureheader}}
-\bsEND
 \end{pseudo}
 
 Picture numbers are not required to be unique within a sequence.
@@ -895,9 +891,8 @@ picture number:
 \bsEND
 \end{pseudo}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Picture prediction}
+\subsection{Picture prediction data}
 \label{pictureprediction}
 
 This section specifies the $picture\_prediction()$ process for parsing picture prediction data.
@@ -1200,11 +1195,10 @@ prediction.
 \end{informative}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Wavelet transform}
+\subsection{Wavelet transform data}
 \label{wavelettransform}
-The $wavelet\_transform()$ function parses metadata determining the wavelet
-transform (including filters, wavelet depth, and code block structures)
-together with the transformed wavelet coefficients.
+The $wavelet\_transform()$ function parses wavelet transform meta-data (wavelet 
+depth, filter type etc) and unpacks wavelet coefficients.
 
 Decoded wavelet transform coefficient data is stored in the state
 variables $\YTransform$, $\COneTransform$ and $\CTwoTransform$ for subsequent
@@ -1215,13 +1209,17 @@ processing using the inverse wavelet transform (Section \ref{idwt}).
 \bsIF{is\_inter()}{\ref{parseinfo}}
     \bsITEM{\ZeroResidual}{bool}
 \bsEND
-
 \bsIF{\ZeroResidual = \false}
     \bsCODE{transform\_parameters()}{\ref{transformparameters}}
     \bsCODE{byte\_align()}
-    \bsCODE{\YTransform = transform\_data(Y)}{\ref{transformdata}}
-    \bsCODE{\COneTransform = transform\_data(C1)}{\ref{transformdata}}
-    \bsCODE{\CTwoTransform = transform\_data(C2)}{\ref{transformdata}}
+    \bsIF{is\_low\_delay()==\false}
+        \bsCODE{\YTransform = core\_transform\_data(Y)}{\ref{transformdec}}
+        \bsCODE{\COneTransform = core\_transform\_data(C1)}{\ref{transformdec}}
+        \bsCODE{\CTwoTransform = core\_transform\_data(C2)}{\ref{transformdec}}
+    \bsELSE
+        \bsCODE{low\_delay\_transform\_data()}{\ref{ldpicture}}
+    \bsEND
+\bsEND
 \end{pseudo}
 
 If $\ZeroResidual=\true$ then all component pixels will be set to zero prior to
@@ -1242,12 +1240,15 @@ and  (if low-delay syntax is not being used) how subbands are spatially partitio
 \bsCODE{wavelet\_depth()}{\ref{wltdepth}}
 \bsIF{is\_low\_delay()==\false}
     \bsCODE{spatial\_partition()}{\ref{spatialpartition}}
+\bsELSE
+    \bsCODE{slice\_parameters()}{\ref{sliceparams}}
+    \bsCODE{quant\_matrix()}{\ref{quantmatrix}}
 \bsEND
 \end{pseudo}
 
-\paragraph{Wavelet filters\newline}
+\paragraph{Wavelet filters}
 \label{wltfilter}
-
+$\ $\newline
 A variety of preset wavelet filters are available, encoded as a 
 values of $\WaveletIndex$, which is an index into
 Table \ref{wltfilterpresets}. Default wavelet filters
@@ -1376,3 +1377,82 @@ $index$ & $\CodeblockMode$ \\
 \end{tabular}
 \caption{Codeblock modes}\label{codeblockmodes}
 \end{table}
+
+\subsubsection{Low-delay slice parameters and dimensions}
+\label{sliceparams}
+
+This section specifies the $slice\_parameters()$ process for parsing the width, height and bit allocation of 
+the slices. Default slice dimensions are defined by the video format parameters in the AU header, as per Appendix 
+\ref{videoformatdefaults}. They may be overridden as follows:
+
+\begin{pseudo}{slice\_parameters}{}
+\bsITEM{non\_default\_slice\_dims}{bool}
+\bsIF{non\_default\_slice\_dims==\true}
+    \bsITEM{width\_exp}{uint}
+    \bsCODE{\SliceWidth=2^{width\_exp}}
+    \bsITEM{height\_exp}{uint}
+    \bsCODE{\SliceHeight=2^{height\_exp}}
+\bsEND
+\bsITEM{non\_default\_slice\_size}{bool}
+\bsIF{non\_default\_slice\_size==\true}
+    \bsITEM{\SliceBits}{uint}
+\bsEND
+\end{pseudo}
+
+If $is\_low\_delay()==\true$, the following constraints are placed upon the slice dimensions 
+and the wavelet depth:
+ 
+\begin{itemize}
+\item $\SliceWidth$ and $\SliceHeight$ shall both be divisible by $2^\WaveletDepth$
+\begin{comment}
+\item If $is\_inter()==\true$, $\SliceWidth$ shall be divisible by $4*\LumaXBsep$ and $\SliceHeight$ shall be divisible by $4*\LumaYBsep$
+\end{comment}
+\item Chroma and luma subbands must contain corresponding levels of padding, i.e. for all orientations $orient$ and levels $l$,
+\begin{eqnarray*}
+\width(\YTransform[l][orient]) & = & chroma\_h\_factor*\width(\COneTransform[l][orient]) \\
+& = & chroma\_h\_factor*\width(\CTwoTransform[l][orient]) \\
+\height(\YTransform[l][orient]) & = & chroma\_v\_factor*\height(\COneTransform[l][orient]) \\
+& = & chroma\_v\_factor*\height(\CTwoTransform[l][orient]) \\
+\end{eqnarray*}
+\end{itemize}
+
+These restrictions ensure that both wavelet coefficients and (if present) motion data superblocks may be partitioned
+correctly by the slices. For example, the last condition restricts the transform depth to be at most 3 on $720\times 576$ 4:2:2 video
+since a depth of 4 would lead to padding for chroma coefficients but not for luma, as $2^4=16$ divides 720 but not 360.
+
+\subsubsection{Low-delay quantisation matrices}
+\label{quantmatrix}
+
+This section specifies the operation of the $quant\_matrix()$ process for setting the $\QuantMatrix$ parameters.
+
+\begin{pseudo}{quant\_matrix}{}
+\bsITEM{quant\_matrix\_index}{uint}
+\bsIF{quant\_matrix\_index==0}
+    \bsITEM{\QuantMatrix[0][\LL]}{uint}
+    \bsFOR{level=1}{\WaveletDepth}
+        \bsITEM{\QuantMatrix[level][\HL]}{uint}
+        \bsITEM{\QuantMatrix[level][\LH]}{uint}
+        \bsITEM{\QuantMatrix[level][\HH]}{uint}
+    \bsEND
+\bsELSE
+    \bsCODE{set\_quant\_matrix(quant\_matrix\_index)}
+\bsEND
+\end{pseudo}
+
+Default quantisation matrices are defined only for $\WaveletDepth=4$. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom). If $\WaveletDepth=4$ then custom quantisation matrices
+may still be transmitted, for example to apply a different degree of perceptual weighting (see Appendix \ref{quantisationmatrices}.
+ 
+The function $set\_quant\_matrix()$ sets the quantisation matrix based on the wavelet filter and the value of $quant\_matrix\_index$, as per Table
+\ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an ``unweighted" matrix, whose values merely compensate for the differential 
+power gain of the different subband filters. Higher values of $quant\_matrix\_index$ imply greater degrees of perceptual weighting.
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|c|c|l|}
+\hline
+\WaveletIndex & quant\_matrix\_indices & {\bf Matrix values} \\
+\hline
+\end{tabular}
+\caption{Preset quantisation matrices}\label{presetqmatrices}
+\end{table}
+ 

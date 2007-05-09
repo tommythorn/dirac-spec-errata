@@ -1,13 +1,11 @@
-\section{Low-delay stream parsing}
 \label{lowdelayparsing}
 
-This section specifies the stream syntax to be used for low-delay profiles.
-The overall format of the low-delay Dirac stream is as specified in Section \ref{streamstructure}. This section
-specifies the picture data elements which are used in low-delay operation. 
+This section specifies the $low\_delay\_picture()$ process for unpacking 
+wavelet coefficients in the low-delay syntax.
 
 In low-delay operation, the Dirac syntax partitions the wavelet coefficients into a number of sets,
 from all subbands, corresponding to a localised area of the picture (Figure \ref{fig:waveletslice}).
- Note that it is the coefficients that are divided,
+Note that it is the coefficients that are divided,
 not the picture. These sets are called slices. A single quantiser, weighted by a quantisation matrix, is used for each slice, 
 a slice is  of fixed dimensions within a picture and is also of fixed length in bytes. Each slice interleaves all three components, and hence
 the transform parameters for the components are placed in the picture header.
@@ -22,8 +20,7 @@ codes, not arithmetic coding.
 \label{fig:waveletslice}
 \end{figure}
 
-This section specifies the syntax and parsing operations only: picture decoding operations are as
-specified in Section \ref{picturedec}, \ref{idwt} and \ref{motioncompensate}. However, the slice
+This section specifies the syntax and coefficient unpacking operations only: picture decoding operations are as specified in Section \ref{picturedec}. However, the slice
 structure implies that in practice incremental picture decoding can be easily achieved without
 accumulating an entire picture data set (wavelet coefficients and motion vectors), yielding a decoding delay
 proportional to the height of the slices. (The actual achievable delay may be more than one slice height because
@@ -42,109 +39,14 @@ applications may have specific requirements for headerless and synchronous opera
 data carried ``on the wire" should differ from a straight-forward encapsulation of the stream. How this should
 be done in particular cases is described in Section \ref{apps}.
 
-\subsection{Picture header elements}
-\label{ldpictureheader}
-
-This section specifies the operation of the $low\_delay\_header()$ process for parsing low-delay elements
-of the picture header (Section \ref{pictureheader}).
-
-The low delay elements consist of the wavelet transform parameters and the picture
-prediction parameters (both placed in the picture header), the slice dimensions 
-(width, height, byte allocation) and the quantisation matrix parameters:
-
-\begin{pseudo}{low\_delay\_header}{}
-    \bsCODE{transform\_parameters()}{\ref{transformparameters}}
-    \bsCODE{picture\_prediction\_parameters()}{\ref{picpredparams}}
-    \bsCODE{slice\_parameters()}{\ref{sliceparams}}
-    \bsCODE{quant\_matrix()}{\ref{quantmatrix}}
-\end{pseudo}
-
-\subsubsection{Slice parameters and dimensions}
-\label{sliceparams}
-
-This section specifies the $slice\_parameters()$ process for parsing the width, height and bit allocation of 
-the slices. Default slice dimensions are defined by the video format parameters in the AU header, as per Appendix 
-\ref{videoformatdefaults}. They may be overridden as follows:
-
-\begin{pseudo}{slice\_parameters}{}
-\bsITEM{non\_default\_slice\_dims}{bool}
-\bsIF{non\_default\_slice\_dims==\true}
-    \bsITEM{width\_exp}{uint}
-    \bsCODE{\SliceWidth=2^{width\_exp}}
-    \bsITEM{height\_exp}{uint}
-    \bsCODE{\SliceHeight=2^{height\_exp}}
-\bsEND
-\bsITEM{non\_default\_slice\_size}{bool}
-\bsIF{non\_default\_slice\_size==\true}
-    \bsITEM{\SliceBits}{uint}
-\bsEND
-\end{pseudo}
-
-If $is\_low\_delay==\true$, the following constraints are placed upon the slice dimensions, the wavelet depth
- and motion compensation block sizes:
-
-\begin{itemize}
-\item $\SliceWidth$ and $\SliceHeight$ shall both be divisible by $2^\WaveletDepth$
-\begin{comment}
-\item If $is\_inter()==\true$, $\SliceWidth$ shall be divisible by $4*\LumaXBsep$ and $\SliceHeight$ shall be divisible by $4*\LumaYBsep$
-\end{comment}
-\item Chroma and luma subbands must contain corresponding levels of padding, i.e. for all orientations $orient$ and levels $l$,
-\begin{eqnarray*}
-\width(\YTransform[l][orient]) & = & chroma\_h\_factor*\width(\COneTransform[l][orient]) \\
-& = & chroma\_h\_factor*\width(\CTwoTransform[l][orient]) \\
-\height(\YTransform[l][orient]) & = & chroma\_v\_factor*\height(\COneTransform[l][orient]) \\
-& = & chroma\_v\_factor*\height(\CTwoTransform[l][orient]) \\
-\end{eqnarray*}
-\end{itemize}
-
-These restrictions ensure that both wavelet coefficients and (if present) motion data superblocks may be partitioned
-correctly by the slices. For example, the last condition restricts the transform depth to be at most 3 on $720\times 576$ 4:2:2 video
-since a depth of 4 would lead to padding for chroma coefficients but not for luma, as $2^4=16$ divides 720 but not 360.
-
-\subsubsection{Quantisation matrices}
-\label{quantmatrix}
-
-This section specifies the operation of the $quant\_matrix()$ process for setting the $\QuantMatrix$ parameters.
-
-\begin{pseudo}{quant\_matrix}{}
-\bsITEM{quant\_matrix\_index}{uint}
-\bsIF{quant\_matrix\_index==0}
-    \bsITEM{\QuantMatrix[0][\LL]}{uint}
-    \bsFOR{level=1}{\WaveletDepth}
-        \bsITEM{\QuantMatrix[level][\HL]}{uint}
-        \bsITEM{\QuantMatrix[level][\LH]}{uint}
-        \bsITEM{\QuantMatrix[level][\HH]}{uint}
-    \bsEND
-\bsELSE
-    \bsCODE{set\_quant\_matrix(quant\_matrix\_index)}
-\bsEND
-\end{pseudo}
-
-Default quantisation matrices are defined only for $\WaveletDepth=4$. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom). If $\WaveletDepth=4$ then custom quantisation matrices
-may still be transmitted, for example to apply a different degree of perceptual weighting (see Appendix \ref{quantisationmatrices}.
- 
-The function $set\_quant\_matrix()$ sets the quantisation matrix based on the wavelet filter and the value of $quant\_matrix\_index$, as per Table
-\ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an ``unweighted" matrix, whose values merely compensate for the differential 
-power gain of the different subband filters. Higher values of $quant\_matrix\_index$ imply greater degrees of perceptual weighting.
-
-\begin{table}[!h]
-\centering
-\begin{tabular}{|c|c|l|}
-\hline
-\WaveletIndex & quant\_matrix\_indices & {\bf Matrix values} \\
-\hline
-\end{tabular}
-\caption{Preset quantisation matrices}\label{presetqmatrices}
-\end{table}
-  
-\subsection{Low-delay picture parsing}
+\subsubsection{Overall process}
 \label{ldpicture}
 
-This section specifies the $low\_delay\_picture()$ process for parsing pictures in the low-delay syntax. Each picture
-is merely a concatenation of slices. The number of slices in a picture is determined from the padded picture dimensions
+In the low-delay syntax, each picture is merely a concatenation of slices. 
+The number of slices in a picture is determined from the padded picture dimensions
 -- the padding being that required for the application of the wavelet transform to depth $\WaveletDepth$.
 
-\begin{pseudo}{low\_delay\_picture}{}
+\begin{pseudo}{low\_delay\_transform\_data()}{}
 \bsCODE{\YTransform = initialise\_wavelet\_data(Y)}{\ref{wltinit}}
 \bsCODE{\COneTransform = initialise\_wavelet\_data(C1)}{\ref{wltinit}}
 \bsCODE{\CTwoTransform = initialise\_wavelet\_data(C2)}{\ref{wltinit}}
@@ -170,17 +72,18 @@ the constraints of Section \ref{sliceparams}.
 
 Note also that intra DC coefficient prediction
 occurs across all the wavelet coefficients, and in particular DC values on the edge of a slice
-are predicted from DC values in previously decoded slices, which must be cached. 
+are predicted from DC values in previously unpacked slices, which must be cached. 
 
-\subsubsection{Slice parsing}
+\subsubsection{Slices}
 \label{sliceparsing}
 
-This section specifies the operation of the $slice(sy,sx)$ process for parsing the slice with coordinates $(sx,sy)$. Each slice
-contains coefficients from all subbands and components. Luma data is parsed first, followed by the chroma data, which
+This section specifies the operation of the $slice(sy,sx)$ process for unpacking coefficients
+within the slice with coordinates $(sx,sy)$. Each slice
+contains coefficients from all subbands and components. Luma data is unpacked first, followed by the chroma data, which
 is interleaved. A length code allows the luma and chroma coefficients each to be terminated early, with remaining values
 set to zero.
 
-The overall slice decoding process is as follows:
+The overall slice unpacking process is as follows:
 
 \begin{pseudo}{slice}{sy,sx}
 \bsCODE{slice\_bits\_left = \SliceBits}
@@ -222,25 +125,27 @@ and the quantisation index.
 \end{pseudo}
 
 \begin{pseudo}{slice\_comp\_quantisers}{c,qindex}
-\bsCODE{q\_idx[c][\LL]=\max(qindex-\QuantMatrix[0][\LL],0)}
+\bsCODE{\Quant[c][0][\LL]=\max(qindex-\QuantMatrix[c][0][\LL],0)}
 \bsFOR{level=1}{\WaveletDepth}
-    \bsCODE{q\_idx[level][orient]=\max(qindex-\QuantMatrix[level][orient],0)}
+    \bsFOREACH{orient}{HL, LH, HH}
+        \bsCODE{qval=\max(qindex-\QuantMatrix[c][level][orient],0)}
+        \bsCODE{\Quant[c][level][orient]=qval}
+    \bsEND
 \bsEND
 \end{pseudo}
 
 $C1$ and $C2$ quantiser index offsets are determined from the video format defaults and the picture header
 as per Appendix \ref{videoformatdefaults}.
 
-\subsubsection{Slice subband parsing}
+\subsubsection{Slice subbands}
 \label{sliceband}
 
 This section specifies the operation of the $luma\_slice\_band( level,orient,sy,sx)$ for 
-parsing luma slice coefficients, and $chroma\_slice\_band( level,orient,sy,sx)$. for 
-parsing chroma slice coefficients.
-These coefficients populate areas of the coefficient data corresponding to the slice area.
+unpacking individual luma slice subbands, and $chroma\_slice\_band( level,orient,sy,sx)$. for 
+unpacking individual chroma slice subbands.
 
-\paragraph{Slice subband area\\}
-
+\paragraph{Slice subband area}
+$\ $\newline
 The rectangular set of coefficients covered by a slice component ($Y$, $C1$ and $C2$) 
 is demarcated by the values $left, right, top, bottom$, defined as fractions
 of the subband dimensions (Section \ref{subbandwidthheight}):
@@ -253,31 +158,38 @@ of the subband dimensions (Section \ref{subbandwidthheight}):
 
 where $c=Y$ for luma coefficients, and $C1$ or $C2$ for chroma coefficients.
 
-\paragraph{Luma slice subband data\\}
+\paragraph{Luma slice subband data}
 \label{lumasliceband}
-
+$\ $\newline
 \begin{pseudo}{luma\_slice\_band}{level, orient, sy, sx}
 \bsFOR{y=bottom}{top-1}
   \bsFOR{x=left}{right-1}
-    \bsITEM{\YTransform[level][orient]=0}{sintb}{\ref{segol}}
+    \bsITEM{val}{sintb}{\ref{segol}}
+    \bsCODE{q=\Quant[Y][level][orient]}
+    \bsCODE{\YTransform[level][orient]=inverse\_quant(val,q)}
   \bsEND
 \bsEND
 \end{pseudo}
 
-\paragraph{Chroma slice subband data\\}
+\paragraph{Chroma slice subband data}
 \label{chromasliceband}
-
+$\ $\newline
 \begin{pseudo}{luma\_slice\_band}{level, orinet, sy, sx}
 \bsFOR{y=bottom}{top-1}
   \bsFOR{x=left}{right-1}
-    \bsITEM{\COneTransform[level][orient]=0}{sintb}{\ref{segol}}
-    \bsITEM{\CTwoTransform[level][orient]=0}{sintb}{\ref{segol}}
+    \bsITEM{val}{sintb}{\ref{segol}}
+    \bsCODE{q1=\Quant[C1][level][orient]}
+    \bsCODE{q2=\Quant[C2][level][orient]}
+    \bsCODE{\COneTransform[level][orient]=inverse\_quant(val,q1)}{\ref{invquant}}
+    \bsITEM{val}{sintb}{\ref{segol}}
+    \bsCODE{\CTwoTransform[level][orient]=inverse\_quant(val,q2)}{\ref{invquant}}
   \bsEND
 \bsEND
 \end{pseudo}
 
+\begin{comment}
 \begin{informative*}
 \subsection{Data adaption and application requirements}
 \label{apps}
-
 \end{informative*}
+\end{comment}

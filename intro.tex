@@ -1,3 +1,5 @@
+\input{dirac-concepts}
+
 \subsection{Purpose}
 \label{intropurpose}
 Dirac was developed to address the growing complexity and cost of current video
@@ -9,16 +11,18 @@ multi-resolution transform for compressing pictures and motion-compensated
 residuals, which allows Dirac to be used across a very wide range of resolutions
 without enlarging the toolset.
 
-Dirac began as an Open Source software project, and reference implementations
+Dirac is an Open Source software project, and reference implementations
 of the decoder and encoder are available at \underline{http://sourceforge.net/projects/dirac}.
+A high-performance implementation, called Schrodinger, is also available
+open source at \underline{http://schrodinger.sourceforge.net}.
 
 \subsection{Scope}
 \label{introscope}
 
-This document specifies normative decoder operations (``semantics") and 
+This document specifies normative decoder operations and 
 stream syntax. The stream syntax is primarily specified by means of
 pseudocode, the conventions of which are described in Section \ref{pseudocode}.
-The decoder semantics are specified by means of a mixture of pseudocode
+The decoder operations are specified by means of a mixture of pseudocode
 and conventional mathematical symbolism.
 
 A number of other elements are also included for informative purposes.
@@ -36,15 +40,15 @@ on how to design efficient compression algorithms, for example for entropy codin
 motion estimation, frame-dropping, rate control, motion estimation and 
 rate-distortion optimisation. This document does not attempt to address these
 issues in detail, but to provide supplementary information where appropriate
-to allow those reasonably ``skilled in the art" to develop a Dirac encoder
+to allow those reasonably `skilled in the art' to develop a Dirac encoder
 rapidly and accurately, and approach design compromises knowledgably.
 
 \subsection{Status}
 \label{introstatus}
 
-This is version \SpecVersion of the Dirac specification. The document includes
+This is version $\SpecVersion$ of the Dirac specification. The document includes
 a full description of the core Dirac stream syntax and decoder operations, together
-with compatible extensions to support low-delay operation (professional profiles). It does
+with compatible extensions to support low-delay operation. It does
 not yet contain a full specification of profiles and levels supported by Dirac.
 
 \subsection{Document structure}
@@ -55,23 +59,32 @@ a layered model:
 
 \begin{enumerate}
     \item Stream data access
-    \item Parsing and interpretation of the Dirac stream
+    \item Parsing and interpretation of the Dirac stream metadata
+    \item Unpacking of Dirac data -- coefficients and motion data
     \item Picture decoding operations
 \end{enumerate}
 
 Stream data access consists of the operations used to extract data values
 (of boolean and integer type) from a raw Dirac bitstream. These include
-data that has been encoded ``literally" (i.e. according to conventional bit-wise
+data that has been encoded `literally' (i.e. according to conventional bit-wise
 representations), variable-length codes, and data entropy coded using arithmetic
-encoding. Stream data access methods are used both by parsing and decoding operations.
+encoding. Stream data access methods are used both by parsing and unpacking operations.
 
-Parsing and interpretation defines the structure of Dirac streams, and defines
-intermediate decoder data structures in which extracted data is stored, 
-used to control picture decoding processes.
+Parsing and interpretation defines the structure of Dirac streams, including
+random access points and navigation. 
+
+Unpacking comprises parsing transform and motion data, and performing
+inverse quantisation to reconstruct wavelet coefficients, and defines
+intermediate decoder data structures in which extracted data is stored. This
+step may be seen either as a stream parsing operation or as a decoding
+operation, but it is separated here for clarity, and also because it
+deals with intermediate data structures (transform coefficients and motion vectors), 
+neither directly present in the bitstream nor output by the decoder.
 
 Picture decoding operations produce decoded pictures from these populated
 data structures by applying specified functions to them. These operations
-are logically distinct from those for navigating the stream or reading the stream data.
+are logically distinct from those for navigating the stream, reading the stream data
+or reconstructing coefficients.
 
 Note in particular that the distinction between parsing and picture decoding is
 {\em not} exactly that between syntax and semantics: complex semantics are
@@ -88,6 +101,7 @@ It should be possible to construct a Dirac parsing engine, for example for
 frame skipping in video playback applications, extremely simply and without
 requiring comprehension of the entire specification.
 
+\begin{comment}
 This layered structure is reflected in the structure of the specification,
 which, after defining conventions used, is divided into three
 corresponding parts: stream data access, defining functions for data types; 
@@ -98,3 +112,4 @@ inverse wavelet transform and motion compensation.
 
 In addition to these parts, appendices deal with standard settings, parameter
 presets and levels and profiles.
+\end{comment}

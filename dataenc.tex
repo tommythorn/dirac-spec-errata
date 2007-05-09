@@ -56,7 +56,7 @@ at the next byte, unless input is already at the beginning of a byte:
 This is used to ensure that a whole number of bytes are read before
 beginning reading a new stream element.
 
-\subsection{Fixed-length code formats}
+\subsection{Parsing of fixed-length data}
 \subsubsection{Bool}
 
 The $read\_bool()$ function identifies 1 with $\true$ and 0 with $\false$:
@@ -99,7 +99,7 @@ An $n$-byte number in literal format shall be decoded by the recipe:
 \bsRET{val}
 \end{pseudo}
 
-\subsection{Variable-length code formats}
+\subsection{Parsing of VLC coded data}
 \label{vlc}
 Variable-length codes are used in three ways in the Dirac stream. The first
 use is for direct encoding of header values into the stream. The second use
@@ -290,13 +290,15 @@ operation is employed:
 
 Note that when $\ABitsLeft==0$, all subsequent values read by $read\_sintb()$ will be 0.
 
-\subsection{Arithmetic decoding}
+\subsection{Parsing of arithmetic-coded data}
 
 \label{arithdecoding}
 
-This section defines the operations for reading and writing arithmetically-coded
-data. These make use of an arithmetic decoding engine defined in Appendix 
-\ref{arithengine}. 
+This section defines the operations for reading and writing arithmetic-coded
+data, and may be thought of as specifying an API for
+extracting data elements using the arithmetic decoding engine, making use
+of elementary arithmetic coding functions defined by the arithmetic decoding engine 
+specified in Appendix \ref{arithengine}.
 
 Arithmetically-coded data is present in the Dirac stream in data blocks which consist of
 a whole number of bytes and are byte aligned. Where arithmetic coding is used, each such
@@ -308,8 +310,9 @@ decoder is initialised, boolean and integer values may be extracted.
 After all values in a particular arithmetic coded block have been parsed, and remaining data
 is purged by calling $flush\_inputb()$ (Section \ref{blockreadbit}).
 
-\subsubsection{Contexts}
 
+
+\subsubsection{Contexts}
 
 Values are extracted by using binary {\em contexts}, which are estimates of the 
 probability of the binary values extracted being 0 ($\false$) or 1 ($\true$).
@@ -321,9 +324,9 @@ is specified in Section \ref{arithcontexts}.
 The set of contexts is $\AContexts$, and an individual context is accessed via
 an index $\AContexts[i]$. 
 
-\paragraph{Context indices\\}
+\paragraph{Context indices}
 \label{contextindices}
-
+$\ $\newline
 The following context indices are used within the Dirac decoder:
 
 Wavelet coefficient contexts:
@@ -385,8 +388,8 @@ This section defines the operation of the $read\_sinta(context\_set)$ and
 $read\_uinta(context\_set)$ function
  for extracting integer values from a block of arithmetically coded data.
 
-\paragraph{Binarisation and contexts \\}
-
+\paragraph{Binarisation and contexts}
+$\ $\newline
 Signed and unsigned integer values are binarised using interleaved exp-Golomb
  binarisation as per Section \ref{vlc}: the $read\_sinta()$ and $read\_uinta()$
 processes are essentially identical to the 
@@ -415,8 +418,8 @@ The follow context selection function $follow\_context()$ is defined by:
 
 So the last follow context is used for all the remaining follow bits also.
 
-\paragraph{Unsigned integer decoding \\}
-
+\paragraph{Unsigned integer decoding}
+$\ $\newline
 Unsigned integers are decoded by:
 
 \begin{pseudo}{read\_uinta}{context\_set}
@@ -433,8 +436,8 @@ Unsigned integers are decoded by:
 \bsRET{value}
 \end{pseudo}
 
-\paragraph{Signed integer decoding \\}
-
+\paragraph{Signed integer decoding}
+$\ $\newline
 $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 
 \begin{pseudo}{read\_sinta}{context\_set}

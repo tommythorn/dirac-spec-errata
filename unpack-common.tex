@@ -1,0 +1,262 @@
+\subsection{Wavelet coefficient unpacking overview}
+\label{unapckingoverview}
+
+This section specifies the unpacking (parsing and inverse
+quantisation) of wavelet coefficient data
+from the Dirac stream. The result of this process is a set
+of fully-populated wavelet subband data arrays, as defined in
+Section \ref{wltdecodeconventions}, containing coefficient
+data with full dynamic range.
+
+Wavelet coefficients are packed in one of two possible formats.
+In the core syntax, coefficients are grouped within individual
+subbands, representing a range of spatial frequencies, from the
+lowest to the highest. A full set of subbands is encoded for each
+video component in turn. 
+
+In the low-delay syntax, coefficients
+are groups into `slices' which represent coefficient pertaining
+to an area of the picture. Each slice contains both luma and chroma
+data, and all spatial frequency bands. Unpacking a slice therefore
+allows an area of picture to be extracted without extracting (or even
+receiving) the remaining picture data.
+
+\subsection{Subband data structures}
+\label{wltdecodeconventions}
+
+\subsubsection{Wavelet data initialisation}
+
+\label{wltinit}
+
+This section specifies the $initialise\_wavelet\_data(comp)$ process, which returns a structure which will
+contain the wavelet coefficients for the component indicated by $comp$. 
+
+For the purposes of this specification, this is a four-dimensional array $data$,
+where individual subbands are two-dimensional arrays accessed by level and orientation:
+
+$band = data[level][orient]$
+
+Valid levels are integers from in the range 0 to $\TransformDepth$ inclusive. 
+Level 0 consists of a single subband with orientation \LL. 
+All other levels consist of 3 subbands of orientation \LH, \HL, 
+and \HH. The orientations correspond to either low- or high-pass filtering
+horizontally and vertically: so the \LH band consists of coefficients derived
+from horizontal low-pass filtering and vertical high-pass filtering. The subbands
+partition the spatial frequency domain by orientation and level as illustrated
+in Figure \ref{fig:orientlevel}.
+
+Each subband array is initialised so that:
+\begin{eqnarray*}
+\width(data[level][orient]) & = & subband\_width(level,comp) \\
+\height(data[level][orient]) & = & subband\_height(level,comp)
+\end{eqnarray*}
+
+as specified in Section \ref{subbandwidthheight}. These dimensions correspond 
+to a wavelet transform being performed on a copy of the component data which 
+has been padded (if necessary) so that its
+dimensions are a multiple of $2^{\TransformDepth}$.
+
+Individual subband coefficients are signed integers accessed by vertical and 
+horizontal coordinates within the subband
+\[c = data[level][orient][y][x]\]
+
+where the range of allowable coordinates for a subband coefficient is 
+$0\leq x<subband\_width(level,comp)$ and
+$0\leq y<subband\_height(level,comp)$.
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\centering
+\begin{picture}(25,35)
+
+%Main Grid
+\multiput(0,0)(16,0){3}%
+  {\line(0,1){32}}
+\multiput(0,0)(0,16){3}%
+  {\line(1,0){32}}
+
+%Second Grid
+\put(0,24){\line(1,0){16}}
+\put(8,16){\line(0,1){16}}
+
+%Third Grid
+\put(0,28){\line(1,0){8}}
+\put(4,24){\line(0,1){8}}
+
+%Fourth Grid
+\put(0,30){\line(1,0){4}}
+\put(2,28){\line(0,1){4}}
+
+
+%Put Levels
+
+\put(24,34){Level 4}
+\put(23,36){\vector(0,-1){3}}
+
+\put(13,34){Level 3}
+\put(12,36){\vector(0,-1){3}}
+
+\put(7,34){2}
+\put(6,36){\vector(0,-1){3}}
+
+\put(4,34){1}
+\put(3,36){\vector(0,-1){3}}
+
+%Put decomposition numbers
+\put(23,24){4-HL}
+\put(7,8){4-LH}
+\put(23,8){4-HH}
+\put(11,28){3-HL}
+\put(3,20){3-LH}
+\put(11,20){3-HH}
+\put(5,30){2-HL}
+\put(1,26){2-LH}
+\put(5,26){2-HH}
+\put(2.2,31){\tiny 1-HL}
+\put(0.2,29){\tiny 1-LH}
+\put(2.2,29){\tiny 1-HH}
+\put(0.2,31){\tiny 0-LL}
+
+  
+\end{picture}
+\caption{Subband decomposition of the spatial frequency domain showing subband 
+numbering, for a 4-level wavelet decomposition}\label{fig:orientlevel}
+
+\end{figure}
+
+\subsubsection{Dimensions of wavelet subbands}
+\label{subbandwidthheight}
+
+This section defines the values of the $subband\_width(level, comp)$ and $subband\_height(level,comp)$
+functions, giving the width and height of subbands at a given level for a given component, and hence the range
+of subband vertical and horizontal indices. 
+
+If $comp==Y$, set
+\begin{eqnarray*}
+w & = & \LumaWidth \\
+h & = & \LumaHeight
+\end{eqnarray*}
+
+Otherwise, set
+\begin{eqnarray*}
+w & = & \ChromaWidth \\
+h & = & \ChromaHeight
+\end{eqnarray*}
+
+Define the padded dimensions of the component by
+\begin{eqnarray*}
+pw = 2^{\TransformDepth}*\left\lceil\frac{w}{2^{\TransformDepth}}\right\rceil\\ 
+ph = 2^{\TransformDepth}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
+\end{eqnarray*}
+
+If $level==0$,
+\begin{eqnarray*}
+subband\_width(level) & = & pw//2^{\TransformDepth} \\
+& = & \left\lceil\frac{w}{2^{\TransformDepth}}\right\rceil \\
+subband\_height(level) & = & ph//2^{\TransformDepth} \\
+& = & \left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
+\end{eqnarray*}
+
+If $level>0$
+\begin{eqnarray*}
+subband\_width(level) & = & pw//2^{\TransformDepth-level+1} \\
+& = & 2^{level-1}*\left\lceil \frac{w}{2^{\TransformDepth}}\right\rceil \\
+subband\_height(level) & = & ph//2^{\TransformDepth-level+1} \\
+& = & 2^{level-1}*\left\lceil\frac{h}{2^{\TransformDepth}}\right\rceil
+\end{eqnarray*}
+
+\begin{informative}
+In encoding, these padded dimensions may be achieved by padding the 
+component data up to the padded dimensions and applying the forward
+Discrete Wavelet Transform (the inverse of the operations specified in
+Section \ref{idwt}). Any values may be used for the padded data, although
+the choice will affect wavelet coefficients at the right and bottom 
+edges of the subbands. Good results, in compression terms, may be obtained
+ by using edge extension for intra pictures and zero extension for inter 
+pictures. A poor choice of padding may cause visible artefacts near the
+bottom and right edges at high levels of compression.
+\end{informative}
+
+\subsection{Inverse quantisation}
+\label{invquant}
+
+This section specifies the operation of inverse quantisation, which scales the
+dynamic range of unpacked wavelet coefficients according to a pre-determined factor.
+The inverse quantisation operation is common to both the low-delay and core syntax.
+
+The $inverse\_quant()$ function is defined by:
+
+\begin{pseudo}{inverse\_quant}{quantised\_coeff, quant\_index}
+\bsCODE{magnitude = |{quantised\_coeff}|}
+\bsCODE{magnitude *= quant\_factor(quant\_index)}{\ref{quantfacs}}
+\bsIF{magnitude!=0}
+  \bsCODE{magnitude += quant\_offset(quant\_index)}{\ref{quantfacs}}
+  \bsCODE{magnitude += 2}
+  \bsCODE{magnitude = magnitude//4}
+\bsEND
+\bsRET{\sign( quantised\_coeff )*magnitude}
+\end{pseudo}
+
+\begin{informative}
+The pseudocode description separates inverse quantisation from coefficient unpacking. However, 
+since dead-zone quantisation is used, the $inverse\_quant()$ function must compute
+the magnitude. Hence it is more efficient to first extract the coefficient magnitude,
+then inverse quantise, and then extract the coefficient sign. 
+
+Note that an unbiased division by 4 is applied: the additional 2 may be absorbed into
+the quantisation offset, but is separated in this specification.
+\end{informative}
+
+\subsubsection{Quantisation factors and offsets}
+\label{quantfacs}
+
+This section specifies the operation of the $quant\_factor()$ and 
+$quant\_offset()$ functions for performing inversion quantisation.
+
+Quantisation factors represent an integer approximation of quarter-bit values 
+with two bits of accuracy i.e. of $(2^{\frac{index}{4}+2})$. Note that 64 bits 
+of accuracy is required to compute these factors correctly up to $index=128$.
+
+Quantisation factors are set as follows:
+
+\begin{pseudo}{quant\_factor}{index}
+\bsCODE{q=\max(index,0)}
+\bsCODE{base = 2^{q//4}}
+\bsIF{ (q\%4)==0 }
+  \bsRET{4*base}
+\bsELSEIF{ (q\%4)==1 }
+  \bsRET{(503829*base+52958)//105917}
+\bsELSEIF{ (q\%4)==2 }
+  \bsRET{(665857*q+58854)//117708}
+\bsELSEIF{ (q\%4)==3 }
+  \bsRET{(440253*base+32722)//65444}
+\bsEND
+\end{pseudo}
+
+For intra pictures, offsets are approximately $1/2$ of the 
+quantisation factors, and for inter pictures they are $3/8$ - these
+mark the reconstruction point within the quantisation interval:
+
+\begin{pseudo}{quant\_offset}{index}
+\bsIF{index==0}
+  \bsCODE{offset = 1}
+\bsELSE
+  \bsIF{ is\_intra() }
+    \bsIF{index==1}
+      \bsCODE{offset = 2}
+    \bsELSE
+      \bsCODE{ offset=(quant\_factor(index)+1)//2 }
+    \bsEND
+  \bsELSE
+    \bsCODE{ offset=(quant\_factor(index)*3+4)//8 }
+  \bsEND
+\bsEND
+\bsRET{offset}
+\end{pseudo}
+
+\begin{informative}
+The quantisation offsets have been selected so as to make inverse quantisation
+and re-quantisation by the same quantisation factor transparent. This requires that
+\[3\leq quant\_offset+2<quant\_factor\] -- hence the special conditions for 
+quantisation indexes 0 and 1.
+\end{informative}

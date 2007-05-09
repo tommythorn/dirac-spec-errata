@@ -9,15 +9,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\clearpage
 %\part{Dirac concepts}
-\input{dirac-concepts}
 \clearpage
-\part{Stream access}\label{streamaccess}\input{stream-access}
+\section{Conformance notation}\input{conformance}
+
 \clearpage
-\part{Stream parsing}\label{streamparsing}\input{parsing}
+\section{Definition of acronyms, terms and naming conventions}\input{terms}
+
 \clearpage
-\part{Decoding operations}\label{decodingops}\input{decoding-ops}
+\section{Conventions}\input{spec-conventions}
+
 \clearpage
-\part{Low-delay syntax}\input{low-delay}
+\section{Dirac stream syntax specification}\input{bs-spec}
+
+\clearpage
+\section{Coefficient data unpacking}\input{wlt-unpacking}
+
+\clearpage
+\section{Motion data unpacking}\input{motion-dec}
+
+
+\clearpage
+%\part{Decoding operations}\label{decodingops}
+%\input{decoding-ops}
+\section{Picture decoding process}\input{picture-dec}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % -      Appendices etc       - %
@@ -26,14 +40,15 @@
 %TO DO: separate off the appendices also
 
 
+
+
 \appendix
+\section{Dirac stream data parsing}\input{dataenc}
+
 \clearpage
 \section{Arithmetic Coding}\input{arith}
 %\section{Comments on coders}\input{coder-intro}
 %\section{Subband inverse quantizer values}\input{ref-quantization-lut}
-
-\clearpage
-\section{Parse diagrams}\input{parsediagrams}
 
 \clearpage
 \section{Video systems model and source parameters}
@@ -45,6 +60,8 @@
 \clearpage
 \section{Profiles and levels}\input{profilelevel}
 
+\clearpage
+\section{Parse diagrams}\input{parsediagrams}
 
 %\clearpage
 %\section{References}

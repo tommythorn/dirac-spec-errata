@@ -49,9 +49,8 @@ These definitions allow us to express the important feature that all filtering o
 as {\em in place} calculations, not involving data being copied at any stage.
 \end{informative}
 
-\subsection{IDWT synthesis operation}
+\subsubsection{IDWT synthesis operation}
 \label{idwtsynthesis}
-
 This section defines the process $idwt\_synthesis(pic, data)$ invoked by $idwt()$.
 
 This is an iterative procedure operating on four subbands at each
@@ -69,7 +68,7 @@ is:
 Note that at each stage, the input dimensions of $LL\_band$ will be the same as those of the
 other input bands, whereas the output dimensions are double those of the input bands.
 
-\subsection{Vertical and horizontal synthesis}
+\subsubsection{Vertical and horizontal synthesis}
 \label{vhsynth}
 
 This section specifies the operation of the vertical and horizontal
@@ -146,7 +145,7 @@ For example, Fidelity does not require a shift value since its filter gain is su
 as to add a bit of resolution with each level of decomposition.
 \end{informative}
 
-\subsection{One-dimensional synthesis}
+\subsubsection{One-dimensional synthesis}
 \label{onedsynth}
 
 This section specifies the one-dimensional synthesis process
@@ -243,7 +242,7 @@ implementation may be more efficient, and complies with this
 specification if it produces identical results.
 \end{informative}
 
-\subsection{Filters and shift values}
+\subsubsection{Filters and shift values}
 \label{wltfilters}
 
 The following the lifting filters and bitshift operations that
@@ -433,7 +432,7 @@ also allows for much more efficient implementation.
 \end{informative}
 
 \clearpage
-\subsection{Removal of IDWT pad values}
+\subsubsection{Removal of IDWT pad values}
 \label{paddingremoval}
 
 This section defines the decoding process $idwt\_pad\_removal(pic, c)$. This

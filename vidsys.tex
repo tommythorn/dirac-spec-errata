@@ -53,7 +53,8 @@ sometimes the chroma components are subsampled, either horizontally or
 both horizontally and vertically. UV sampling is specified by the
 $\ChromaFormat$ value. 
 
-\paragraph{Conventional YUV coding\\}
+\paragraph{Conventional YUV coding}
+$\ $\newline
 In conventional YUV coding, the $E_Y$, $E_{Cb}$ and $E_{Cr}$ values are
 mapped to a range of integers denoted $Y$, $C1$ and $C2$ within this
 specification. In this way, $C1$ typically corresponds to $Cb$ and
@@ -63,7 +64,8 @@ that are actually output from the decoder. In order to display video, the invers
 operations must be performed to convert this data to $E_Y$, $E_{Cb}$, $E_Cr$, then
 to $E_R$, $E_G$, $E_B$ and thence to R, G and B.  
 
-\paragraph{YCoCg coding\\}
+\paragraph{YCoCg coding}
+$\ $\newline
 The E values can be viewed as something of a mathematical abstraction.
 For example in digital display devices, R, G and B values are specified
 in terms of integer levels which are derived from the integral luma and
@@ -173,8 +175,8 @@ encoded primaries and display primaries is not done.)
 
 \subsubsection{Matrix}
 \label{matrix}
-\paragraph{Conventional YUV coding\\}
-
+\paragraph{Conventional YUV coding}
+$\ $\newline
 Unit-scale luma and chroma values $E_Y$, $E_{Cb}$ and $E_{Cr}$ should be
 derived from decoded $Y$, $C1$ and $C2$ values using the signal range parameters
 as per Section \ref{signalranges}. Given these values, $E_R$, $E_G$ and $E_B$ are
@@ -193,7 +195,8 @@ E_{Cb} & = & \dfrac{E_B - E_Y}{2*(1-K_B)} \\
 E_{Cr} & = & \dfrac{E_R - E_Y}{2*(1-K_R)} \\
 \end{eqnarray*}
 
-\paragraph{YCoCg coding\\}
+\paragraph{YCoCg coding}
+$\ $\newline
 In the case of YCoCg coding, integer $I_R$, $I_G$, $I_B$ should be directly computed from
 the decoded $Y$, $C1$ ($Co$) and $C2$ ($Cg$) values by
 \begin{eqnarray*}
@@ -230,7 +233,8 @@ these scaling operations. They should be set to $2^\VideoDepth-1$ and $2^\VideoD
 respectively..
 
 \subsubsection{Transfer characteristics}
-\paragraph{TV transfer characteristic\\}
+\paragraph{TV transfer characteristic}
+$\ $\newline
 
 Denoting R or G or B as `$L$' (light) and $E_R$, $E_G$, $E_B$ as
 `$E$' then $E=f(L)$ such that
@@ -250,7 +254,8 @@ signals are pre-corrected'' as 2.2 for NTSC and 2.8 for PAL. This
 specification is incomplete, incorrect and obsolete and modern PAL and
 NTSC systems use the `TV' transfer characteristic above.
 
-\paragraph{Extended Colour Gamut\\}
+\paragraph{Extended Colour Gamut}
+$\ $\newline
 
 ITU-R BT 1361, `Worldwide unified colorimetry of future TV systems'
 defines a transfer characteristic for systems with an extended colour
@@ -273,8 +278,8 @@ E=\left\{
 This transfer characteristic is intended to be used with systems using
 an extended colour gamut.
 
-\paragraph{Linear\\}
-
+\paragraph{Linear}
+$\ $\newline
 A linear transfer characteristic has $f(x)=x$. 
 
 \subsubsection{Frame rate}

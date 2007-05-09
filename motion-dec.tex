@@ -208,8 +208,9 @@ bit of the block prediction mode is decoded separately.
 \bsEND
 \end{pseudo}
 
-\paragraph{Block global mode\\}
+\paragraph{Block global mode}
 \label{blockglobal}
+$\ $\newline
 
 The $block\_mode(ypos,xpos)$ process parses the global motion mode for the block at position $(xpos, ypos)$.
 
@@ -400,9 +401,9 @@ effect is illustrated for a variety of splitting modes in Figure \ref{splitapert
 \caption{Effect of splitting modes on spatial prediction}\label{splitapertures}
 \end{figure}
 
-\paragraph{Superblock split prediction \\}
+\paragraph{Superblock split prediction}
 \label{splitprediction}
-
+$\ $\newline
 $split\_prediction$ returns the mean of the the neighbouring split values:
 
 \begin{pseudo}{split\_prediction}{ypos, xpos}
@@ -423,9 +424,9 @@ $split\_prediction$ returns the mean of the the neighbouring split values:
 }
 \end{pseudo}
 
-\paragraph{Block mode prediction \\}
+\paragraph{Block mode prediction}
 \label{modeprediction}
-
+$\ $\newline
 $mode\_prediction$ returns a majority verdict for each of the references:
 
 \begin{pseudo}{mode\_prediction}{ypos, xpos, n}
@@ -446,8 +447,9 @@ $mode\_prediction$ returns a majority verdict for each of the references:
 
 \end{pseudo}
 
-\paragraph{Block global flag prediction \\}
+\paragraph{Block global flag prediction}
 \label{blockglobalprediction}
+$\ $\newline
 
 $block\_global\_prediction$ returns a majority verdict of the neighbouring blocks:
 
@@ -470,9 +472,9 @@ $block\_global\_prediction$ returns a majority verdict of the neighbouring block
 
 \end{pseudo}
 
-\paragraph{Motion vector prediction \\}
+\paragraph{Motion vector prediction}
 \label{mvprediction}
-
+$\ $\newline
 Motion vectors are predicted using the median of available block vectors in the aperture. A vector is available for
 prediction if a) its block falls within the picture area and b) its prediction mode allows it to be defined and c) it
 is not a global motion block. 
@@ -541,9 +543,9 @@ median of the available vector elements:
 
 (Note that the median of an empty set is zero.)
 
-\paragraph{DC value prediction \\}
+\paragraph{DC value prediction}
 \label{dcprediction}
-
+$\ $\newline
 DC values are predicted using the unbiased mean available values in the aperture. The
 process $dc\_prediction(ypos, xpos, comp)$ returns values according to
 the following rules:
@@ -591,8 +593,8 @@ unbiased mean of available values:
 
 \subsubsection{Block motion data contexts}
 
-\paragraph{Superblock splitting mode\\}
-
+\paragraph{Superblock splitting mode}
+$\ $\newline
 The $sb\_split\_contexts()$ function returns the following unsigned integer context set:
 
 \begin{itemize}
@@ -600,9 +602,9 @@ The $sb\_split\_contexts()$ function returns the following unsigned integer cont
 \item Data = \SBSplitData
 \end{itemize}
 
-\paragraph{Motion vectors\\}
+\paragraph{Motion vectors}
 \label{mvcontexts}
-
+$\ $\newline
 There is a single signed integer context set for motion vector data, which is re-used for each of the four vector elements
 (references 1 and 2, horizontal and vertical).
 
@@ -613,7 +615,7 @@ $mv\_contexts()$ returns the set with
 \item Sign = \VectorSign
 \end{itemize}
 
-\paragraph{DC values \\}
+\paragraph{DC values}
 \label{dcvaluecontexts}
 
 There is a single signed integer context set for DC values, which is reused for each component. 
