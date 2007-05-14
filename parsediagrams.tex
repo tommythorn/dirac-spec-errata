@@ -1,20 +1,18 @@
 \label{parsediagrams}
 
-\subsection{Core syntax}
-
 % Stream
 
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
 \begin{picture}(20,12)
-\put(0,5){\vector(1,0){5}}
-\put(10,5){\oval(10,4.7)\put(-2,-0.5){Sequence}}
-\put(15,5){\vector(1,0){5}}
-\put(2.5,5){\line(0,1){5}}
-\put(17.5,5){\line(0,1){5}}
-\put(17.5,10){\vector(-1,0){10}}
-\put(2.5,10){\line(1,0){10}}
+\put(0,3){\vector(1,0){5}}
+\put(10,3){\oval(10,4.7)\put(-2,-0.5){Sequence}}
+\put(15,3){\vector(1,0){5}}
+\put(2.5,3){\line(0,1){5}}
+\put(17.5,3){\line(0,1){5}}
+\put(17.5,8){\vector(-1,0){10}}
+\put(2.5,8){\line(1,0){10}}
 \end{picture}
 \caption{Stream}\label{fig:stream}
 \end{figure}
@@ -82,8 +80,6 @@
 \caption{Access Unit}\label{fig:accessunit}
 \end{figure}
 
-%\clearpage
-
 % AU header
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -100,6 +96,7 @@
 \caption{Access Unit header}\label{fig:auheader}
 \end{figure}
 
+\clearpage
 
 %% AU parse params
 \setlength{\unitlength}{1em}
@@ -177,8 +174,6 @@
 \caption{Chroma formats}\label{fig:chromaformats}
 \end{figure}
 
-%\clearpage
-
 % Video depth
 
 \setlength{\unitlength}{1em}
@@ -197,6 +192,8 @@
 \end{picture}
 \caption{Video Depth}\label{fig:videodepth}
 \end{figure}
+
+\clearpage
 
 % AU source parameters
 
@@ -279,7 +276,6 @@
 \caption{Interlace}\label{fig:interlace}
 \end{figure}
 
-\clearpage
 % frame rate
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -307,6 +303,8 @@
 \end{picture}
 \caption{Frame Rate}\label{fig:framerate}
 \end{figure}
+
+\clearpage
 
 % Aspect ratio
 \setlength{\unitlength}{1em}
@@ -398,6 +396,8 @@
 \caption{Signal Range}\label{fig:signalrange}
 \end{figure}
 
+\clearpage
+
 % Colour specification
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -432,7 +432,6 @@
 \end{picture}
 \caption{Colour Specification}\label{fig:colourspec}
 \end{figure}
-\clearpage
 
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -469,6 +468,7 @@
 \caption{Colour Matrix}\label{fig:colourmatrix}
 \end{figure}
 
+\clearpage
 
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -486,6 +486,8 @@
 \end{picture}
 \caption{Transfer Function}\label{fig:transferfunction}
 \end{figure}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Picture
 
@@ -508,8 +510,6 @@
 \caption{Picture}\label{fig:picture}
 \end{figure}
 
-\clearpage
-
 % Picture header
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -528,7 +528,7 @@
 \put(36,3){\vector(1,0){3}}
 
 \end{picture}
-\caption{Picture header}\label{fig:pictureheader}
+\caption{Picture Header}\label{fig:pictureheader}
 \end{figure}
 
 \setlength{\unitlength}{1em}
@@ -547,6 +547,8 @@
 \end{picture}
 \caption{Reference Picture Numbers}\label{fig:refpicturenumbers}
 \end{figure}
+
+\clearpage
 
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -642,6 +644,8 @@
 \caption{Block Parameters}\label{fig:blockparameters}
 \end{figure}
 
+\clearpage
+
 %Motion vector precision
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -713,8 +717,10 @@
 \put(31,8){\vector(1,0){1}}
 \put(11,3){\vector(1,0){24}}
 \end{picture}
-\caption{Pan/tilt}\label{fig:pantilt}
+\caption{Pan/Tilt}\label{fig:pantilt}
 \end{figure}
+
+\clearpage
 
 % Zoom, rotation and shear matrix
 \setlength{\unitlength}{1em}
@@ -770,8 +776,6 @@
 \caption{Perpective}\label{fig:perpective}
 \end{figure}
 
-\clearpage
-
 % Picture prediction mode
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -789,6 +793,8 @@
 \end{picture}
 \caption{Picture Prediction Mode}\label{fig:picturepredictionmode}
 \end{figure}
+
+\clearpage
 
 % Reference picture weights
 \setlength{\unitlength}{1em}
@@ -817,7 +823,7 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(51,8)
+\begin{picture}(31,11)
 \put(0,3){\vector(1,0){12}}
 
 \put(1,3){\line(0,1){4}}
@@ -828,16 +834,12 @@
 
 \put(15.5,3){\oval(7,4.7)\put(-2,.5){Transform} \put(-2,-1){Parameters}}
 \put(19,3){\vector(1,0){2}}
-\put(24.5,3){\oval(7,4.7)\put(-2,1){Y} \put(-2,-.5){Transform}\put(-2,-2){Data}}
-\put(28,3){\vector(1,0){2}}
-\put(33.5,3){\oval(7,4.7)\put(-2,1){U} \put(-2,-.5){Transform}\put(-2,-2){Data}}
-\put(37,3){\vector(1,0){2}}
-\put(42.5,3){\oval(7,4.7)\put(-2,1){V} \put(-2,-.5){Transform}\put(-2,-2){Data}}
-\put(46,3){\vector(1,0){2}}
+\put(24.5,3){\oval(7,4.7)\put(-2,.5){Transform}\put(-2,-1){Data}}
+\put(28,3){\vector(1,0){3}}
 \put(11,3){\line(0,1){4}}
-\put(11,7){\vector(1,0){18.5}}
-\put(29.5,7){\line(1,0){17}}
-\put(46.5,7){\line(0,-1){4}}
+\put(11,7){\vector(1,0){9.5}}
+\put(20.5,7){\line(1,0){8.5}}
+\put(29,7){\line(0,-1){4}}
 \end{picture}
 \caption{Wavelet Transform}\label{fig:wavelettransform}
 \end{figure}
@@ -846,14 +848,24 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(40,10)
-\put(0,3){\vector(1,0){4}}
-\put(8,3){\oval(8,4.7) \put(-2,.5){Wavelet}\put(-2,-1){Filter}}
-\put(12,3){\vector(1,0){4}}
-\put(20,3){\oval(8,4.7)\put(-2,.5){Wavelet}\put(-2,-1){Depth}}
-\put(24,3){\vector(1,0){4}}
-\put(32,3){\oval(8,4.7)\put(-2,.5){Spatial}\put(-2,-1){Partition}}
-\put(36,3){\vector(1,0){4}}
+\begin{picture}(48,15)
+\put(0,7){\vector(1,0){2}}
+\put(6,7){\oval(8,4.7) \put(-2,.5){Wavelet}\put(-2,-1){Filter}}
+\put(10,7){\vector(1,0){2}}
+\put(16,7){\oval(8,4.7)\put(-2,.5){Wavelet}\put(-2,-1){Depth}}
+\put(20,7){\line(1,0){2}}
+\put(22,3){\line(0,1){8}}
+\put(22,3){\vector(1,0){2}}
+\put(22,11){\vector(1,0){7}}
+\put(33,11){\oval(8,4.7)\put(-2,.5){Spatial}\put(-2,-1){Partition}}
+\put(37,11){\line(1,0){7}}
+\put(28,3){\oval(8,4.7)\put(-2,.5){Slice} \put(-2,-1){Parameters}}
+\put(32,3){\vector(1,0){2}}
+\put(38,3){\oval(8,4.7)\put(-2,.5){Quant} \put(-2,-1){Matrix}}
+\put(42,3){\line(1,0){2}}
+\put(42,11){\line(1,0){2}}
+\put(44,3){\line(0,1){8}}
+\put(44,7){\vector(1,0){2}}
 \end{picture}
 \caption{Transform Parameters}\label{fig:transformparameters}
 \end{figure}
@@ -874,6 +886,8 @@
 \end{picture}
 \caption{Wavelet Filter}\label{fig:waveletfilter}
 \end{figure}
+
+\clearpage
 
 % Wavelet depth
 \setlength{\unitlength}{1em}
@@ -919,8 +933,56 @@
 \put(39,8){\vector(1,0){2}}
 \put(41,8){\line(0,-1){5}}
 \end{picture}
-\caption{Spatial Partition}\label{fig:spatialpartition}
+\caption{Spatial Partition (core syntax)}\label{fig:spatialpartition}
 \end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\centering
+\begin{picture}(30,8)
+\put(0,3){\vector(1,0){2}}
+\put(5.5,3){\oval(7,4.7) \put(-1.5,.5){Slice}\put(-1.5,-1){Width}}
+\put(9,3){\vector(1,0){2}}
+\put(14.5,3){\oval(7,4.7) \put(-1.5,.5){Slice}\put(-1.5,-1){Height}}
+\put(18,3){\vector(1,0){3}}
+\put(24.5,3){\oval(7,4.7) \put(-1.5,.5){Slice}\put(-1.5,-1){Bits}}
+\put(28,3){\vector(1,0){2}}
+
+\put(1,3){\line(0,1){4}}
+\put(1,7){\vector(1,0){9}}
+\put(10,7){\line(1,0){9}}
+\put(19,7){\line(0,-1){4}}
+
+\put(20,3){\line(0,1){4}}
+\put(20,7){\vector(1,0){5}}
+\put(25,7){\line(1,0){4}}
+\put(29,7){\line(0,-1){4}}
+
+\end{picture}
+\caption{Slice Parameters (low delay syntax)}\label{fig:sliceparameters}
+\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\centering
+\begin{picture}(22,8)
+\put(0,3){\vector(1,0){2}}
+\put(6,3){\oval(8,4.7) \put(-2.5,.5){Quant Matrix}\put(-2.5,-1){Index}}
+\put(10,3){\vector(1,0){2}}
+\put(16,3){\oval(8,4.7) \put(-2.5,.5){Subband}\put(-2.5,-1){Quant Offset}}
+\put(20,3){\vector(1,0){3}}
+
+\put(1,3){\line(0,1){4}}
+\put(1,7){\vector(1,0){5.5}}
+\put(6.5,7){\line(1,0){4.5}}
+\put(11,7){\line(0,-1){4}}
+
+\end{picture}	
+	\caption{Quant Matrix  (low delay syntax)}
+	\label{fig:quantmatrix}
+\end{figure}
+
+\clearpage
 
 % Block motion data stuff
 %%%%%%%%%%%%%
@@ -930,7 +992,7 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(50,18)
+\begin{picture}(50,12)
 \put(0,3){\vector(1,0){2}}
 \put(5.5,3){\oval(7,4.7)\put(-2,.5){Superblock}\put(-2,-1.5){Split Mode}}
 \put(9,3){\vector(1,0){2}}
@@ -958,7 +1020,7 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(40,18)
+\begin{picture}(40,10)
 \put(0,3){\vector(1,0){2}}
 \put(5.5,3){\oval(7,4.7)\put(-2,-0.5){Length}}
 \put(9,3){\vector(1,0){2}}
@@ -986,7 +1048,7 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(52,18)
+\begin{picture}(52,10)
 \put(0,3){\vector(1,0){2}}
 \put(4.5,3){\oval(5,4.7)\put(-1.5,-0.5){Length}}
 \put(7,3){\vector(1,0){2}}
@@ -1027,7 +1089,7 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(15,10)
+\begin{picture}(15,8)
 \put(0,3){\vector(1,0){4}}
 \put(8,3){\oval(8,4.7)\put(-2,.5){SB Split}\put(-2,-1.5){Residual} }
 \put(12,3){\vector(1,0){4}}
@@ -1044,7 +1106,7 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(30,15)
+\begin{picture}(30,8)
 \put(0,3){\vector(1,0){2}}
 
 \put(6,3){\oval(8,4.7)\put(-3,.5){Prediction}\put(-3,-1.5){Mode Residual}}
@@ -1062,6 +1124,8 @@
 \end{picture}
 \caption{Block Prediction Mode}\label{fig:blockpredmode}
 \end{figure}
+
+\clearpage
 
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
@@ -1092,16 +1156,31 @@
 \setlength{\unitlength}{1em}
 \begin{figure}[!ht]
 \centering
-\begin{picture}(20,12)
-\put(0,5){\vector(1,0){5}}
-\put(10,5){\oval(10,4.7)\put(-2,-0.5){Subband}}
-\put(15,5){\vector(1,0){5}}
-\put(2.5,5){\line(0,1){5}}
-\put(17.5,5){\line(0,1){5}}
-\put(17.5,10){\vector(-1,0){10}}
-\put(2.5,10){\line(1,0){10}}
+\begin{picture}(30,8)
+\put(0,3){\vector(1,0){2}}
+\put(5.5,3){\oval(7,4.7)\put(-2,1){Y} \put(-2,-.5){Transform}\put(-2,-2){Data}}
+\put(9,3){\vector(1,0){2}}
+\put(14.5,3){\oval(7,4.7)\put(-2,1){Chroma1} \put(-2,-.5){Transform}\put(-2,-2){Data}}
+\put(18,3){\vector(1,0){2}}
+\put(23.5,3){\oval(7,4.7)\put(-2,1){Chroma2} \put(-2,-.5){Transform}\put(-2,-2){Data}}
+\put(27,3){\vector(1,0){2}}
 \end{picture}
-\caption{Transform Data}\label{fig:transformdata}
+\caption{Transform Data (core syntax)}\label{fig:transformdata}
+\end{figure}
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\centering
+\begin{picture}(20,12)
+\put(0,3){\vector(1,0){5}}
+\put(10,3){\oval(10,4.7)\put(-2,-0.5){Subband}}
+\put(15,3){\vector(1,0){5}}
+\put(2.5,3){\line(0,1){5}}
+\put(17.5,3){\line(0,1){5}}
+\put(17.5,8){\vector(-1,0){10}}
+\put(2.5,8){\line(1,0){10}}
+\end{picture}
+\caption{Component Transform Data (core syntax)}\label{fig:comptransformdata}
 \end{figure}
 
 % Subband
@@ -1129,7 +1208,7 @@
 \put(34,3){\vector(1,0){5}}
 
 \end{picture}
-\caption{Subband}\label{fig:subband}
+\caption{Subband (core syntax)}\label{fig:subband}
 \end{figure}
 
 % Codeblock
@@ -1167,75 +1246,10 @@
 \put(38,8){\line(0,-1){5}}
 \end{picture}
 
-\caption{Codeblock}\label{fig:codeblock}
+\caption{Codeblock (core syntax)}\label{fig:codeblock}
 \end{figure}
 
 \clearpage
-
-\subsection{Low delay syntax}
-
-\setlength{\unitlength}{1em}
-\begin{figure}[!ht]
-\centering
-\begin{picture}(45,8)
-\put(0,3){\vector(1,0){3}}
-\put(7,3){\oval(8,4.7) \put(-2,.5){Transform}\put(-2,-1){Parameters}}
-\put(11,3){\vector(1,0){2}}
-\put(17.5,3){\oval(9,4.7)\put(-3.5,.5){Picture Prediction} \put(-3.5,-1){Parameters}}
-\put(22,3){\vector(1,0){2}}
-\put(28,3){\oval(8,4.7)\put(-2,.5){Slice} \put(-2,-1){Parameters}}
-\put(32,3){\vector(1,0){2}}
-\put(38,3){\oval(8,4.7)\put(-2,.5){Quant} \put(-2,-1){Matrix}}
-\put(42,3){\vector(1,0){3}}
-\end{picture}
-\caption{Low Delay Header}\label{fig:lowdelayheader}
-\end{figure}
-
-\setlength{\unitlength}{1em}
-\begin{figure}[!ht]
-\centering
-\begin{picture}(30,8)
-\put(0,3){\vector(1,0){2}}
-\put(5.5,3){\oval(7,4.7) \put(-1.5,.5){Slice}\put(-1.5,-1){Width}}
-\put(9,3){\vector(1,0){2}}
-\put(14.5,3){\oval(7,4.7) \put(-1.5,.5){Slice}\put(-1.5,-1){Height}}
-\put(18,3){\vector(1,0){3}}
-\put(24.5,3){\oval(7,4.7) \put(-1.5,.5){Slice}\put(-1.5,-1){Bits}}
-\put(28,3){\vector(1,0){2}}
-
-\put(1,3){\line(0,1){4}}
-\put(1,7){\vector(1,0){9}}
-\put(10,7){\line(1,0){9}}
-\put(19,7){\line(0,-1){4}}
-
-\put(20,3){\line(0,1){4}}
-\put(20,7){\vector(1,0){5}}
-\put(25,7){\line(1,0){4}}
-\put(29,7){\line(0,-1){4}}
-
-\end{picture}
-\caption{Slice Parameters}\label{fig:sliceparameters}
-\end{figure}
-
-\setlength{\unitlength}{1em}
-\begin{figure}[!ht]
-\centering
-\begin{picture}(22,8)
-\put(0,3){\vector(1,0){2}}
-\put(6,3){\oval(8,4.7) \put(-2.5,.5){Quant Matrix}\put(-2.5,-1){Index}}
-\put(10,3){\vector(1,0){2}}
-\put(16,3){\oval(8,4.7) \put(-2.5,.5){Subband}\put(-2.5,-1){Quant Offset}}
-\put(20,3){\vector(1,0){3}}
-
-\put(1,3){\line(0,1){4}}
-\put(1,7){\vector(1,0){5.5}}
-\put(6.5,7){\line(1,0){4.5}}
-\put(11,7){\line(0,-1){4}}
-
-\end{picture}	
-	\caption{Quant Matrix}
-	\label{fig:quantmatrix}
-\end{figure}
 
 \begin{figure}[!ht]
 \centering
@@ -1250,7 +1264,7 @@
 \put(6,7){\line(-1,0){4}}
 \end{picture}
 	
-	\caption{Low Delay Picture}
+	\caption{Transform Data (low delay syntax)}
 	\label{fig:lowdelaypicture}
 \end{figure}
 
@@ -1280,7 +1294,7 @@
 
 \end{picture}
 	
-	\caption{Slice}
+	\caption{Slice (low delay syntax)}
 	\label{fig:slice}
 \end{figure}
 
@@ -1298,7 +1312,7 @@
 
 \end{picture}
 	
-	\caption{Luma Slice Subband}
+	\caption{Luma Slice Subband (low delay syntax)}
 	\label{fig:lumaslicesubband}
 \end{figure}
 
@@ -1318,6 +1332,6 @@
 
 \end{picture}
 	
-	\caption{Chroma Slice Subband}
+	\caption{Chroma Slice Subband (low delay syntax)}
 	\label{fig:chromaslicesubband}
 \end{figure}

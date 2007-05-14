@@ -1,7 +1,5 @@
-\subsection{Wavelet coefficient unpacking overview}
-\label{unapckingoverview}
-
-This section specifies the unpacking (parsing and inverse
+This section specifies the $transform\_data()$ process for
+unpacking (parsing and inverse
 quantisation) of wavelet coefficient data
 from the Dirac stream. The result of this process is a set
 of fully-populated wavelet subband data arrays, as defined in
@@ -21,6 +19,18 @@ data, and all spatial frequency bands. Unpacking a slice therefore
 allows an area of picture to be extracted without extracting (or even
 receiving) the remaining picture data.
 
+The overall process is as follows:
+
+\begin{pseudo}{transform\_data()}{}
+\bsIF{is\_low\_delay()==\false}
+    \bsCODE{\YTransform = core\_transform\_data(Y)}{\ref{transformdec}}
+    \bsCODE{\COneTransform = core\_transform\_data(C1)}{\ref{transformdec}}
+    \bsCODE{\CTwoTransform = core\_transform\_data(C2)}{\ref{transformdec}}
+\bsELSE
+    \bsCODE{low\_delay\_transform\_data()}{\ref{ldpicture}}
+\bsEND
+\end{pseudo}
+
 \subsection{Subband data structures}
 \label{wltdecodeconventions}
 
@@ -29,7 +39,7 @@ receiving) the remaining picture data.
 \label{wltinit}
 
 This section specifies the $initialise\_wavelet\_data(comp)$ process, which returns a structure which will
-contain the wavelet coefficients for the component indicated by $comp$. 
+contain the wavelet coefficients for the component (Y, C1 or C2) indicated by $comp$. 
 
 For the purposes of this specification, this is a four-dimensional array $data$,
 where individual subbands are two-dimensional arrays accessed by level and orientation:

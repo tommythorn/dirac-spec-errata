@@ -1212,13 +1212,7 @@ processing using the inverse wavelet transform (Section \ref{idwt}).
 \bsIF{\ZeroResidual = \false}
     \bsCODE{transform\_parameters()}{\ref{transformparameters}}
     \bsCODE{byte\_align()}
-    \bsIF{is\_low\_delay()==\false}
-        \bsCODE{\YTransform = core\_transform\_data(Y)}{\ref{transformdec}}
-        \bsCODE{\COneTransform = core\_transform\_data(C1)}{\ref{transformdec}}
-        \bsCODE{\CTwoTransform = core\_transform\_data(C2)}{\ref{transformdec}}
-    \bsELSE
-        \bsCODE{low\_delay\_transform\_data()}{\ref{ldpicture}}
-    \bsEND
+    \bsCODE{transform\_data()}{\ref{wltunpacking}}
 \bsEND
 \end{pseudo}
 
@@ -1326,7 +1320,7 @@ Allowable $\WaveletDepth$ values are determined by the level and profile
 (Appendix \ref{profilelevel}). The wavelet depth determines the number of 
 subbands and the the dimensions of the subband data array (Section \ref{wltinit}).
 
-\subsubsection{Spatial partition of wavelet data}
+\subsubsection{Spatial partition of wavelet data (core syntax)}
 \label{spatialpartition}
 
 Each subband may be partitioned into a number of code blocks. The number of codeblocks
@@ -1378,7 +1372,7 @@ $index$ & $\CodeblockMode$ \\
 \caption{Codeblock modes}\label{codeblockmodes}
 \end{table}
 
-\subsubsection{Low-delay slice parameters and dimensions}
+\subsubsection{Slice parameters and dimensions (low delay syntax)}
 \label{sliceparams}
 
 This section specifies the $slice\_parameters()$ process for parsing the width, height and bit allocation of 
@@ -1420,7 +1414,7 @@ These restrictions ensure that both wavelet coefficients and (if present) motion
 correctly by the slices. For example, the last condition restricts the transform depth to be at most 3 on $720\times 576$ 4:2:2 video
 since a depth of 4 would lead to padding for chroma coefficients but not for luma, as $2^4=16$ divides 720 but not 360.
 
-\subsubsection{Low-delay quantisation matrices}
+\subsubsection{Quantisation matrices (low-delay syntax)}
 \label{quantmatrix}
 
 This section specifies the operation of the $quant\_matrix()$ process for setting the $\QuantMatrix$ parameters.
@@ -1436,6 +1430,13 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
     \bsEND
 \bsELSE
     \bsCODE{set\_quant\_matrix(quant\_matrix\_index)}
+\bsEND
+\bsCODE{\COneQuantOffset=0}
+\bsCODE{\CTwoQuantOffset=0}
+\bsITEM{non\_zero\_chroma\_offset\_flag}{bool}
+\bsIF{non\_zero\_chroma\_offset\_flag==\true}
+    \bsITEM{\COneQuantOffset}{sint}
+    \bsITEM{\CTwoQuantOffset}{sint}
 \bsEND
 \end{pseudo}
 
