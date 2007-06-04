@@ -384,7 +384,9 @@ parameters:
 \bsELSE
   \bsCODE{mv=global\_mv(ref, ref\_num, x, y, c)}{\ref{globalmv}}
 \bsEND
-\bsCODE{mv = chroma\_mv\_scale(mv)}{\ref{chromamvscale}}
+\bsIF{c!=Y}
+  \bsCODE{mv = chroma\_mv\_scale(mv)}{\ref{chromamvscale}}
+\bsEND
 \bsCODE{\hdots}
 \end{pseudo}
 
