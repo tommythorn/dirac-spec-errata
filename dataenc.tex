@@ -411,7 +411,7 @@ last follow context being used for all subsequent follow bits (if any) also.
 The follow context selection function $follow\_context()$ is defined by:
 
 \begin{pseudo}{follow\_context}{index, context\_set}
-\bsCODE{pos= \min(index, length(context\_set[follow])-1 }
+\bsCODE{pos= \min(index, length(context\_set[follow])-1) }
 \bsCODE{ctx\_index = context\_set[follow][pos]}
 \bsRET{\AContexts[ctx\_index]}
 \end{pseudo}
