@@ -850,7 +850,9 @@ alignment for clarity). The process for parsing the picture header is as follows
 \bsIF{is\_inter()}{\ref{parseinfo}}
     \bsCODE{reference\_picture\_numbers()}
 \bsEND
-\bsCODE{retired\_picture\_list()}
+\bsIF(is_low_delay()==\false)
+    \bsCODE{retired\_picture\_list()}
+\bsEND
 \end{pseudo}
 
 Picture numbers are not required to be unique within a sequence.
@@ -1209,7 +1211,7 @@ processing using the inverse wavelet transform (Section \ref{idwt}).
 \bsIF{is\_inter()}{\ref{parseinfo}}
     \bsITEM{\ZeroResidual}{bool}
 \bsEND
-\bsIF{\ZeroResidual = \false}
+\bsIF{\ZeroResidual == \false}
     \bsCODE{transform\_parameters()}{\ref{transformparameters}}
     \bsCODE{byte\_align()}
     \bsCODE{transform\_data()}{\ref{wltunpacking}}
