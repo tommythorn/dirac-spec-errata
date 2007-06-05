@@ -59,7 +59,9 @@ interpretation.
 \label{chromamvscale}
 $\ $\newline
 When motion compensating chroma components, motion vectors are scaled by the
-$chroma\_mv\_scale()$ function:
+$chroma\_mv\_scale()$ function. This uses unbiased rounding to produce chroma
+motion vectors with the same accuracy for the chroma components as for the luma
+component:
 
 \begin{pseudo}{chroma\_mv\_scale}{v}
 \bsCODE{sv[0] = \rounddivide(v[0], chroma\_h\_factor() )}{\ref{chromaformat}}
@@ -67,6 +69,7 @@ $chroma\_mv\_scale()$ function:
 \bsRET{sv}
 \end{pseudo}
 
+\begin{comment}
 Throughout this Section, the following conventions are used.
 
 \begin{itemize}
@@ -74,8 +77,8 @@ Throughout this Section, the following conventions are used.
 \item $u,v$ are co-ordinates in a potentially upconverted reference picture component
 \end{itemize}
 
-\begin{comment}
-[Are they??]
+%\begin{comment}
+%[Are they??]
 \end{comment}
 
 \begin{informative*}
@@ -398,8 +401,8 @@ The value returned is that of the upconverted reference pixel at the derived coo
   \bsCODE{px = (x\ll \MotionVectorPrecision)+mv[0]}
   \bsCODE{py = (y\ll \MotionVectorPrecision)+mv[1]}
 \bsELSE
-  \bsCODE{px = (x+mv[0])<<1}
-  \bsCODE{py = (y+mv[1])<<1}
+  \bsCODE{px = (x+mv[0])\ll 1}
+  \bsCODE{py = (y+mv[1])\ll 1}
 \bsEND
 \bsRET{upconvert(ref, px, py))}{\ref{upconvert}}
 \end{pseudo*}
@@ -538,7 +541,7 @@ ref2[q][p]=  \left(\sum_{i=0}^{4} t_i *
 \left(
  ref[(q-1)//2-i][p]
 +ref[(q+1)//2+i][p]
-\right)+128 \right)>>8
+\right)+128 \right)\gg 8
 \]
 
 Where coefficients fall outside the bounds of the reference array, values
@@ -556,7 +559,7 @@ are supplied by edge extension. The overall process is thus defined by
   \bsCODE{ref2[q][p]+=t_i*ref[\clip(ypos,0,\height(ref)-1)][p]}
 \bsEND
 \bsCODE{ref2[q][p] += 128}
-\bsCODE{ref2[q][p] >>=8}
+\bsCODE{ref2[q][p] \gg=8}
 \bsCODE{ref2[q][p] = \clip(ref2[q][p], 0, 2^\VideoDepth-1)}
 \end{pseudo*}
 
@@ -570,7 +573,7 @@ upref[q][p]=  \left(\sum_{i=0}^{4} t_i *
 \left(
  ref2[q][(p-1)//2-i]
 +ref2[q][(p+1)//2+i]
-\right)+128 \right)>>8
+\right)+128 \right)\gg8
 \]
 
 Where coefficients fall outside the bounds of $ref2$, values
@@ -589,7 +592,7 @@ For $0\leq p<2*\width(ref)$ and $0\leq q<2*\height(ref)$ we have:
     \bsCODE{upref[q][p]+=t_i*ref2[q][\clip(xpos,0,\height(ref)-1)]}
   \bsEND
   \bsCODE{upref[q][p] += 128}
-  \bsCODE{upref[q][p] >>=8}
+  \bsCODE{upref[q][p] \gg=8}
   \bsCODE{upref[q][p] = \clip(upref[q][p], 0, 2^\VideoDepth-1)}
 \bsEND
 \end{pseudo*}
