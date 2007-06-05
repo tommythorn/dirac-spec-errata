@@ -494,27 +494,35 @@ Chroma dimensions are set according to the scaling implied by the chroma format:
 \bsEND
 \end{pseudo}
 
-Utility functions returning the chroma subsampling factors are also defined:
+For convenience, utility functions returning the 
+chroma subsampling shifts/factors are also defined:
+
+\begin{pseudo}{chroma\_h\_shift}{}
+\bsIF{\SChromaFormatIndex==0}
+    \bsRET{0}
+\bsELSE
+    \bsRET{1}
+\bsEND
+\end{pseudo}
+
+\begin{pseudo}{chroma\_v\_shift}{}
+\bsIF{\SChromaFormatIndex<=1}
+    \bsRET{0}
+\bsELSE
+    \bsRET{1}
+\bsEND
+\end{pseudo}
 
 \begin{pseudo}{chroma\_h\_ratio}{}
-\bsIF{\SChromaFormatIndex==0}
-    \bsRET{1}
-\bsELSEIF{\SChromaFormatIndex==1}
-    \bsRET{2}
-\bsELSE
-    \bsRET{2}
-\bsEND
+\bsRET{1\ll chroma\_h\_shift()}
 \end{pseudo}
 
 \begin{pseudo}{chroma\_v\_ratio}{}
-\bsIF{\SChromaFormatIndex==0}
-    \bsRET{1}
-\bsELSEIF{\SChromaFormatIndex==1}
-    \bsRET{1}
-\bsELSE
-    \bsRET{2}
-\bsEND
+\bsRET{1\ll chroma\_v\_shift()}
 \end{pseudo}
+
+These factors are used to scale chroma motion vectors (Section \ref{chromamvscale})
+and motion compensation block dimensions (Section \ref{chromablockparams}).
 
 \subsubsection{Video depth}
 \label{videodepth}
@@ -1405,10 +1413,10 @@ and the wavelet depth:
 \end{comment}
 \item Chroma and luma subbands must contain corresponding levels of padding, i.e. for all orientations $orient$ and levels $l$,
 \begin{eqnarray*}
-\width(\YTransform[l][orient]) & = & chroma\_h\_factor*\width(\COneTransform[l][orient]) \\
-& = & chroma\_h\_factor*\width(\CTwoTransform[l][orient]) \\
-\height(\YTransform[l][orient]) & = & chroma\_v\_factor*\height(\COneTransform[l][orient]) \\
-& = & chroma\_v\_factor*\height(\CTwoTransform[l][orient]) \\
+\width(\YTransform[l][orient]) & = & chroma\_h\_ratio()*\width(\COneTransform[l][orient]) \\
+& = & chroma\_h\_ratio()*\width(\CTwoTransform[l][orient]) \\
+\height(\YTransform[l][orient]) & = & chroma\_v\_ratio()*\height(\COneTransform[l][orient]) \\
+& = & chroma\_v\_ratio()*\height(\CTwoTransform[l][orient]) \\
 \end{eqnarray*}
 \end{itemize}
 

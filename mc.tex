@@ -14,7 +14,7 @@ Transform (IWT), specified in Section \ref{idwt}.
 Motion compensation uses the motion block data $\BlockData$ and (optionally) the
 global motion parameters $\GlobalParams$.
 
-\subsubsection{Dimensions}
+\paragraph{Dimensions}
 
 Since $motion\_compensate()$ applies to both luma and (potentially subsampled)
 chroma data, for simplicity a number of local variables are defined. If $c=Y$ then:
@@ -59,17 +59,17 @@ interpretation.
 \label{chromamvscale}
 $\ $\newline
 When motion compensating chroma components, motion vectors are scaled by the
-$chroma\_mv\_scale()$ function. This uses unbiased rounding to produce chroma
-motion vectors with the same accuracy for the chroma components as for the luma
-component:
+$chroma\_mv\_scale()$ function. This produces chroma vectors in units of 
+$\MotionVectorPrecision$ with respect to the chroma samples:
 
 \begin{pseudo}{chroma\_mv\_scale}{v}
-\bsCODE{sv[0] = \rounddivide(v[0], chroma\_h\_factor() )}{\ref{chromaformat}}
-\bsCODE{sv[1] = \rounddivide(v[1], chroma\_v\_factor())}{\ref{chromaformat}}
+\bsCODE{sv[0] \gg= chroma\_h\_shift()}{\ref{chromaformat}}
+\bsCODE{sv[1] \gg= chroma\_v\_shift()}{\ref{chromaformat}}
 \bsRET{sv}
 \end{pseudo}
 
 \begin{comment}
+
 Throughout this Section, the following conventions are used.
 
 \begin{itemize}
@@ -77,8 +77,7 @@ Throughout this Section, the following conventions are used.
 \item $u,v$ are co-ordinates in a potentially upconverted reference picture component
 \end{itemize}
 
-%\begin{comment}
-%[Are they??]
+[Are they??]
 \end{comment}
 
 \begin{informative*}
@@ -488,16 +487,16 @@ w10 & = & rv*(2^{\MotionVectorPrecision-1}-ru)\\
 w11 & = & rv*ru
 \end{eqnarray*}
 
-The value returned is:
+These weights sum to $2^{\MotionVectorPrecision}$ and the value returned is:
 \[
 \left(
 \begin{array}{l}
 w00*up2by2(ref,hu,hv)+\\
 w01*up2by2(ref,hu+1,hv)+\\
 w10*up2by2(ref,hu,hv+1)+\\
-w11*up2by2(ref,hu+1,hv+1)+2^{\MotionVectorPrecision-2}
+w11*up2by2(ref,hu+1,hv+1)+2^{\MotionVectorPrecision-1}
 \end{array}
-\right)\gg(\MotionVectorPrecision-1)\]
+\right)\gg(\MotionVectorPrecision)\]
 
 \begin{informative}
 Note that the remainder values $ru$ and $rv$, although apparently depending
