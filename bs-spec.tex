@@ -1256,7 +1256,7 @@ $\ $\newline
 A variety of preset wavelet filters are available, encoded as a 
 values of $\WaveletIndex$, which is an index into
 Table \ref{wltfilterpresets}. Default wavelet filters
-are the Deslauriers-Debuc (9,3) filter for intra pictures
+are the Deslauriers-Debuc (9,5) filter for intra pictures
 and the LeGall (5,3) filter for inter pictures. If a flag is
 set, other presets may be used. Their interpretation and lifting 
 implementations are specified in Section \ref{wltfilters}. 
@@ -1282,7 +1282,7 @@ $\WaveletIndex$ shall lie in the range 0 to 7.
 \hline
 \WaveletIndex & {\bf Filter} \\
 \hline
-0 & Deslauriers-Debuc (9,3) \\
+0 & Deslauriers-Debuc (9,5) \\
 \hline
 1 & LeGall (5,3) \\
 \hline
@@ -1308,7 +1308,7 @@ and high-pass filters in the conventional prefiltering (i.e. before subsampling)
 model of wavelet filtering. They do not reflect the length of lifting filters, which
 operate in the subsampled domain: see Section \ref{wltfilters}. Deslauriers-Debuc
 filters are normally referred to in terms of the number of vanishing moments of their
-synthesis filters, so the (9,3) and (13,5) filters may be referred to in the literature
+synthesis filters, so the (9,5) and (13,5) filters may be referred to in the literature
 as (2,2) and (4,2) filters respectively.
 \end{informative}
 
@@ -1386,22 +1386,21 @@ $index$ & $\CodeblockMode$ \\
 \label{sliceparams}
 
 This section specifies the $slice\_parameters()$ process for parsing the width, height and bit allocation of 
-the slices. Default slice dimensions are defined by the video format parameters in the AU header, as per Appendix 
-\ref{videoformatdefaults}. They may be overridden as follows:
+the slices. This process is invoked if $is\_low\_delay()==\true$.There are no default slice parameters -- these parameters are always explicitly encoded as follows:
 
 \begin{pseudo}{slice\_parameters}{}
-\bsITEM{non\_default\_slice\_dims}{bool}
-\bsIF{non\_default\_slice\_dims==\true}
-    \bsITEM{width\_exp}{uint}
-    \bsCODE{\SliceWidth=2^{width\_exp}}
-    \bsITEM{height\_exp}{uint}
-    \bsCODE{\SliceHeight=2^{height\_exp}}
-\bsEND
-\bsITEM{non\_default\_slice\_size}{bool}
-\bsIF{non\_default\_slice\_size==\true}
-    \bsITEM{\SliceBits}{uint}
-\bsEND
+\bsITEM{width\_exp}{uint}
+\bsCODE{\SliceWidth=2^{width\_exp}}
+\bsITEM{height\_exp}{uint}
+\bsCODE{\SliceHeight=2^{height\_exp}}
+\bsITEM{\SliceBytesNum}{uint}
+\bsITEM{\SliceBytesDenom}{uint}
 \end{pseudo}
+
+The ratio
+\[b=\dfrac{\SliceBytesNum}{\SliceBytesDenom}\]
+is the mean number of bytes per slice. The actual slice allocation is either $\lfloor b \rfloor$
+or $\lceil b \rceil$ depending on the slice index (Section \ref{slicebytes}).
 
 If $is\_low\_delay()==\true$, the following constraints are placed upon the slice dimensions 
 and the wavelet depth:
@@ -1430,8 +1429,8 @@ since a depth of 4 would lead to padding for chroma coefficients but not for lum
 This section specifies the operation of the $quant\_matrix()$ process for setting the $\QuantMatrix$ parameters.
 
 \begin{pseudo}{quant\_matrix}{}
-\bsITEM{quant\_matrix\_index}{uint}
-\bsIF{quant\_matrix\_index==0}
+\bsITEM{non\_default\_quant\_matrix}{bool}
+\bsIF{non\_default\_quant\_matrix==\true}
     \bsITEM{\QuantMatrix[0][\LL]}{uint}
     \bsFOR{level=1}{\WaveletDepth}
         \bsITEM{\QuantMatrix[level][\HL]}{uint}
@@ -1439,31 +1438,21 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
         \bsITEM{\QuantMatrix[level][\HH]}{uint}
     \bsEND
 \bsELSE
-    \bsCODE{set\_quant\_matrix(quant\_matrix\_index)}
+    \bsCODE{set\_quant\_matrix()}
 \bsEND
+\bsCODE{\LumaQuantOffset=0}
 \bsCODE{\COneQuantOffset=0}
 \bsCODE{\CTwoQuantOffset=0}
-\bsITEM{non\_zero\_chroma\_offset\_flag}{bool}
-\bsIF{non\_zero\_chroma\_offset\_flag==\true}
+\bsITEM{non\_zero\_quant\_offset\_flag}{bool}
+\bsIF{non\_zero\_quant\_offset\_flag==\true}
+    \bsITEM{\LumaQuantOffset}{sint}
     \bsITEM{\COneQuantOffset}{sint}
     \bsITEM{\CTwoQuantOffset}{sint}
 \bsEND
 \end{pseudo}
 
-Default quantisation matrices are defined only for $\WaveletDepth=4$. If $\WaveletDepth!=4$ then $quant\_matrix\_index$ shall be 0 (custom). If $\WaveletDepth=4$ then custom quantisation matrices
-may still be transmitted, for example to apply a different degree of perceptual weighting (see Appendix \ref{quantisationmatrices}.
+The function $set\_quant\_matrix()$ sets default quantisation matrices for $\WaveletDepth\leq4$ and certain values of $\WaveletIndex$, as per Table \ref{presetqmatrices}. For values not represented in this table, $quant\_matrix\_index$ shall be 0 (custom quantisation matrix). 
  
-The function $set\_quant\_matrix()$ sets the quantisation matrix based on the wavelet filter and the value of $quant\_matrix\_index$, as per Table
-\ref{presetqmatrices}. For $quant\_matrix\_index==1$, this is an ``unweighted" matrix, whose values merely compensate for the differential 
-power gain of the different subband filters. Higher values of $quant\_matrix\_index$ imply greater degrees of perceptual weighting.
-
-\begin{table}[!h]
-\centering
-\begin{tabular}{|c|c|l|}
-\hline
-\WaveletIndex & quant\_matrix\_indices & {\bf Matrix values} \\
-\hline
-\end{tabular}
-\caption{Preset quantisation matrices}\label{presetqmatrices}
-\end{table}
- 
+\begin{informative}
+Default quantisation matrices are ``unweighted'', and intended only to compensate for the differential power gain of the high-pass and low-pass filters. Perceptual weighting may be applied by designing a custom matrix as described in Appendix \ref{custommatrices}.
+\end{informative} 

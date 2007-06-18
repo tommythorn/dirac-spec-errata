@@ -86,11 +86,11 @@ set to zero.
 The overall slice unpacking process is as follows:
 
 \begin{pseudo}{slice}{sy,sx}
-\bsCODE{slice\_bits\_left = \SliceBits}
+\bsCODE{slice\_bits\_left = 8*slice\_bytes(sy,sx)}{\ref{slicebytes}}
 \bsCODE{qindex=read\_nbits(7)}
 \bsCODE{slice\_bits\_left -= 7}
 \bsCODE{slice\_quantisers(qindex)}{\ref{slicequantisers}}
-\bsCODE{length\_bits = \log_2(\SliceBits) }
+\bsCODE{length\_bits = \log_2(8*slice\_bytes(sy,sx))}
 \bsCODE{slice\_y\_length=read\_nbits(length\_bits)}
 \bsCODE{slice\_bits\_left -= length\_bits}
 \bsCODE{\ABitsLeft=slice\_y\_length}
@@ -110,6 +110,18 @@ The overall slice unpacking process is as follows:
   \bsEND
 \bsEND
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
+\end{pseudo}
+
+\subsubsection{Slice bytes}
+\label{slicebytes}
+
+This section specifies the $slice\_bytes(sy,sx)$ function for determining the number of bytes to be used for the slice at location $(sx,sy)$:
+
+\begin{pseudo}{slice\_bytes}{sy,sx}
+\bsCODE{slice\_num=sy*\SlicesX+sx}
+\bsCODE{bytes = ((slice\_num+1)*\SliceBytesNum)//\SliceBytesDenom}
+\bsCODE{bytes -= ((slice\_num)*\SliceBytesNum)//\SliceBytesDenom}
+\bsRET{bytes}
 \end{pseudo}
 
 \subsubsection{Setting slice quantisers}

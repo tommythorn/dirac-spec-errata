@@ -1,0 +1,552 @@
+\label{quantmatrices}
+
+\subsection{Default quantisation matrices}
+\label{defaultquantmatrices}
+
+This section defines default quantisation matrices to be used 
+for the quantisation of slice coefficients in the low-delay syntax.
+The following tables define matrices for $\WaveletDepth\leq 4$ 
+and a subset of $\WaveletIndex$. Combinations of values of 
+$\WaveletDepth$ and $\WaveletIndex$ not present in the tables
+in this section shall require a custom matrix to be encoded, 
+as per Section \ref{sliceparams}. Informative advice for 
+constructing quantisation matrices based on noise power 
+conservation and perceptual weighting is given in 
+Appendix \ref{custommatrices}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & HL,LH & 3 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 6 \\
+\hline
+1 & HL,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 5 \\
+2 & HH & 2 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & HL,LH & 2 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 1 \\
+\hline
+3 & HL,LH & 6 \\
+3 & HH & 3 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & LH,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 2 \\
+\hline
+3 & HL,LH & 6 \\
+3 & HH & 3 \\
+\hline
+4 & HL,LH & 8 \\
+4 & HH & 5 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==0$ (Deslauriers-Debuc (9,3)) 
+\label{table:qm0}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 4 \\
+\hline
+1 & HL,LH & 2 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 4 \\
+\hline
+1 & HL,LH & 2 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 2 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & HL,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 5 \\
+2 & HH & 3 \\
+\hline
+3 & HL,LH & 7 \\
+3 & HH & 5 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & LH,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 5 \\
+2 & HH & 2 \\
+\hline
+3 & HL,LH & 7 \\
+3 & HH & 5 \\
+\hline
+4 & HL,LH & 9 \\
+4 & HH & 7 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==1$ (LeGall (5,3)) 
+\label{table:qm1}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & HL,LH & 2 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 6 \\
+\hline
+1 & HL,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 2 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 6 \\
+\hline
+1 & HL,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 1 \\
+\hline
+3 & HL,LH & 5 \\
+3 & HH & 3 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 5 \\
+\hline
+1 & LH,LH & 3 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 1 \\
+\hline
+3 & HL,LH & 5 \\
+3 & HH & 2 \\
+\hline
+4 & HL,LH & 6 \\
+4 & HH & 4 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==2$ (Deslauriers-Debuc (13,5))) 
+\label{table:qm2}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 12 \\
+\hline
+1 & HL,LH & 8 \\
+1 & HH & 4 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 16 \\
+\hline
+1 & HL,LH & 12 \\
+1 & HH & 8 \\
+\hline
+2 & HL,LH & 8 \\
+2 & HH & 4 \\
+\hline
+3 & HL,LH & 4 \\
+3 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 20 \\
+\hline
+1 & LH,LH & 16 \\
+1 & HH & 12 \\
+\hline
+2 & HL,LH & 12 \\
+2 & HH & 8 \\
+\hline
+3 & HL,LH & 8 \\
+3 & HH & 4 \\
+\hline
+4 & HL,LH & 4 \\
+4 & HH & 0 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==3$ (Haar with no shift)) 
+\label{table:qm3}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 0 \\
+\hline
+3 & HL,LH & 4 \\
+3 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & LH,LH & 4 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 0 \\
+\hline
+3 & HL,LH & 4 \\
+3 & HH & 0 \\
+\hline
+4 & HL,LH & 4 \\
+4 & HH & 0 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==4$ (Haar with single shift per level)) 
+\label{table:qm4}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 8 \\
+2 & HH & 4 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 8 \\
+2 & HH & 4 \\
+\hline
+3 & HL,LH & 12 \\
+3 & HH & 8 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 8 \\
+\hline
+1 & LH,LH & 4 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 8 \\
+2 & HH & 4 \\
+\hline
+3 & HL,LH & 12 \\
+3 & HH & 8 \\
+\hline
+4 & HL,LH & 16 \\
+4 & HH & 12 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==5$ (Haar with double shift per level)) 
+\label{table:qm5}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 0 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 7 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 0 \\
+\hline
+1 & HL,LH & 3 \\
+1 & HH & 7 \\
+\hline
+2 & HL,LH & 7 \\
+2 & HH & 10 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 0 \\
+\hline
+1 & HL,LH & 4 \\
+1 & HH & 7 \\
+\hline
+2 & HL,LH & 7 \\
+2 & HH & 11 \\
+\hline
+3 & HL,LH & 11 \\
+3 & HH & 14 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 0 \\
+\hline
+1 & LH,LH & 3 \\
+1 & HH & 7 \\
+\hline
+2 & HL,LH & 7 \\
+2 & HH & 10 \\
+\hline
+3 & HL,LH & 10 \\
+3 & HH & 14 \\
+\hline
+4 & HL,LH & 14 \\
+4 & HH & 17 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==6$ (Fidelity)) 
+\label{table:qm6}}
+\end{table}
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 4 \\
+\hline
+1 & HL,LH & 2 \\
+1 & HH & 0 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 3 \\
+\hline
+1 & HL,LH & 2 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 2 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 3 \\
+\hline
+1 & HL,LH & 1 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 2 \\
+\hline
+3 & HL,LH & 6 \\
+3 & HH & 4 \\
+\hline
+\hline
+\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\hline
+Level & Orientation & \QuantMatrix[level][orientation] \\
+\hline
+0 & LL & 3 \\
+\hline
+1 & LH,LH & 2 \\
+1 & HH & 0 \\
+\hline
+2 & HL,LH & 4 \\
+2 & HH & 3 \\
+\hline
+3 & HL,LH & 7 \\
+3 & HH & 5 \\
+\hline
+4 & HL,LH & 9 \\
+4 & HH & 7 \\
+\hline
+\end{tabular}
+\caption{Default quantisation matrices for $\WaveletIndex==7$ (Daubechies (9,7))
+\label{table:qm7}}
+\end{table}
+
+\clearpage
+\begin{informative*}
+\subsection{Custom quantisation matrices (Informative)}
+\label{custommatrices}
+
+
+
+\end{informative*}
