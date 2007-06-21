@@ -1,0 +1,223 @@
+\begin{informative*}
+This is an informative appendix introducing the fundamentals of wavelet
+filtering and the lifting scheme. For a fuller explanation see ?.
+
+\subsection{Wavelet filter banks}
+
+Figure \ref{fig:decimatereconstruct} below illustrates a single stage of a 
+generalized wavelet decimation followed by reconstruction. The aim is to 
+get perfect reconstruction of the output so that it is identical to the original input. 
+\end{informative*}
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\begin{picture}(50,20)
+\put(0,10){\line(1,0){5}}
+\put(5,5){\line(0,1){10}}
+
+\put(5,5){\line(1,0){2}}
+\put(5,15){\line(1,0){2}}
+
+\put(7,3){\framebox(8,4){\Large $h(-z)$}}
+\put(7,13){\framebox(8,4){\Large $g(-z)$}}
+
+\put(15,5){\line(1,0){2}}
+\put(15,15){\line(1,0){2}}
+
+\put(18.5,5){\circle{3}}\put(18,5){\Large $\downarrow 2$}
+\put(18.5,15){\circle{3}}\put(18,15){\Large $\downarrow 2$}
+
+\put(20,5){\line(1,0){2}}
+\put(20,15){\line(1,0){2}}
+
+\put(24,5){\line(1,0){2}}
+\put(24,15){\line(1,0){2}}
+
+\put(27.5,5){\circle{3}}\put(27,5){\Large $\uparrow 2$}
+\put(27.5,15){\circle{3}}\put(27,15){\Large $\uparrow 2$}
+
+\put(29,5){\line(1,0){2}}
+\put(29,15){\line(1,0){2}}
+
+\put(31,3){\framebox(8,4){\Large $\tilde{h}(z)$}}
+\put(31,13){\framebox(8,4){\Large $\tilde{g}(z)$}}
+
+\put(39,5){\line(1,0){2}}
+\put(39,15){\line(1,0){2}}
+
+\put(39.5,10){\line(1,0){6.5}}
+\put(41,5){\line(0,1){10}}
+
+\put(41,10){\circle{3}}
+\begin{informative*}
+\end{picture}
+\caption{Wavelet decimation and reconstruction}\label{fig:decimatereconstruct}
+\end{figure}
+
+The filters $h(z)$ and $g(z)$ are the low-pass and high-pass analysis 
+filters, whilst $\tilde{h}(z)$ and $\tilde{g}(z)$ are the 
+synthesis filters. The filters must satisfy the conditions
+\begin{eqnarray*}
+h(z)\tilde{h}(z^{-1})+g(z)\tilde{g}(z^{-1}) & = & 2 \text{ (Perfect reconstruction)}\\
+h(z)\tilde{h}(-z^{-1})+g(z)\tilde{g}(-z^{-1}) & = & 0 \text{ (Alias cancellation)}
+\end{eqnarray*}
+These conditions imply that the synthesis filters are derived from the analysis filters and vice-versa:
+\begin{eqnarray*}
+\tilde{g}(z) & = & z^{-1}h(-z^{-1}) \\
+\tilde{h}(z) & = & z^{-1}g(-z^{-1})
+\end{eqnarray*}
+
+If we have an {\em orthogonal} wavelet decomposition, then additionally $H=\tilde{h}$ and $g=\tilde{g}$
+and there is a single ``mother'' wavelet.
+ 
+The next figure (F.2) illustrates how the frequency components are distributed both during decimation and reconstruction. This figures illustrates how the alias frequencies created during the decimation process are cancelled out during the reconstruction process. This feature of alias cancellation results from the wavelet process and is a specific attribute of wavelet coding. It is important to note that if the decoder receives imperfect signals (caused, for example, by quantisation errors) then the imperfections will result in distortion in the reconstructed output.
+
+ 
+Figure F.2 -Illustration of the alias frequency generation and cancellation in a wavelet filter bank
+A single wavelet stage is insufficient for most video coding applications. The figure below illustrates how only the low-pass path is passed on to the next wavelet decimation step. Because each step of the wavelet decimation is self-contained, the reconstructed output is still identical to the input (barring quantisation errors).
+ 
+Figure F.3 -Two-step wavelet processing filter bank
+The application of wavelet filter banks in picture coding results in a two-dimensional decimation process as illustrated in figure F.4 below.
+ 
+Figure F.4 -Decomposition of a single image into 7 wavelet frequency bands
+The final figure illustrates how a real image is decimated to produce a low-frequency proxy in the top-left corner and a range of increasing frequency band components extending to the right side for increasing horizontal frequencies and downwards for increasing vertical frequencies.
+ 
+Figure F.5 -Decomposition of the EBU "Boats" picture into 7 wavelet frequency bands
+
+\subsection{Lifting}
+\label{lifting}
+
+For any set of filters, the analysis and synthesis filter banks shown 
+in Figure \ref{fig:decimatereconstruct} can easily be re-expressed as polyphase
+filter banks by means of applying {\em matrices} of filters in the subsampled
+domain. This is shown in Figure \ref{fig:polyphase}, where $A(z)$ is the $z-$transform
+of the analysis polyphase filter matrix, and $S(z)$ is the $z-$transform
+of the synthesis polyphase filter matrix (the entries of both matrices being Laurent
+polynomials).
+\end{informative*}
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\begin{picture}(50,20)
+% Analysis side
+\put(0,9){\line(1,0){2}}
+
+\put(2,5){\line(0,1){8}}
+
+\put(2,5){\line(1,0){1}}\put(3,3.5){\framebox(3,3){\Large $z$}}\put(6,5){\line(1,0){1}}
+\put(2,13){\line(1,0){5}}
+
+\put(8.5,5){\circle{3}}\put(8,5){\Large $\downarrow 2$}
+\put(8.5,13){\circle{3}}\put(8,13){\Large $\downarrow 2$}
+
+\put(10,5){\line(1,0){2}}
+\put(10,13){\line(1,0){2}}
+
+\put(12,4){\framebox(8,10){\Large $A(z)$}}
+
+\put(20,5){\line(1,0){1}}
+\put(20,13){\line(1,0){1}}
+
+% Synthesis side
+\put(23,5){\line(1,0){1}}
+\put(23,13){\line(1,0){1}}
+
+\put(24,4){\framebox(8,10){\Large $S(z)$}}
+
+\put(32,5){\line(1,0){2}}
+\put(32,13){\line(1,0){2}}
+
+\put(35.5,5){\circle{3}}\put(35,5){\Large $\uparrow 2$}
+\put(35.5,13){\circle{3}}\put(35,13){\Large $\uparrow 2$}
+
+\put(37,5){\line(1,0){1}}\put(38,3.5){\framebox(3,3){\Large $z^{-1}$}}\put(41,5){\line(1,0){1}}
+\put(37,13){\line(1,0){5}}
+
+
+\put(41,9){\line(1,0){4}}
+\put(42,5){\line(0,1){8}}
+
+\put(42,9){\circle{2}}
+
+\end{picture}
+\caption{Polyphase representation of wavelet filter banks}\label{fig:polyphase}
+\end{figure}
+\begin{informative*}
+In this representation, linear combinations of filters operate on both even and 
+odd samples to produce new even and odd samples:
+\[
+\left( 
+\begin{array}{c}
+x^{out}_e(z) \\
+x^{out}_o(z)
+\end{array}
+\right) 
+= A(z)
+\left(
+\begin{array}{c}
+x^{in}_e(z) \\
+x^{in}_o(z)
+\end{array}
+\right)
+\]
+
+Since the filter process is invertible, it can be shown that the analysis and 
+synthesis matrices are related by $A(z)=(S(z^{-1})^T)^{-1}$. Hence, in particular
+both the analysis and synthesis matrices are invertible. It can be shown that
+this means that they are (up to gain factors and delays) factorisable into 
+products of upper and lower triangular matrices:
+\[A(z)= 
+\left(
+\begin{array}{cc}
+1 & a_1(z) \\
+0 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{cc}
+1 & 0 \\
+b_1(z) & 1
+\end{array}
+\right)
+\left(
+\begin{array}{cc}
+1 & a_2(z) \\
+0 & 1
+\end{array}
+\right)
+\ldots
+\]
+
+Each upper- or lower-triangular polyphase matrix represents a so-called {\em lifting} stage
+whereby either even coefficients are modified solely by odd coefficients or odd coefficients
+solely by even coefficients. For example, if 
+\[
+\left( 
+\begin{array}{c}
+x^{out}_e(z) \\
+x^{out}_o(z)
+\end{array}
+\right) 
+=
+\left(
+\begin{array}{cc}
+1 & a(z) \\
+0 & 1
+\end{array}
+\right)
+\left(
+\begin{array}{c}
+x^{in}_e(z) \\
+x^{in}_o(z)
+\end{array}
+\right) 
+\]
+then
+\begin{eqnarray*}
+x^{out}_e(z) & = & x^{in}_e(z) + a(z)x^{in}_o(z) \\
+x^{out}_o(z) & = & x^{out}_o(z)\\
+\end{eqnarray*}
+and the filter $a(z)$ has been applied to the odd coefficients and then used to modify
+the even coefficients. Not only is this computationally efficient, breaking long
+filters into a number of shorter filter applied successively but the
+factorisation into such filter stages allows for all computations to be done in-place,
+without additional memory.
+ \end{informative*}

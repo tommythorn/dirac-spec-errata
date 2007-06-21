@@ -18,24 +18,23 @@ state values on beginning to parse each picture, as described in
 Section \ref{streamstructure}.
 
 The parsing and decoding operations are specified in terms of modifying
-the decoder state. Decoder state variables may not directly correspond
-to elements of the stream, but are calculated from them taking into
+the decoder state. The state variables may not directly correspond
+to elements of the stream, but may be calculated from them taking into
 account the decoder state as a whole. For example, a state variable value 
 may be differentially encoded with respect to another value, with the
 difference, not the variable itself, encoded in the stream. 
 
-The stream structure itself is summarised in parse diagrams, which 
+The Dirac stream syntax is illustrated in parse diagrams, which 
 are presented in Appendix \ref{parsediagrams}. The parsing process
 is defined by means of pseudocode and/or mathematical formulae. The
-conventions for these elements are described in the succeeding sections.
+conventions for these elements are described in the following sections.
 In the event of any conflict between the parse diagrams and the specified
 parsing processes, the latter shall be deemed to be correct.
 
-\subsection{Numbers and arithmetic operations}
+\subsection{Number formats}
 \label{mathnotation}
 
-\subsubsection{Numbers}
-\label{numbers}
+Numbers without a prefix shall be interpreted as decimal numbers.
 
 The prefix b indicates that the following value is to be interpreted as a binary
 natural number (non-negative integer). 
@@ -47,8 +46,59 @@ natural number.
 
 {\bf Example} The value 0x7A is equal to the decimal value 122. 
 
-\subsubsection{Arithmetic operations}
-\label{arithoperations}
+\subsection{Data types}
+\label{datatypes}
+
+\subsubsection{Elementary data types}
+
+Only three basic types are used in the pseudo code:
+\begin{description}
+\item[Boolean] - A Boolean variable that has only two possible values: $\true$ and $\false$.
+\item[Integer] - A positive or negative whole number or zero.
+\item[Unsigned] - A non-negative ($\geq 0$) whole number, of arbitrary size.
+\end{description}
+
+\subsubsection{Compound data types}
+
+There are three types of compound data:
+
+\begin{description}
+\item[Set] A collection of variables or values with no particular indexing. 
+A set containing members $A,B,C,\ldots$ is denoted $\{A,B,C,\ldots\}$. The usual
+set-theoretic operations $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
+apply.
+
+\item[Map]
+
+A map is a set accessed by token names. For example
+$p[Y]$, $p[C1]$, $p[C2]$ might give the value of the different video components
+(Y, C1 and C2) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
+so that $\args(p)=\{Y,C1,C2\}$.
+
+\item[Array] 
+
+An array is a set with an integer index or indices. All arrays are indexed from 0. 
+Elements of a 1-dimensional array $a$ are accessed by $a[n]$ for $n$ in the
+range 0 to $\length(a)-1$. Elements of a 2-dimensional array are accessed by
+$a[n][m]$ for $0\leq m\leq\width(a)-1$ and $0\leq n\leq\height(a)-1$.
+
+A 1-dimensional array can be explicitly defined by the syntax $a=[u, v, w, \hdots]$.
+Then $a[0]=u$, 
+$a[1]=v$ and so on.
+\end{description}
+
+The elements contained within any compound data type may be other compound data types.
+
+
+\subsection{Numerical functions and operators}
+\label{functionoperators}
+
+This section defines the functions and operators used 
+in the pseudo-code in this specification. Functions and operators
+are similar but functions use the syntax, $(arg1, arg2,\ldots)$ 
+whereas operators are simply placed before or between operands, 
+e.g. $a+b$. The difference is purely syntactic and is to 
+correspond with conventional mathematical notation.
 
 All arithmetic defined by this specification is exact: the entire 
 specification can be implemented using only integer and logical operations.
@@ -227,6 +277,10 @@ and
 
 then at the end of $foo$, $\StateName[var\_name]$ has been set to 1.
 
+The only global variables are the state variables encapsulated in $\StateName$
+and $\SeqStateName$. If a variable is not declared as an input to
+the process and is not a state variable, then it is local to the function.
+
 If a process is particularly complex, it may be broken into a number of steps with 
 intermediate discussion. This is signalled by appending  and prepending ``$\hdots$" to
 the parts of the pseudocode specification:
@@ -254,52 +308,6 @@ pseudocode, and must be considered as a normative part of the specification of t
 This is done as it is sometimes much more clear to split up a long and complicated process
 into a number of steps.
 
-\subsubsection{Variables and data types}
-\label{datatypes}
-
-The only global variables are the state variables encapsulated in $\StateName$
-and $\SeqStateName$. If a variable is not declared as an input to
-the process and is not a state variable, then it is local to the function.
-
-The following basic types are defined:
-\begin{description}
-\item[Boolean] A boolean variable has two possible states, $\true$ and $\false$.
-
-\item[Unsigned integer] A non-negative ($\geq 0$) whole number, of arbitrary size.
-
-\item[Integer] A whole number, of arbitrary size.
-
-\item[Set] A collection of variables or values with no particular indexing. 
-A set containing members $A,B,C,\ldots$ is denoted $\{A,B,C,\ldots\}$. The usual
-set-theoretic operations $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
-apply.
-
-\item[Map]
-
-A map is a set accessed by token names. For example
-$p[Y]$, $p[C1]$, $p[C2]$ might give the value of the different video components
-(Y, C1 and C2) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
-so that $\args(p)=\{Y,C1,C2\}$.
-
-\item[Array] 
-
-A list is a set with an integer index or indices. All arrays are indexed from 0. 
-Elements of a 1-dimensional array $a$ are accessed by $a[n]$ for $n$ in the
-range 0 to $\length(a)-1$. Elements of a 2-dimensional array are accessed by
-$a[n][m]$ for $0\leq m\leq\width(a)-1$ and $0\leq n\leq\height(a)-1$.
-
-A 1-dimensional array can be explicitly defined by the syntax $a=[u, v, w, \hdots]$.
-Then $a[0]=u$, 
-$a[1]=v$ and so on.
-
-\end{description}
-
-These basic variable types may be combined. For example, picture data may be considered
-to be a map of arrays $pic$, where $pic[Y]$ is a 2-dimensional array storing luma data,
-and $pic[C1]$ and $pic[C2]$ are two-dimensional arrays storing chroma data.
-
-Variables within processes are not explicitly declared, and their type is determined from
-context or defined in the surrounding description.
 
 \paragraph{Assignment and equality}
 $\ $\newline$\ $\newline

@@ -1,13 +1,17 @@
 \label{quantmatrices}
 
-\subsection{Default quantisation matrices}
+This section specifies the default quantisation matrices to be used
+in the core syntax and provides an informative description of quantisation
+matrix design principles and of quantiser selection in both the core
+and low-delay syntax.
+
+\subsection{Quantisation matrices (low delay syntax)}
 \label{defaultquantmatrices}
 
 This section defines default quantisation matrices to be used 
 for the quantisation of slice coefficients in the low-delay syntax.
-The following tables define matrices for $\WaveletDepth\leq 4$ 
-and a subset of $\WaveletIndex$. Combinations of values of 
-$\WaveletDepth$ and $\WaveletIndex$ not present in the tables
+The following tables define matrices for $\WaveletDepth\leq 4$. 
+Values of $\WaveletDepth$ not present in the tables
 in this section shall require a custom matrix to be encoded, 
 as per Section \ref{sliceparams}. Informative advice for 
 constructing quantisation matrices based on noise power 
@@ -76,7 +80,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 4 & HH & 5 \\
 \hline
 \end{tabular}
-\caption{Default quantisation matrices for $\WaveletIndex==0$ (Deslauriers-Debuc (9,3)) 
+\caption{Default quantisation matrices for $\WaveletIndex==0$ (Deslauriers-Debuc (9,5)) 
 \label{table:qm0}}
 \end{table}
 
@@ -544,8 +548,151 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 
 \clearpage
 \begin{informative*}
-\subsection{Custom quantisation matrices (Informative)}
+\subsection{Quantisation matrix design and quantiser selection (Informative)}
+\label{qmatrixdesign}
+
+This section provides an informative guide to the principles used to design the default
+quantisation matrix 
+
+\subsubsection{Noise power normalisation}
+\label{noisenorm}
+
+The quantisation matrices defined in the preceding section are designed to counteract the
+differential power gain of the various wavelet filters, so that quantisation noise from 
+each subband is weighted equally in terms of its contribution to noise power when transformed
+back into the picture domain. Let $\alpha$ and $\beta$ represent the noise gain factors of
+the low-pass and high-pass wavelet filters used in wavelet decomposition. In a single level of
+wavelet decomposition, quantisation noise in each of the four subbands is therefore weighted by the factors shown in Figure \ref{fig:onelevelweight}.
+\end{informative*}
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(20,27)
+\put(0,5){\line(1,0){20}}
+\put(0,5){\line(0,1){20}}
+\put(20,5){\line(0,1){20}}
+\put(20,25){\line(-1,0){20}}
+
+\put(10,5){\line(0,1){20}}
+\put(0,15){\line(1,0){20}}
+
+\put(3,19.5){\text{\Large LL -- $\alpha^2$}}
+\put(3,9.5){\text{\Large LH -- $\alpha\beta$}}
+\put(13,19.5){\text{\Large HL -- $\alpha\beta$}}
+\put(13,9.5){\text{\Large HH -- $\beta^2$}}
+\end{picture}
+\caption{Subband weights for a 1-level decomposition}\label{fig:onelevelweight}
+\end{figure}
+\begin{informative*}
+
+For higher levels of decomposition, these subband weighting factors iterate
+in the same manner as the wavelet transform itself. For example, with a two-level
+decomposition, the first level LL band, with weight $\alpha^2$ is further decomposed
+to give four more bands with weights as for the 1-level decomposition, but multiplied
+by $\alpha^2$. This yields the weights shown in Figure \ref{fig:twolevelweight}.
+\end{informative*}
+\setlength{\unitlength}{1em}
+\begin{figure}[!h]
+\centering
+\begin{picture}(30,40)
+\put(0,5){\line(1,0){30}}
+\put(0,5){\line(0,1){30}}
+\put(30,5){\line(0,1){30}}
+\put(30,35){\line(-1,0){30}}
+
+\put(15,5){\line(0,1){30}}
+\put(0,20){\line(1,0){30}}
+
+\put(5.5,12){\text{\Large LH -- $\alpha\beta$}}
+\put(20.5,27){\text{\Large HL -- $\alpha\beta$}}
+\put(20.5,12){\text{\Large HH -- $\beta^2$}}
+
+\put(7.5,20){\line(0,1){15}}
+\put(0,27.5){\line(1,0){15}}
+
+\put(2,31){\text{\Large LL -- $\alpha^4$}}
+\put(2,23.5){\text{\Large LH -- $\alpha^3\beta$}}
+\put(9,31){\text{\Large HL -- $\alpha^3\beta$}}
+\put(9,23.5){\text{\Large HH -- $\alpha^2\beta^2$}}
+
+\end{picture}
+\caption{Subband weights for a 2-level decomposition}\label{fig:twolevelweight}
+\end{figure}
+\begin{informative*}
+
+In this specification, wavelet synthesis filters have been defined in terms of lifting stages,
+which are filters operating on subsampled data. Wavelet filters are more traditionally
+represented in terms of an iterated binary polyphase filter bank: the relationship between
+these representation is described in Appendix \ref{lifting}. The factors $\alpha$ and $\beta$
+are most easily computed from the filter bank representation. In this case $\alpha$ is either
+the RMS power gain of the low-pass synthesis filter, or the {\em reciprocal} of the RMS power
+gain of the low-pass analysis filter; and $\beta$ is the RMS power gain of the high-pass
+synthesis filter of the reciprocal of the RMS power gain of the high-pass analysis filter. 
+
+Thus, in the terminology of Appendix \ref{lifting}, 
+$\alpha=\dfrac{1}{(\sum_n h(n)^2)^{\frac{1}{2}}}$ or
+$\alpha=(\sum_n \tilde{h}(n)^2)^{\frac{1}{2}}$
+
+and
+$\beta=\dfrac{1}{(\sum_n g(n)^2)^{\frac{1}{2}}}$ or
+$\beta=(\sum_n \tilde{g}(n)^2)^{\frac{1}{2}}$
+
+These alternative definitions arise because the wavelet filters defined in this specification
+are not orthogonal, but technically {\em biorthogonal} and so, strictly speaking, there is
+not power addition of the quantisation noise in each subband. The values used for quantisation
+matrices have been computed from the analysis rather than the synthesis filters, as this yields
+better compression results in practice.
+
+Note also that these factors must also take into account the shift factors used to add accuracy 
+bits prior to each wavelet decomposition stage. For a filter shift of $d$, $\alpha$ and 
+$\beta$ are each multiplied by $2^{-d/2}$.
+
+Given a subband weighting factor $w$, a quantisation offset for that subband may be defined 
+as $4*\log_2(w)$ rounded to the nearest integer. These offsets are then normalised so as
+to be non-negative, to produce the tables of the preceding section.
+
+\subsubsection{Custom quantisation matrices}
 \label{custommatrices}
+
+Custom matrices may be defined that take into account not only noise power normalisation
+but also perceptual weighting based on spatial frequency. Additional multiplicative factors
+may be computed for each subband, which produce a matrix of quantisation offsets which may
+then be added to the default unweighted quantisation matrices to produce a weighted quantisation
+matrix.
+
+An example perceptual weighting may be constructed from the CCIR 959 Contrast Sensitivity
+Function (CSF). This is a function $csf(s)$ which produces a value representing the
+sensitivity to detail at a given normalised spatial frequency $s$. For luminance, it is defined
+by 
+\[csf(s)=0.255*(1+0.2561*s^2)^{-0.75}\]
+
+Assuming an isotropic response, we may form a 2-d perceptual weighting function on 
+horizontal and vertical spatial frequencies $x_s,y_s$ by
+\begin{eqnarray*}
+c(x_s,y_s) & = & \dfrac{1}{csf((xs^2+ys^2)^{\frac{1}{2}})} \\
+& = & 0.255*(1+0.2561*(x_s^2+y_s^2))^{0.75}
+\end{eqnarray*}
+
+Each subband in a wavelet decomposition represents a subset of spatial frequencies according
+to level and orientation, partitioning the spatial frequency domain as per Figure \ref{fig:orientlevel}.
+Note that this partitioning is un-normalised, since output pictures (and their compression artefacts) may
+be viewed at a range of distances. 
+
+Accordingly we may pick a representative, un-normalised horizontal and vertical spatial frequency $(f_x(b),f_y(b))$ -- perhaps the middle frequency of the band. For example, an LH band $b$ at level 1 in a 1-level 
+decomposition will have mid frequency at $(pw/4,3*ph/4)$ where $ph$ and $pw$ are the padded
+width and height of the picture (Section \ref{subbandwidthheight}). This may be turned into a true
+spatial frequency by normalising by the number of horizontal and vertical cycles per degree the output
+pictures will subtend at the target viewing distance and aspect ratio:
+\[ (f_x(b)/cpd_x,f_y(b)/cpd_y)\]
+
+and this value may be fed into the weighting function to get a value $c(b)$. The appropriate
+quantisation offset for that subband is then $4*\log_2(c(b))$, which may be used to define a modified
+quantisation matrix.
+\subsection{Quantiser selection in the core syntax (Informative)}
+\label{qselectcore}
+
+\subsection{Quantiser selection in the low delay syntax (Informative)}
+\label{qselectld}
 
 
 
