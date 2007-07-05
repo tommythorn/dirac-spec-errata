@@ -16,7 +16,7 @@ coding applications and a low-delay syntax used for applications where decoding
 syntaxes apply primarily to the unpacking of wavelet coefficients, and
 do not affect stream parsing as specified in this section,
 except in terms of some alternative transform metadata 
-(Section {transformparameters}). 
+(Section \ref{transformparameters}). 
 
 The stream parsing specification is augmented by the parse diagrams
 in Appending \ref{parsediagrams}, which summarise in graphical form
@@ -37,7 +37,7 @@ Any change in video parameters necessitates that a sequence be terminated and a
 new sequence started.
 
 Default decoding parameters are computed based on the Access Unit header data.
-AU header data (excluding the AU picture number) is required to be constant throughout
+AU header data is required to be constant throughout
 a sequence (Section \ref{auheader}): however the decoding parameters used for
 decoding pictures are {\em not} necessarily constant since they may be overridden within
 the picture data. 
@@ -149,9 +149,13 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 \ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
 \hline
-0x0C & 0000 1100 & Intra Reference Picture & 0\\
+0x0C & 0000 1100 & Intra Reference Picture (arithmetic coding) & 0\\
 \hline
-0x08 & 0000 1000 & Intra Non Reference Picture & 0\\
+0x08 & 0000 1000 & Intra Non Reference Picture (arithmetic coding) & 0\\
+\hline
+0x?? & ???? ???? & Intra Reference Picture (no arithmetic coding) & 0\\
+\hline
+0x?? & ???? ???? & Intra Non Reference Picture (no arithmetic coding) & 0\\
 \hline
 0x0D & 0000 1101 & Inter Reference Picture & 1\\
 \hline
@@ -195,6 +199,10 @@ boolean, except for $num\_refs()$ which returns an integer:
 
 \begin{pseudo}{is\_non\_reference}{}
 \bsRET{((\ParseCode \&\text{0x04})==\text{0x00})}
+\end{pseudo}
+
+\begin{pseudo}{using\_ac}{}
+\bsRET{((\ParseCode \&\text{0x??})==\text{0x??})}
 \end{pseudo}
 
 \begin{pseudo}{num\_refs}{}
@@ -345,21 +353,20 @@ of source and sequence parameters.
 This section specifes the structure of the Access Unit Parse Parameters, which is as follows:
 
 \begin{pseudo}{parse\_parameters}{}
-\bsCODE{\SAUPictureNumber=read\_uint\_lit(4)}
 \bsITEM{\SVersionMajor}{uint}{}
 \bsITEM{\SVersionMinor}{uint}{}
 \bsITEM{\SProfile}{uint}{}
 \bsITEM{\SLevel}{uint}{}
 \end{pseudo}
 
-Access Unit Parse parameter data, with the exception of $\SAUPictureNumber$ shall remain constant
+Access Unit Parse parameter data shall remain constant
 (byte-for-byte identical) for all instances of the Access Unit header within a Dirac sequence.
+
 
 \subsubsection{AU picture number}
 
 $\SAUPictureNumber$ shall be equal to the picture number of the immediately succeeding picture,
 if there is one.
-
 \subsubsection{Version number}
 
 The version number of the Dirac syntax specification (this document) shall be used by the 

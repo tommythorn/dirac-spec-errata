@@ -10,8 +10,9 @@ for unpacking the set of coefficient subbands corresponding
 to a video picture component (Y, C1 or C2) in the core Dirac syntax, 
 according to the conventions set out in Section \ref{wltdecodeconventions}.
 
-In the Dirac stream core syntax, subband data is arithmetic coded and arranged by 
-level and orientation, from level 0 up to level \TransformDepth. The unpacking process
+In the Dirac stream core syntax, subband data is arranged by 
+level and orientation, from level 0 up to level \TransformDepth. Coefficients may
+be VLC or arithmetic coded. Where arithmetic coding is used, the unpacking process
  for each subband is contingent on data from subbands of the same orientation in 
  the next lower level. This is the {\em parent} subband; the subband of the same orientation in the next
 higher level is the {\em child} subband. 
@@ -112,6 +113,12 @@ The overall unpacking process is therefore:
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
 \end{pseudo}
 
+\begin{informative}
+Note that even if arithmetic coding is not being used for coefficient unpacking,
+the arithmetic decoding engine is still initialised to ensure that $\ABitsLeft$ is set
+to allow the bounded read function $read\_sintb()$ to operate correctly. 
+\end{informative}
+
 \paragraph{Intra DC band prediction}
 \label{intradcprediction}
 $\ $\newline
@@ -159,7 +166,7 @@ codeblock in position $(x,y)$.
 \end{comment}
 
 \paragraph{Codeblock dimensions}
-$\ $\newline$\ $\newline
+$\ $\newline
 
 The codeblock covers coefficients in the horizontal range $left$ to $right-1$ and in the vertical
 range $bottom$ to $top-1$ where these values are defined by:
@@ -180,7 +187,11 @@ The codeblock unpacking process is defined as:
   \bsCODE{quant\_idx += quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{v=bottom}{top-1}
     \bsFOR{h=left}{right-1}
-      \bsCODE{coeff\_unpack(data,level,orient,quant_idx,v,h)}{\ref{wltcoeff}}
+      \bsIF{using\_ac()==\true}
+          \bsCODE{coeff\_unpack(data,level,orient,quant_idx,v,h)}{\ref{wltcoeff}}
+      \bsELSE
+          \bsCODE{data[level][orient][v][h]=read\_sintb()}{\ref{segol}}
+      \bsEND
     \bsEND
   \bsEND
 \bsEND
@@ -188,6 +199,12 @@ The codeblock unpacking process is defined as:
 \end{pseudo}
 
 If the codeblock is skipped, then coefficients within that codeblock remain 0.
+
+\begin{informative}
+If arithmetic coding is not employed, the use of the bounded read operation ensures
+that a subband may, if desired, be terminated early and all remaining coefficients
+will be 0.
+\end{informative}
 
 \paragraph{Skipped codeblock flag}
 \label{zeroblockflag}
