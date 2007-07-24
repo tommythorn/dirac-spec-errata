@@ -126,8 +126,8 @@ Parse Info header to the first byte of the previous Parse Info header, if there 
 is no subsequent Parse Info header, it shall be be 0
 \end{itemize}
 
-Parse codes are divided into two sets. The first set of parse codes relate to the core Dirac syntax,
-used for conventional coding applications. The second set of parse codes relate to the low-delay
+Parse codes are divided into three sets. The first set of parse codes is generic. The second set 
+relates to the core Dirac syntax, used for conventional coding applications. The third set of parse codes relate to the low-delay
 syntax, used for professional applications. These are suitable
 for applications where the required delay is less than a picture -- perhaps much less.
 
@@ -143,7 +143,7 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 0x20 & 0010 0000 & Auxiliary data & -- \\
 \hline
-0x60 & 0110 0000 & Padding data & -- \\
+0x30 & 0011 0000 & Padding data & -- \\
 \hline
 \multicolumn{4}{|c|}{\bf Core syntax} \\
 \hline
@@ -153,17 +153,25 @@ for applications where the required delay is less than a picture -- perhaps much
 \hline
 0x08 & 0000 1000 & Intra Non Reference Picture (arithmetic coding) & 0\\
 \hline
-0x?? & ???? ???? & Intra Reference Picture (no arithmetic coding) & 0\\
+0x4C & 0100 1100 & Intra Reference Picture (no arithmetic coding) & 0\\
 \hline
-0x?? & ???? ???? & Intra Non Reference Picture (no arithmetic coding) & 0\\
+0x48 & 0100 1000 & Intra Non Reference Picture (no arithmetic coding) & 0\\
 \hline
-0x0D & 0000 1101 & Inter Reference Picture & 1\\
+0x0D & 0000 1101 & Inter Reference Picture (arithmetic coding) & 1\\
 \hline
-0x0E & 0000 1110 & Inter Reference Picture & 2\\
+0x4D & 0100 1101 & Inter Reference Picture (no arithmetic coding) & 1\\
 \hline
-0x09 & 0000 1001 & Inter Non Reference Picture & 1\\
+0x0E & 0000 1110 & Inter Reference Picture (arithmetic coding) & 2\\
 \hline
-0x0A & 0000 1010 & Inter Non Reference Picture & 2\\
+0x4E & 0100 1110 & Inter Reference Picture (no arithmetic coding) & 2\\
+\hline
+0x09 & 0000 1001 & Inter Non Reference Picture (arithmetic coding)& 1\\
+\hline
+0x49 & 0100 1001 & Inter Non Reference Picture (no arithmetic coding) & 1\\
+\hline
+0x0A & 0000 1010 & Inter Non Reference Picture (arithmetic coding) & 2\\
+\hline
+0x4A & 0100 1010 & Inter Non Reference Picture (no arithmetic coding)& 2\\
 \hline
 \multicolumn{4}{|c|}{\bf Low-delay syntax} \\
 \hline
@@ -186,7 +194,7 @@ boolean, except for $num\_refs()$ which returns an integer:
 \end{pseudo}
 
 \begin{pseudo}{is\_picture}{}
-\bsRET{((\ParseCode \&\text{0x18})==\text{0x08})}
+\bsRET{((\ParseCode \&\text{0x08})==\text{0x08})}
 \end{pseudo}
 
 \begin{pseudo}{is\_end\_of\_sequence}{}
@@ -202,7 +210,7 @@ boolean, except for $num\_refs()$ which returns an integer:
 \end{pseudo}
 
 \begin{pseudo}{using\_ac}{}
-\bsRET{((\ParseCode \&\text{0x??})==\text{0x??})}
+\bsRET{((\ParseCode \&\text{0x40})==\text{0x40})}
 \end{pseudo}
 
 \begin{pseudo}{num\_refs}{}
