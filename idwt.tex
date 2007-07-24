@@ -59,7 +59,7 @@ is:
 
 \begin{pseudo}{idwt\_synthesis}{data}
 \bsCODE{LL\_band = data[0][\LL]}
-\bsFOR{n=0}{\WaveletDepth-1}
+\bsFOR{n=1}{\WaveletDepth}
    \bsCODE{ LL\_band = vh\_synthesis(LL\_band, data[n][\HL], data[n][\LH], data[n][\HH])}{\ref{vhsynth}}
 \bsEND
 \bsRET{LL\_band}
@@ -72,7 +72,7 @@ other input bands, whereas the output dimensions are double those of the input b
 \label{vhsynth}
 
 This section specifies the operation of the vertical and horizontal
-synthesis process $vh\_synthesis(LL\_data, HL\_data, LH\_data, HH\_data)$.
+synthesis process $vh\_synthesis()$.
 
 $vh\_synthesis$ is repeatedly invoked by $idwt\_synthesis()$. It operates on four subband
 data arrays of identical dimensions to produce a new array $synth$, which is returned as the result of

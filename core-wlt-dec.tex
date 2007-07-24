@@ -184,7 +184,7 @@ The codeblock unpacking process is defined as:
 \begin{pseudo}{codeblock}{data,level,orient,quant\_index,y,x}
 \bsCODE{skipped=zero\_flag()}{\ref{zeroblockflag}}
 \bsIF{skipped==\false}
-  \bsCODE{quant\_idx += quant\_offset()}{\ref{blockquantidx}}
+  \bsCODE{quant\_idx += block\_quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{v=bottom}{top-1}
     \bsFOR{h=left}{right-1}
       \bsIF{using\_ac()==\true}
@@ -229,7 +229,7 @@ it is unpacked from the stream.
 $\ $\newline$\ $\newline
 \label{blockquantidx}
 
-If $\CodeblockMode=\SingleQuantiser$,  $quant\_offset()$ shall return 0.
+If $\CodeblockMode=\SingleQuantiser$,  $block\_quant\_offset()$ shall return 0.
 
 If $\CodeblockMode=\MultipleQuantiser$ then the quantiser index offset
 is extracted from the stream -- $read\_sinta(quant\_contexts())$ is returned, where
