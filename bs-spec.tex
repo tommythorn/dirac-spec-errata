@@ -868,7 +868,7 @@ alignment for clarity). The process for parsing the picture header is as follows
 \bsIF{is\_inter()}{\ref{parseinfo}}
     \bsCODE{reference\_picture\_numbers()}
 \bsEND
-\bsIF(is\_low\_delay()==\false)
+\bsIF{is\_low\_delay()==\false}
     \bsCODE{retired\_picture\_list()}
 \bsEND
 \end{pseudo}
@@ -899,7 +899,7 @@ picture number:
 
 
 The retired picture list is a list of pictures to be removed from the reference picture
-buffer before the current picture is decoded. The rules for the use of the retired
+buffer after the current picture is decoded. The rules for the use of the retired
 picture list are specified in Section \ref{refbuffer}.
 The list of retired picture numbers is also encoded differentially with respect to the
 picture number:
