@@ -154,43 +154,43 @@ even length, consisting
 of either a row or a column of a 2-dimensional integral data array.
 
 The one-dimensional synthesis process comprises the application of a
-number of reversible integer lifting filter operations. An integral lifting filter
- is characterised by four elements:
+number of reversible integer lifting filter operations. Four types 
+of lifting operations are defined: Type 1, Type 2, Type 3 and type 4.
+Each type is characterised by two elements:
 \begin{itemize}
 \item a set of taps $t_{-N}, \hdots,t_M$
 \item a scale factor $s$
-\item a parity (odd or even)
-\item whether it is an ``update" or ``predict" filter
 \end{itemize}
 
-An even lifting filtering operation modifies the even coefficients
+Type 1 and Type 2 lifting filtering operations modify the even coefficients
 by the odd coefficients:
 \begin{eqnarray*}
-  A[2*n]& +=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Update)} \\
-  A[2*n]& -=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Predict)}
+  A[2*n]& +=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Type 1)} \\
+  A[2*n]& -=& \big( \sum^M_{i=-N} t_i *A[2*(n+i) + 1] +(1\ll (s-1))\big) \gg s \mbox{ (Type 2)}
 \end{eqnarray*}
 
-An odd lifting filtering operation modifies the odd coefficients
+Type 3 and Type 4 lifting filtering operation modify the odd coefficients
  by the even coefficients:
 \begin{eqnarray*}
-  A[2*n+1]& +=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)]+(1\ll (s-1)) \big) \gg s \mbox{ (Update)} \\
-  A[2*n+1]& -=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)] +(1\ll (s-1))\big) \gg s \mbox{ (Predict)} \\
+  A[2*n+1]& +=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)]+(1\ll (s-1)) \big) \gg s \mbox{ (Type 3)} \\
+  A[2*n+1]& -=&  \big( \sum^M_{i=-N} t_i A[2*(n+i)] +(1\ll (s-1))\big) \gg s \mbox{ (Type 4)} \\
 \end{eqnarray*}
 
 \begin{informative}
-Note that the distinction between update and predict filters is necessary
+Note that the distinctions between Type 1 and Type 2 and between 
+Type 3 and Type 4 filters is necessary
 because integer rounding is being used, and so the filters are non-linear.
-In particular, a predict filter with taps $t_i$ is {\em not} equivalent to 
-an update filter with taps $-t_i$.
+In particular, a Type 1 or Type 3 filter with taps $t_i$ is {\em not} equivalent to 
+an Type 2 or Type 4 filter with taps $-t_i$.
 \end{informative}
 
 These formulae are deemed to be applied for all applicable $n$
 before the next filtering stage is applied and to use edge extension (of even and
 odd parts separately) at the array
-edges where the filter would otherwise overlap. In pseudo-code, two
-functions $lifteven(A, t_i, s)$ and $liftodd(A, t_i, s)$ are specified by:
+edges where the filter would otherwise overlap. In pseudo-code, four
+functions $lift1(A, t_i, s)$ and $lift2(A, t_i, s)$ are specified by:
 
-\begin{pseudo}{lifteven}{A,t_i, s,fsort}
+\begin{pseudo}{lift1}{A,t_i, s}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
     \bsFOR{i=-N}{M}
@@ -200,16 +200,25 @@ functions $lifteven(A, t_i, s)$ and $liftodd(A, t_i, s)$ are specified by:
         \bsCODE{sum+=t_i*A[pos]}
     \bsEND
     \bsCODE{sum+=(1\ll (s-1))}
-    \bsIF{fsort==\textit{PREDICT}}
-        \bsCODE{A[2*n]-=(sum\gg s)}
-    \bsELSE
-        \bsCODE{A[2*n]+=(sum\gg s)}
+    \bsCODE{A[2*n]+=(sum\gg s)}
 \bsEND
 \end{pseudo}
 
-and
+\begin{pseudo}{lift2}{A,t_i, s}
+\bsFOR{n=0}{(\length(A)//2)-1}
+    \bsCODE{sum=0}
+    \bsFOR{i=-N}{M}
+        \bsCODE{pos=2*(n+i)-1}
+        \bsCODE{pos=\min(pos, \length(A)-1)}        
+        \bsCODE{pos=\max(pos, 1)}
+        \bsCODE{sum+=t_i*A[pos]}
+    \bsEND
+    \bsCODE{sum+=(1\ll (s-1))}
+    \bsCODE{A[2*n]-=(sum\gg s)}
+\bsEND
+\end{pseudo}
 
-\begin{pseudo}{liftodd}{A,t_i, s,fsort}
+\begin{pseudo}{lift3}{A,t_i, s,fsort}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
     \bsFOR{i=-N}{M}
@@ -219,14 +228,28 @@ and
         \bsCODE{sum+=t_i*A[pos]}
     \bsEND
     \bsCODE{sum+=(1\ll (s-1))}
-    \bsIF{fsort==\textit{PREDICT}}
-        \bsCODE{A[2*n+1]-=(sum\gg s)}
-    \bsELSE
-        \bsCODE{A[2*n+1]+=(sum\gg s)}
-\bsEND\end{pseudo}
+    \bsCODE{A[2*n+1]+=(sum\gg s)}
+\bsEND
+\end{pseudo}
 
-$1d\_synthesis$ applies the sequence of lifting filters specified in Section \ref{wltfilters},
-invoking $lifteven$ for even parity filters and $liftodd$ for odd parity filters.
+and
+
+\begin{pseudo}{lift4}{A,t_i, s}
+\bsFOR{n=0}{(\length(A)//2)-1}
+    \bsCODE{sum=0}
+    \bsFOR{i=-N}{M}
+        \bsCODE{pos=2*(n+i)}
+        \bsCODE{pos=\min(pos, \length(A)-2)}        
+        \bsCODE{pos=\max(pos, 0)}
+        \bsCODE{sum+=t_i*A[pos]}
+    \bsEND
+    \bsCODE{sum+=(1\ll (s-1))}
+    \bsCODE{A[2*n+1]-=(sum\gg s)}
+\bsEND
+\end{pseudo}
+
+$1d\_synthesis$ applies the sequence of lifting filters specified in Section \ref{wltfilters}
+according to the types specified there.
 
 \begin{informative}
 This specification defines the lifting process on the basis of lifting
@@ -255,9 +278,9 @@ apply for each value of $\WaveletIndex$ are specified in Tables \ref{filtertable
 \hline
 Lifting steps:  \\
 \begin{tabular}{l}
-1. Even, Predict, $s=2, t_0=1, t_1=1$ i.e. \\
+1. Type 2, $s=2, t_0=1, t_1=1$ i.e. \\
 \quad $ A[2*n]     -=  (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
-2. Odd, Update, $s=4$, $t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
+2. Type 3, $s=4$, $t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
 \quad $ A[2*n+1]  +=  (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]-A[2*n+4]+8)\gg 4$
 \end{tabular}
 \\
@@ -276,9 +299,9 @@ $filtershift()$ returns 1\\
 Lifting steps: \\
 
 \begin{tabular}{l}
-1. Even, Predict, $s=2, t_0=1, t_1=1$ i.e. \\
+1. Type 2, $s=2, t_0=1, t_1=1$ i.e. \\
 \quad $ A[2*n]  -= (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
-2. Odd, Update, $s=1$, $t_0=1, t_1=1$ i.e. \\
+2. Type 3, $s=1$, $t_0=1, t_1=1$ i.e. \\
 \quad $ A[2*n+1]  += (A[2*n]+A[2*n+2]+1)\gg 1$
 \end{tabular}
 \\
@@ -295,11 +318,10 @@ $filtershift()$ returns 1\\
 
 \hline
 Lifting steps: \\
-\hline
 \begin{tabular}{l}
-1. Even, Predict, $s=5, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
+1. Type 2, $s=5, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
 \quad $ A[2*n]  -= (-A[2*n-3]+9*A[2*n-1]+9*A[2*n+1]+A[2*n+3]+16)\gg 5$ \\
-2. Odd, Update, $s=4, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
+2. Type 3, $s=4, t_{-1}=-1, t_0=9, t_1=9, t_2=-1$ i.e. \\
 \quad $ A[2*n+1]  += (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]+A[2*n+4]+8)\gg 4$
 \end{tabular}
 \\
@@ -317,9 +339,9 @@ $filtershift()$ returns 1\\
 \hline
 Lifting steps:\\
 \begin{tabular}{l}
-1. Even, Predict, $s=1, t_1=1$ i.e. \\
+1. Type 2, $s=1, t_1=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
-2. Odd, Update, $s=0, t_0=1$ i.e. \\
+2. Type 3, $s=0, t_0=1$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
 \\
@@ -337,9 +359,9 @@ $filtershift()$ returns 0\\
 \hline
 Lifting steps:\\
 \begin{tabular}{l}
-1. Even, Predict, $s=1, t_1=1$ i.e. \\
+1. Type 2, $s=1, t_1=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
-2. Odd, Update, $s=0, t_0=1$ i.e. \\
+2. Type 3, $s=0, t_0=1$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
 \\
@@ -358,9 +380,9 @@ $filtershift()$ returns 1\\
 Lifting steps:\\
 
 \begin{tabular}{l}
-1. Even, Predict, $s=1, t_1=1$ i.e. \\
+1. Type 2, $s=1, t_1=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
-2. Odd, Update, $s=0, t_0=1$ i.e. \\
+2. Type 3, $s=0, t_0=1$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
 \\
@@ -376,12 +398,11 @@ $filtershift()$ returns 2\\
 \begin{tabular}{|l|}
 \hline
 Lifting steps:\\
-\hline
 \begin{tabular}{l}
-1. Odd, Update, $s=8, t_{-3}=-2, t_{-2}=10, t_{-1}=-25, t_0=81, t_1=81, t_2=-25, t_3=10, t_4=-2$ i.e. \\
+1. Type 3, $s=8, t_{-3}=-2, t_{-2}=10, t_{-1}=-25, t_0=81, t_1=81, t_2=-25, t_3=10, t_4=-2$ i.e. \\
 $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+6])\\
                                              & &       -25*(A[2*n-2]+A[2*n+4])+81*(A[2*n]+A[2*n+2])+128)\gg 8 \end{array}$ \\
-1. Even, Predict,  $s=8, t_{-3}=-8, t_{-2}=21, t_{-1}=-46, t_0=161, t_1=161, t_2=-46, t_3=21, t_4=-8$ i.e. \\
+1. Type 2,  $s=8, t_{-3}=-8, t_{-2}=21, t_{-1}=-46, t_0=161, t_1=161, t_2=-46, t_3=21, t_4=-8$ i.e. \\
  $ \begin{array}{rcl}A[2*n]  & -= & (-8*(A[2*n-7]+A[2*n+7])+21*(A[2*n-5]+A[2*n+5]) \\
                                           & &      -46*(A[2*n-3]+A[2*n+3])+161*(A[2*n-1]+A[2*n+1])+128)\gg 8 \end{array}$ 
 \end{tabular}
@@ -399,15 +420,14 @@ $filtershift()$ returns 0\\
 
 \hline
 Lifting steps:\\
-\hline
 \begin{tabular}{l}
-1. Even, Predict, $s=12, t_0=1817, t_1=1817$ i.e. \\
+1. Type 2, $s=12, t_0=1817, t_1=1817$ i.e. \\
 \quad $A[2*n] -=  (1817*A[2*n-1]+1817*A[2*n+1]+2048)\gg 12$ \\
-2. Odd, Predict, $s=12, t_0=3616, t_1=3616$ i.e. \\
+2. Type 4, $s=12, t_0=3616, t_1=3616$ i.e. \\
 \quad $ A[2*n+1] -= (3616*A[2*n]+3616*A[2*n+2]+2048)\gg 12$ \\
-3. Even, Update, $s=12, t_0=217, t_1=217$ i.e. \\
+3. Type 1, $s=12, t_0=217, t_1=217$ i.e. \\
 \quad $A[2*n] +=  (217*A[2*n-1]+217*A[2*n+1]+2048)\gg 12$ \\
-4. Odd, Update, $s=12, t_0=6497, t_1=6497$ i.e. \\
+4. Type 3, $s=12, t_0=6497, t_1=6497$ i.e. \\
 \quad $ A[2*n+1] += (6497*A[2*n]+6497*A[2*n+2]+2048)\gg 12$
 \end{tabular}
 \\
