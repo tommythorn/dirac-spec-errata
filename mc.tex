@@ -140,7 +140,7 @@ Note that this clipping is {\em in addition} to clipping performed on the output
 \bsFOR{y=0}{lenY-1}
     \bsFOR{x=0}{lenX-1}
         \bsCODE{pic[y][x] += pixel\_predict(y, x, pic, ref1, ref2, c)}{\ref{pixelpredict}}
-        \bsCODE{pic[y][x] = \clip(pic[y][x], 0, 2^\VideoDepth-1)}
+        \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{\VideoDepth-1}, 2^{\VideoDepth-1}-1)}
     \bsEND
 \bsEND
 \end{pseudo*}
@@ -259,7 +259,7 @@ strategy:
 \bsFOR{y=0}{lenY-1}
     \bsFOR{x=0}{lenX-1}
         \bsCODE{pic[y][x] += (b[y][x]+2^{total\_wt\_bits-1})\gg total\_wt\_bits}
-        \bsCODE{pic[y][x] = \clip(pic[y][x], 0, 2^\VideoDepth-1)}
+        \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{\VideoDepth-1}, 2^{\VideoDepth-1}-1)}
     \bsEND
 \bsEND
 \end{pseudo*}
