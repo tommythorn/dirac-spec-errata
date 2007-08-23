@@ -134,7 +134,7 @@ used as a reference:
 \begin{pseudo}{clip\_component}{comp\_data}
 \bsFOR{y=0}{\height(comp\_data)-1}
     \bsFOR{x=0}{\width(comp\_data)-1}
-        \bsCODE{data = \clip(comp\_data[y][x], 0, 2^\VideoDepth-1)}
+        \bsCODE{data = \clip(comp\_data[y][x], -2^{\VideoDepth-1}, 2^{\VideoDepth-1}-1)}
      \bsEND
 \bsEND
 \end{pseudo}

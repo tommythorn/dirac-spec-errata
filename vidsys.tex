@@ -84,30 +84,31 @@ Co) and $C2$ (representing $Cg$) data. This transform is described in Section
 \subsubsection{Signal range}
 \label{signalranges}
 
-When $YCoCg$ coding is not being applied, offset and excursion values 
+Video signals within the decoder are bi-polar. Offset and offset and excursion values 
 $\LumaOffset$, $\LumaExcursion$, $\ChromaOffset$ and
 $\ChromaExcursion$ should be used to convert the
 integer-valued decoded luma and chroma data $Y$, $C1$ ($Cb$) and $C2$ ($Cr$) 
 to intermediate values $E_Y$, $E_{Cb}$, and $E_{Cr}$ by the recipe
 \begin{eqnarray*}
-E_Y & = & \dfrac{Y-\LumaOffset}{\LumaExcursion} \\
-E_{Cb} & = & \dfrac{C1-\ChromaOffset}{\ChromaExcursion} \\
-E_{Cr} & = & \dfrac{C2-\ChromaOffset}{\ChromaExcursion}
+E_Y & = & \dfrac{Y}{\LumaExcursion}+dfrac{\LumaOffset}{\VideoDepth} = \dfrac{Y}{\LumaExcursion}+0.5\\
+E_{Cb} & = & \dfrac{C1+\ChromaOffset}{\ChromaExcursion} \\
+E_{Cr} & = & \dfrac{C2+\ChromaOffset}{\ChromaExcursion}
 \end{eqnarray*}
 
 $E_Y$ is normally clipped to the range $[0,1]$ and $E_{Cb}$, $E_{Cr}$
-to the range $[-0.5,0.5]$. This effectively clips integer $Y$ values to 
+to the range $[-0.5,0.5]$. This effectively clips integer $Y$ values within
+the codec to 
 the interval
-\[ [\LumaOffset,\LumaOffset+\LumaExcursion] \]
+\[ [-\LumaExcursion/2, \LumaExcursion/2] \]
 and $C1$, $C2$ values to
-\[ [\ChromaOffset-\ChromaExcursion/2,\ChromaOffset+\ChromaExcursion/2] \]
+\[ [-\ChromaExcursion/2,\ChromaExcursion/2] \]
 
 However, maintaining an extended RGB gamut may mean that either such
 clipping is not done, or non-standard offset and excursion values are
-used to extract the extended gamut from the non-negative decoded $Y$, $C1$,
+used to extract the extended gamut from the non-negative $Y$, $C1$,
 and $C2$ values.
 
-Signal range values are not used in the case of $YCoCg$ coding.[True??]
+In the case of $YCoCg$ coding, [tbc]
 
 \begin{comment}
 Non-default offset and excursion values cannot be coded if the chroma
