@@ -169,11 +169,11 @@ Initialisation of the arithmetic encoder is very simple -- the internal variable
 set as:
 \begin{eqnarray*}
 low&=&\text{0x0} \\
-range&=&\text{0x10000} \\
+range&=&\text{0xFFFF} \\
 carry&=&0
 \end{eqnarray*}
 
-With 16 bit accuracy, 0x10000 corresponds to an interval width value of 1. All
+With 16 bit accuracy, 0xFFFF corresponds to an interval width value of (almost) 1. All
 context probabilities are initialised to probability $1/2$ (0x8000).
 
 \subsubsection{Encoding binary values}
@@ -340,7 +340,7 @@ decoding state is initialised as follows:
 \begin{pseudo}{initialise\_arithmetic\_decoding}{block\_data\_length}
 \bsCODE{\ABitsLeft=8*block\_data\_length}
 \bsCODE{\ALow = \text{0x0}}
-\bsCODE{\ARange =\text{0x10000}}
+\bsCODE{\ARange =\text{0xFFFF}}
 \bsCODE{\ACode =\text{ 0x0}}
 \bsFOR{i=0}{15}
     \bsCODE{\ACode <<= 1}
@@ -356,6 +356,11 @@ Contexts are initialised by the $init\_contexts()$ function as follows:
   \bsCODE{\AContexts[i][prob0]=\text{0x8000}}
 \bsEND
 \end{pseudo}
+
+\begin{informative}
+Note also that the range and probability variables are guaranteed to lie within a 16 bit range 0-0xFFFF
+inclusive.
+\end{informative}
 
 \subsubsection{Data input}
 \label{inputarith}
@@ -624,7 +629,7 @@ decoding state is initialised as follows:
 \begin{pseudo}{initialise\_arithmetic\_decoding}{block\_data\_length}
 \bsCODE{\ABitsLeft=8*block\_data\_length}
 \bsCODE{\ALow = \text{0x0}}
-\bsCODE{\ARange =\text{0x10000}}
+\bsCODE{\ARange =\text{0xFFFF}}
 \bsCODE{\ACode =\text{ 0x0}}
 \bsFOR{i=0}{15}
     \bsCODE{\ACode <<= 1}
