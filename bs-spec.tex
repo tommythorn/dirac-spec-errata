@@ -792,16 +792,10 @@ The Interlaced Coding part of the Access Unit Header shall determine whether sou
 
 Interlaced coding shall determine the interpretation of coded pictures in the stream. If video is coded as interlaced then coded pictures represent fields, else coded pictures represent frames. 
 
-Interlaced video is initially set as coded as fields (interlaced coding), and progressive video is initially set as coded as frames (progressive coding).
-
 The $interlace\_coding$ parsing process shall be as defined by the following table: 
 
 \begin{pseudo}{interlaced\_coding}{video\_params}
-\bsCODE{coding\_mode=video\_params[interlaced]}{\ref{defaultcodingmode}}	
-\bsITEM{scan\_coding\_flag}{bool}
-\bsIF{scan\_coding\_flag == \true}	
-  \bsCODE{coding\_mode=!coding\_mode}
-\bsEND
+\bsITEM{coding\_mode}{bool}
 \bsRET{coding\_mode}
 \end{pseudo}
 
@@ -812,7 +806,7 @@ With interlaced coding each frame shall be split into two fields as indicated by
 An effect of interlace coding shall be to determine the vertical dimensions of coded pictures. Hence, once the interlace coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{}).
 
 \begin{informative}
-There are may be circumstances in which it is appropriate to interlaced source video as if it were progressive frames. This might be appropriate if there were limited motion in the video, in which case coding as if it were progressive frames would yield fewer coded bits. Sometimes progressively scanned video is conveyed as if it were interlaced, which is know as "film mode" or progressive segmented frames (psf). For a progressive video source, formatted as psf, it is appropriate to code it as progressive frames even though it is signaled as being interlaced.
+There are may be circumstances in which it is appropriate to code interlaced source video as if it were progressive frames. Sometimes, also progressively scanned video is conveyed as if it were interlaced, which is know as "film mode" or progressive segmented frames (psf) and it may be convenient to code it as interlaced fields.
 \end{informative}
 
 \subsection{Setting coding parameters}
