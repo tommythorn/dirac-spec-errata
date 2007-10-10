@@ -852,8 +852,8 @@ Frame heights shall be constrained such that the chroma height of pictures is eq
 The $video\_depth()$ process, which determines the maximum number of bits required to represent a sample of the decoded video, shall be defined as follows:
 
 \begin{pseudo}{video\_depth}{video\_params}
-\bsCODE{\SLumaDepth =\left\lceil \log_2(video\_params[luma\_excursion])\right\rceil}
-\bsCODE{\SChromaDepth =\left\lceil \log_2(video\_params[chroma\_excursion])\right\rceil}
+\bsCODE{\SLumaDepth =1+\left\lfloor \log_2(video\_params[luma\_excursion])\right\rfloor}
+\bsCODE{\SChromaDepth =1+\left\lfloor \log_2(video\_params[chroma\_excursion])\right\rfloor}
 \end{pseudo}
 
 Note that for some video formats (specifically YCgCo) the luma and chroma depths may be different.
@@ -1301,7 +1301,7 @@ and  (if low-delay syntax is not being used) how subbands are spatially partitio
 
 \begin{pseudo}{transform\_parameters}{state}
 \bsCODE{wavelet\_filter()}{\ref{wltfilter}}
-\bsCODE{wavelet\_depth()}{\ref{wltdepth}}
+\bsCODE{transform\_depth()}{\ref{wltdepth}}
 \bsIF{is\_low\_delay()==\false}
     \bsCODE{spatial\_partition()}{\ref{spatialpartition}}
 \bsELSE
@@ -1361,19 +1361,19 @@ synthesis filters, so the (9,7) and (13,7) filters may be referred to in the lit
 as (2,2) and (4,2) filters respectively.
 \end{informative}
 
-\subsubsection{Wavelet depth}
+\subsubsection{Transform depth}
 \label{wltdepth}
 
-The wavelet depth determines the number of times the vertical and horizontal
-wavelet filters may be applied. The $wavelet\_depth()$ parsing process is as
+The wavelet transform depth determines the number of times the vertical and horizontal
+wavelet filters may be applied. The $transform\_depth()$ parsing process is as
 follows:
 
-\begin{pseudo}{wavelet\_depth}{}
-\bsITEM{\WaveletDepth}{uint}
+\begin{pseudo}{transform\_depth}{}
+\bsITEM{\TransformDepth}{uint}
 \end{pseudo}
 
-Allowable $\WaveletDepth$ values are determined by the level and profile 
-(Appendix \ref{profilelevel}). The wavelet depth determines the number of 
+Allowable $\TransformDepth$ values are determined by the level and profile 
+(Appendix \ref{profilelevel}). The transform depth determines the number of 
 subbands and the the dimensions of the subband data array (Section \ref{wltinit}).
 
 \subsubsection{Spatial partition of wavelet data (core syntax)}
@@ -1387,12 +1387,12 @@ $\Codeblocks[level][h]$ respectively.
 \bsCODE{\CodeblockMode=0}
 \bsITEM{spatial\_partition\_flag}{bool}
 \bsIF{spatial\_partition\_flag==\false}
-    \bsFOR{level=0}{\WaveletDepth}
+    \bsFOR{level=0}{\TransformDepth}
         \bsCODE{\Codeblocks[level][h]=1}
         \bsCODE{\Codeblocks[level][v]=1}
     \bsEND
 \bsELSE
-    \bsFOR{level=0}{\WaveletDepth}
+    \bsFOR{level=0}{\TransformDepth}
         \bsITEM{\Codeblocks[level][h]}{uint}
         \bsITEM{\Codeblocks[level][v]}{uint}
     \bsEND
@@ -1440,7 +1440,7 @@ If $is\_low\_delay()==\true$, the following constraints are placed upon the slic
 and the wavelet depth:
  
 \begin{itemize}
-\item $\SliceWidth$ and $\SliceHeight$ shall both be divisible by $2^\WaveletDepth$
+\item $\SliceWidth$ and $\SliceHeight$ shall both be divisible by $2^\TransformDepth$
 \begin{comment}
 \item If $is\_inter()==\true$, $\SliceWidth$ shall be divisible by $4*\LumaXBsep$ and $\SliceHeight$ shall be divisible by $4*\LumaYBsep$
 \end{comment}
@@ -1466,7 +1466,7 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
 \bsITEM{non\_default\_quant\_matrix}{bool}
 \bsIF{non\_default\_quant\_matrix==\true}
     \bsITEM{\QuantMatrix[0][\LL]}{uint}
-    \bsFOR{level=1}{\WaveletDepth}
+    \bsFOR{level=1}{\TransformDepth}
         \bsITEM{\QuantMatrix[level][\HL]}{uint}
         \bsITEM{\QuantMatrix[level][\LH]}{uint}
         \bsITEM{\QuantMatrix[level][\HH]}{uint}
@@ -1476,7 +1476,7 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
 \bsEND
 \end{pseudo}
 
-The function $set\_quant\_matrix()$ sets default quantisation matrices for $\WaveletDepth\leq4$ and certain values of $\WaveletIndex$, as per Table \ref{presetqmatrices}. For values not represented in this table, $non\_default\_quant\_matrix$ shall be $\True$ (custom quantisation matrix). 
+The function $set\_quant\_matrix()$ sets default quantisation matrices for $\TransformDepth\leq4$ and certain values of $\WaveletIndex$, as per Table \ref{presetqmatrices}. For values not represented in this table, $non\_default\_quant\_matrix$ shall be $\true$ (custom quantisation matrix). 
  
 \begin{informative}
 Default quantisation matrices are ``unweighted'', and intended only to compensate for the differential power gain of the high-pass and low-pass filters. Perceptual weighting may be applied by designing a custom matrix as described in Appendix \ref{custommatrices}.

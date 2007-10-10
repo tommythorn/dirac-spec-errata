@@ -10,8 +10,8 @@ and low-delay syntax.
 
 This section defines default quantisation matrices to be used 
 for the quantisation of slice coefficients in the low-delay syntax.
-The following tables define matrices for $\WaveletDepth\leq 4$. 
-Values of $\WaveletDepth$ not present in the tables
+The following tables define matrices for $\TransformDepth\leq 4$. 
+Values of $\TransformDepth$ not present in the tables
 in this section shall require a custom matrix to be encoded, 
 as per Section \ref{sliceparams}. Informative advice for 
 constructing quantisation matrices based on noise power 
@@ -22,7 +22,7 @@ Appendix \ref{custommatrices}.
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -32,7 +32,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -45,7 +45,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 2 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -61,7 +61,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 3 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -88,7 +88,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -98,7 +98,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -111,7 +111,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 2 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -127,7 +127,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 5 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -154,7 +154,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -164,7 +164,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -177,7 +177,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 2 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -193,7 +193,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 3 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -220,7 +220,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -230,7 +230,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -243,7 +243,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -259,7 +259,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -286,7 +286,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -296,7 +296,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -309,7 +309,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -325,7 +325,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -352,7 +352,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -362,7 +362,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -375,7 +375,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 4 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -391,7 +391,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 8 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -418,7 +418,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -428,7 +428,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 7 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -441,7 +441,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 10 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -457,7 +457,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 14 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -484,7 +484,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==1$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==1$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -494,7 +494,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 1 & HH & 0 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==2$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==2$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -507,7 +507,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 2 & HH & 2 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==3$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==3$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline
@@ -523,7 +523,7 @@ Level & Orientation & \QuantMatrix[level][orientation] \\
 3 & HH & 4 \\
 \hline
 \hline
-\multicolumn{3}{|c|}{{$\WaveletDepth==4$}} \\
+\multicolumn{3}{|c|}{{$\TransformDepth==4$}} \\
 \hline
 Level & Orientation & \QuantMatrix[level][orientation] \\
 \hline

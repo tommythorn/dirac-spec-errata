@@ -59,7 +59,7 @@ is:
 
 \begin{pseudo}{idwt\_synthesis}{data}
 \bsCODE{LL\_band = data[0][\LL]}
-\bsFOR{n=1}{\WaveletDepth}
+\bsFOR{n=1}{\TransformDepth}
    \bsCODE{ LL\_band = vh\_synthesis(LL\_band, data[n][\HL], data[n][\LH], data[n][\HH])}{\ref{vhsynth}}
 \bsEND
 \bsRET{LL\_band}
@@ -459,7 +459,7 @@ This section defines the decoding process $idwt\_pad\_removal(pic, c)$. This
 is invoked subsequent to $idwt\_synthesis()$.
 
 Subband data elements have been padded to ensure that the reconstructed 
-data array $pic$ has dimensions divisible by $2^\WaveletDepth$.
+data array $pic$ has dimensions divisible by $2^\TransformDepth$.
 
 Values $width$ and $height$ are defined to be the appropriate dimensions
 of the component data:
