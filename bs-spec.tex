@@ -25,7 +25,7 @@ the struture of the stream.
 \subsection{Introduction}
 
 A stream is a concatenation of Dirac sequences.
-A sequence is a concatenation of Access Units, comprised of Access Unit
+a sequence is a concatenation of Access Units, comprised of Access Unit
 headers and a number of picture data units, together with data headers (``Parse Info")
 allowing for efficient navigation of the sequence.
 
@@ -64,8 +64,8 @@ reading the AU header once allows any picture in the sequence to be parsed.
 \subsection{Stream}
 \label{stream}
 
-A stream is a concatenation of Dirac sequences. 
-The process for parsing a stream is to parse all sequences it contains.
+A stream is a concatenation of Dirac sequences. The process for parsing a stream 
+is to parse all sequences it contains. A Dirac sequence shall be decoded as a separate entity.
 
 \subsubsection{Sequence}
 
@@ -306,15 +306,21 @@ Specifically, a stream may be successfully parsed from any Access Unit Header (S
 without reference to prior data, and successfully decoded once the reference picture buffer has
 converged (Section \ref{picturedec}). 
 
+The access unit parsing process returns a set containing metadata, derived from the access unit
+header, describing the encoded video
+formats, which shall be used by decoding and display processes for presenting decoded video
+(Section \ref{picturedec}).
+
 The Access Unit parsing process is given by:
 
 \begin{pseudo}{access\_unit}{}
-\bsCODE{access\_unit\_header()}{\ref{auheader}}
+\bsCODE{video\_params=access\_unit\_header()}{\ref{auheader}}
 \bsCODE{parse\_info()}{\ref{parseinfo}}
 \bsWHILE{is\_picture()==\true}{\ref{parseinfo}}
     \bsCODE{picture\_parse()}{\ref{picture}}
     \bsCODE{parse\_info()}{\ref{parseinfo}}
 \bsEND
+\bsRET{video\_params}
 \end{pseudo}
 
 Each Access Unit begins with the Access Unit header. Picture data may be read from that point until
@@ -327,7 +333,7 @@ set by parsing the Access Unit header (Section \ref{auheader}).
 This section specifies the structure of the Access Unit header. The Access Unit header is byte aligned
 by default (see Section \ref{parseinfo} -- the pseudocode below contains a superfluous byte alignment for clarity).
 
-Parsing this header consists in reading the Access Unit parameters (parse, source and sequence parameters) and initialising 
+Parsing this header consists in reading the Access Unit parameters and initialising 
 the default decoder parameters $\SeqStateName$ as a result of these. Access Unit parameters
 remain constant throughout a sequence, so in theory the AU header may be skipped after being read
 once.
@@ -337,20 +343,26 @@ The AU header is parsed as follows:
 \begin{pseudo}{access\_unit\_header}{}
 \bsCODE{byte\_align()}
 \bsCODE{parse\_parameters()}{\ref{parseparameters}}
-\bsCODE{sequence\_parameters()}{\ref{sequenceparameters}}
-\bsCODE{source\_parameters()}{\ref{sourceparameters}}
+\bsITEM{video\_format}{uint}{\ref{videoformat}}
+\bsCODE{video\_params=source\_parameters()}{\ref{sourceparameters}}
+\bsCODE{coding\_mode=interlaced\_coding(video\_format)}{\ref{interlacedcoding}}
+\bsCODE{coding\_parameters(video\_params,coding\_mode)}{\ref{codingparameters}}
+\bsRET{video\_params}
 \end{pseudo}
 
 \begin{informative}
-Note that source parameters indicate whether the video sequence is interlaced or progressive.
+Note that video parameters indicate whether the video sequence is interlaced or progressive.
 In particular a change from interlaced to progressive video, or vice-versa, necessitates that
-the Dirac sequence be terminated and a new sequence begun. 
+the Dirac sequence be terminated and a new sequence begun. The coding mode indicates whether
+the pictures within a Dirac sequence are fields or frames. Note that progressive video may
+still be encoded as fields, to provide backward compatibility with pseudo-progressive frame (PSF)
+video transmission, although this application -- along with the use of PSF itself -- is deprecated.
 
-The source parameters are not used by the Dirac decoder. Source and sequence parameter values should
+The video parameters are not used by the Dirac decoder. Video parameter values should
 be made available using appropriate interfaces and standards to any downstream video
 processing device or display, but their use and interpretation by other devices is not specified in this standard. 
 Neverthless, Appendix \ref{vidsys} specifies the video systems model that should be used for the interpretation
-of source and sequence parameters.
+of video parameters.
 \end{informative}
 
 
@@ -411,63 +423,133 @@ not mean that an application under Main profile is required to use Inter picture
 required to use arithmetic coding.
 \end{comment}
 
-\subsection{Access unit sequence parameters}
-\label{sequenceparameters}
+\subsection{Video format}
+\label{videoformat}
 
-The AU sequence parameters consist of the video format, the
-image dimensions, the chroma format and the video depth.  AU sequence
-parameter data shall remain constant throughout a Dirac sequence.
+Video Format shall be an index to Table \ref{table:videoformats}. For each entry in the table, parameters are defined in Appendix \ref{videoformatdefaults}, indicating default video parameters corresponding the video source and parameters required to decode pictures. These default parameters may be overridden by subsequent metadata present in the stream as defined in subsequent sections.
 
-\begin{pseudo}{sequence\_parameters}{}
-\bsITEM{\SVideoFormat}{uint}{}
-\bsCODE{set\_format\_defaults()}{\ref{setformatdefaults}}
-\bsCODE{image\_dimensions()}{\ref{imagedimensions}}
-\bsCODE{chroma\_format()}{\ref{chromaformat}}
-\bsCODE{video\_depth()}{\ref{videodepth}}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+Video format index	& Video format description \\
+\hline
+0	& Custom Format\\
+\hline
+1	&	QSIF\\
+\hline
+2	&	QCIF\\
+\hline
+3	&	SIF\\
+\hline
+4	&	CIF\\
+\hline
+5	&	4SIF\\
+\hline
+6	&	4CIF\\
+\hline
+7	&	SD 525 (525 Line 60 Field/s Standard Definition)\\
+\hline
+8	&	SD 625 (625 Line 50 Field/s Standard Definition)\\
+\hline
+9	&	HD 720P60 (720 Line 60 Frame/s High Definition)\\
+\hline
+10 &	HD 720P60 (720 Line 50 Frame/s High Definition)\\
+\hline
+11 &	HD 1080I60 (1080 Line 60 Field/s High Definition)\\
+\hline
+12	&	HD 1080I50 (1080 Line 50 Field/s High Definition)\\
+\hline
+13	&	HD 1080P60 (1080 Line 60 Frame/s High Definition)\\
+\hline
+14	&	HD 1080P50 (1080 Line 50 Frame/s High Definition)\\
+\hline
+15	&	2K Cinema\\
+\hline
+16	&	4K Cinema\\
+\hline
+\end{tabular}
+\caption{Video formats}
+\label{table:videoformats}
+\end{table}
+
+\subsection{Access unit source parameters}
+\label{sourceparameters}
+
+The Source Parameters are intended indicate the format of the video that was originally encoded.
+ They provide metadata that indicates how the decoded video should be displayed. The Frame Size,
+Sampling Format, Scanning Format and the Signal Range are required to decode the video. 
+Display and downstream processing falls outside the scope of this specification, hence 
+the interpretation of the other parameters (not required to decode the video) is not normatively defined, with the exception of frame rate (Section \ref{framerate}). The frame rate imposes requirements 
+  on compliant decoders for a given level and profile (Appendix \ref{profilelevel}).
+
+The Source Parameters shall comprise Frame Size, Sampling Format, Scan Format, Frame Rate, Aspect Ratio, Clean Area, Signal Range and Color Specification.
+Source Parameter data shall remain constant throughout a VC-2 sequence. 
+
+Default values for the source parameters shall be derived from the Video Format, as defined in
+ Appendix \ref{videoformatdefaults}. These default values shall be the source parameters unless they are overridden with alternative values encoded as part of the Source Parameters part of the stream. Each parameter shall be associated with a Boolean variable that determines whether the parameter shall be set to the default parameter in  or shall be over-ridden. If the Boolean value is True, the stream syntax shall either:
+\begin{itemize}
+\item	define a value for each parameter or
+\item	define the value of an index parameter that shall be used to access a defined look-up table.
+\end{itemize}
+If the Boolean value is False, the parameter value shall retain its default value.
+
+Parsing the AU source parameters is as follows:
+
+\begin{pseudo}{source\_parameters}{video\_format\_index}
+\bsCODE{video\_params = set\_source\_defaults(video\_format\_index)}{\ref{setsourcedefaults}}
+\bsCODE{\SVideoFormat = video\_format\_index}	
+\bsCODE{frame\_size(video\_params)}{\ref{framedimensions}}
+\bsCODE{chroma\_sampling\_format(video\_params)}{\ref{chromaformat}}
+\bsCODE{scan\_format(video\_params)}{\ref{scanformat}}
+\bsCODE{frame\_rate(video\_params)}{\ref{framerate}}
+\bsCODE{aspect\_ratio(video\_params)}{\ref{aspectratio}}
+\bsCODE{clean\_area(video\_params)}{\ref{cleanarea}}
+\bsCODE{signal\_range(video\_params)}{\ref{signalrange}}
+\bsCODE{colour\_spec(video\_params)}{\ref{colourspec}}
+\bsRET{video\_params}
 \end{pseudo}
 
-\subsubsection{Setting format defaults}
-\label{setformatdefaults}
 
-Default parameter values are set based on the value of $\SVideoFormat$, as specified
-in Appendix \ref{videoformatdefaults}. These cover sequence and source 
-parameters, but also decoding parameters such as wavelet transform depth and 
-motion compensation block sizes. For example, if $\SVideoFormat==4$, CIF
-defaults are set, with picture size equal to $252\times 288$, 4:2:0 chroma format, and
-$12\times 12$ luma blocks.
+\subsubsection{Setting source defaults}
+\label{setsourcedefaults}
 
-Sequence and source parameters may be overridden by subsequent data in the AU header.
-For example, an image width of 360 may be encoded as per Section \ref{imagedimensions},
-overriding the CIF format defaults. Decoding parameters may be overridden by data in individual pictures.
+The function that sets the default values of the source video parameters 
+shall take the video format index as an argument. That is, the signature of this function is: $set\_source\_defaults(video\_format\_index)$ where $video\_format\_index$ is an unsigned integer. The function returns a map of source video parameters.
 
-\subsubsection{Custom image dimensions}
-\label{imagedimensions}
+The source video parameters shall be set, based on the video format index, as defined in 
+Appendix \ref{videoformatdefaults}. The parameters set by this function shall be: Frame Size, 
+Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), Frame Rate, Aspect Ratio, Clean Area, Signal Range, Color Specification. The tokens used to access the map returned by the function shall be as defined in the subsequent sections that specify how to override the default video source parameters.
+
+Note: as an example, if $video\_format\_index  == 4$, CIF defaults are set, with picture size equal to 252x288, 4:2:0 chroma format, amongst other parameters. A frame width of 360 pixels may be encoded by overriding the CIF format default value of 352. 
+
+\subsubsection{Frame dimensions}
+\label{framedimensions}
 
 If a flag is set, the image dimensions specified by the video format defaults may
 be overridden:
 
-\begin{pseudo}{image\_size}{}
+\begin{pseudo}{frame\_size}{video\_params}
 \bsITEM{custom\_dimensions\_flag}{bool}{}
 \bsIF{custom\_dimensions\_flag==\true}
-    \bsITEM{\SLumaWidth}{uint}{}
-    \bsITEM{\SLumaHeight}{uint}{}
+    \bsITEM{video\_params[frame\_width]}{uint}{}
+    \bsITEM{video\_params[frame\_height]}{uint}{}
 \bsEND
 \end{pseudo}
 
-\subsubsection{Chroma formats}
+\subsubsection{Chroma samplingformats}
 \label{chromaformat}
 
 If a flag is set, the chroma format specified by the video format defaults is overridden.
 
-\begin{pseudo}{chroma\_format}{}
+\begin{pseudo}{chroma\_format}{video\_params}
 \bsITEM{chroma\_format\_flag}{bool}{}
 \bsIF{chroma\_format\_flag==\true}
-     \bsITEM{\SChromaFormatIndex}{uint}{}
+     \bsITEM{video\_params[chroma\_format\_index]}{uint}{}
 \bsEND
-\bsCODE{chroma\_dimensions()}
 \end{pseudo}
 
-The supported chroma formats are specified in Table \ref{tab:chromaformats}:
+The supported chroma sampling formats are specified in Table \ref{tab:chromaformats}:
 
 \begin{table}[!ht]
 \centering
@@ -485,106 +567,8 @@ The supported chroma formats are specified in Table \ref{tab:chromaformats}:
 \caption{Supported chroma formats}\label{tab:chromaformats}
 \end{table}
 
-MPEG-2 conventions are adopted for chroma subsampling: 4:2:2 video will have
-chroma samples co-sited at horizontal even positions; 4:2:0 video will have 
-for chroma sample at position $(m,n$) located at position $(2*m,2*n+1/2)$.
-
-Chroma dimensions are set according to the scaling implied by the chroma format:
-
-\begin{pseudo}{chroma\_dimensions}{}
-\bsIF{\SChromaFormatIndex==0}
-    \bsCODE{\SChromaWidth = \SLumaWidth}
-    \bsCODE{\SChromaHeight = \SLumaHeight}
-\bsELSEIF{\SChromaFormatIndex==1}
-    \bsCODE{\SChromaWidth = \SLumaWidth//2}
-    \bsCODE{\SChromaHeight = \SLumaHeight}
-\bsELSE
-    \bsCODE{\SChromaWidth = \SLumaWidth//2}
-    \bsCODE{\SChromaHeight = \SLumaHeight//2}
-\bsEND
-\end{pseudo}
-
-For convenience, utility functions returning the 
-chroma subsampling shifts/factors are also defined:
-
-\begin{pseudo}{chroma\_h\_shift}{}
-\bsIF{\SChromaFormatIndex==0}
-    \bsRET{0}
-\bsELSE
-    \bsRET{1}
-\bsEND
-\end{pseudo}
-
-\begin{pseudo}{chroma\_v\_shift}{}
-\bsIF{\SChromaFormatIndex<=1}
-    \bsRET{0}
-\bsELSE
-    \bsRET{1}
-\bsEND
-\end{pseudo}
-
-\begin{pseudo}{chroma\_h\_ratio}{}
-\bsRET{1\ll chroma\_h\_shift()}
-\end{pseudo}
-
-\begin{pseudo}{chroma\_v\_ratio}{}
-\bsRET{1\ll chroma\_v\_shift()}
-\end{pseudo}
-
-These factors are used to scale chroma motion vectors (Section \ref{chromamvscale})
-and motion compensation block dimensions (Section \ref{chromablockparams}).
-
-\subsubsection{Video depth}
-\label{videodepth}
-
-If a flag is set, the default video depth specified by the video format is overridden:
-
-\begin{pseudo}{video\_depth}{}
-\bsITEM{video\_depth\_flag}{bool}{}
-\bsIF{video\_depth\_flag==\true}
-    \bsITEM{\SVideoDepth}{uint}{}
-\bsEND
-\end{pseudo}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Access unit source parameters}
-\label{sourceparameters}
-
-The Access Unit source parameters consist of: 
-\begin{itemize}
-\item scan format
-\item frame rate
-\item aspect ratio
-\item clean area
-\item signal range
-\item colour specification
-\end{itemize}
-
-These parameters
-have been grouped together as they directly influence how a downstream
-display device will display decoded pictures produced by a Dirac decoder.
-Access Unit source parameter data shall remain constant throughout a Dirac sequence.
-Default values are derived from the video format, as specified in Appendix \ref{videoformatdefaults}.
-
-Display and downstream processing falls outside the scope of this specification, and
-hence the interpretation of these parameters is not normatively defined, with
-the exception of frame rate (Section \ref{framerate}) which imposes 
-requirements on compliant decoders for a given level and profile (Appendix \ref{profilelevel}). 
-Appendix \ref{vidsys} describes how the source should be interpreted.
-Deviation from the description there will reduce video quality, perhaps
-significantly, and in embedding a Dirac decoder in a display or processing
-device manufacturers should take the greatest care in adhering to that 
-description.
-
-\begin{pseudo}{source\_parameters}{}
-\bsCODE{scan\_format()}{\ref{scanformat}}
-\bsCODE{frame\_rate()}{\ref{framerate}}
-\bsCODE{aspect\_ratio()}{\ref{aspectratio}}
-\bsCODE{clean\_area()}{\ref{cleanarea}}
-\bsCODE{signal\_range()}{\ref{signalrange}}
-\bsCODE{colour\_spec()}{\ref{colourspec}}
-\end{pseudo}
+The chroma sampling format shall be used to determine the width and height of the 
+chroma components of the coded video as described in Section \ref{} below.
 
 \subsubsection{Scan format}
 \label{scanformat}
@@ -593,65 +577,58 @@ Scan Format parameters are concerned with interlace. If $\SInterlaced=\true$, th
 video should be displayed as interlaced video. The process for parsing the Scan Format parameters
 is as follows:
 
-\begin{pseudo}{scan\_format}{}
+\begin{pseudo}{scan\_format}{video\_params}
 \bsITEM{scan\_format\_flag}{bool}{}
 \bsIF{scan\_format\_flag==\true}
-    \bsITEM{\SInterlaced}{bool}{}
-    \bsIF{\SInterlaced}
+    \bsITEM{video\_params[interlaced}{bool}{}
+    \bsIF{video\_params[interlaced]==\true}
         \bsITEM{field\_dominance\_flag}{bool}{}
         \bsIF{field\_dominance\_flag==\true}
-            \bsITEM{\STopFieldFirst}{bool}{}
-        \bsEND
-        \bsITEM{field\_interleaving\_flag}{bool}{}
-        \bsIF{field\_interleaving\_flag==\true}
-            \bsITEM{\SSequentialFields}{bool}{}
+            \bsITEM{video\_params[top\_field\_first]}{bool}{}
         \bsEND
     \bsEND
 \bsEND
 \end{pseudo}
 
-\begin{informative}
-If we have an interlaced source the field lines can either be interleaved line by line 
-({\em pseudo-progressive} format) or interleaved field by field ({\em sequential field format}, 
-required for low delay and low resource coding). Pseudo-progressive format is set as default
-for all the interlaced video formats. The field interleaving flag indicates non-default field
- interleaving, and the sequential fields 
-(Boolean) parameter indicates whether the fields are interleaved as pseudo-progressive or 
-sequential fields.
+If the scan format flag is set to $\true$, the scan format parameters defined by 
+the default values shall be overridden by the new values.
 
-Note that if the video stream is in sequential field format, then picture dimensions refer to
-fields rather than frames. Even picture numbers will in this case refer to even fields, and
-odd picture numbers to odd fields. In pseudo-progressive mode, picture dimensions are
- frame dimensions.
-\end{informative}
+If the source video is interlaced, then $video\_params[interlaced]$ shall be true, 
+else $video\_params[interlaced]$ shall be False.
+
+If the source video is interlaced then $video_params[top\_field\_first])$ shall be $\true$ 
+if the top line of the frame is in the earlier field, else $video\_params[top\_field\_first])$
+ shall be $\false$.
+
+These flags are independent of whether the video is coded as fields or frames.
 
 \subsubsection{Frame rate}
 \label{framerate}
 
 The process for parsing Frame Rate parameters is as follows:
 
-\begin{pseudo}{frame\_rate}{}
+\begin{pseudo}{frame\_rate}{video\_params}
 \bsITEM{frame\_rate\_flag}{bool}{}
 \bsIF{frame\_rate\_flag==\true}
     \bsITEM{index}{uint}{}
     \bsIF{index == 0}
-        \bsITEM{\SFrameRateNumerator}{uint}{}
-        \bsITEM{\SFrameRateDenominator}{uint}{}
+        \bsITEM{video\_params[frame\_rate\_numer]}{uint}{}
+        \bsITEM{video\_params[frame\_rate\_denom]}{uint}{}
     \bsELSE
-        \bsCODE{preset\_frame\_rate()}
+        \bsCODE{preset\_frame\_rate(video\_params,index)}
      \bsEND
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 8.
 
-$preset\_frame\_rate(index)$ sets frame rate values as specified in Table \ref{table:frameratevalues}
+For $index>0$, $preset\_frame\_rate(index)$ sets frame rate values as specified in Table \ref{table:frameratevalues}
 (Appendix \ref{sourceparamspresets}).
 
 The true frame rate is $\dfrac{\SFrameRateNumerator}{\SFrameRateDenominator}$.
 
-Note that what is encoded is frame rate, not picture rate. If $\SSequentialFields=\true$
-then picture rate is twice the encoded frame rate. Supported frame rates in a given profile
+Note that what is encoded is frame rate, not picture rate. If the video is coded
+as fields, then picture rate is twice the encoded frame rate. Supported frame rates in a given profile
 and level are specified in Appendix \ref{profilelevel}.
 
 \subsubsection{Aspect ratio}
@@ -659,13 +636,13 @@ and level are specified in Appendix \ref{profilelevel}.
 
 The process for extracting aspect ratio parameters is as follows:
 
-\begin{pseudo}{aspect\_ratio}{}
+\begin{pseudo}{aspect\_ratio}{video\_params}
 \bsITEM{aspect\_ratio\_flag}{bool}{}
 \bsIF{apect\_ratio\_flag==\true}
     \bsITEM{index}{uint}{}
     \bsIF{index == 0}
-        \bsITEM{\SAspectRatioNumerator}{uint}{}
-        \bsITEM{\SAspectRatioDenominator}{uint}{}
+        \bsITEM{video\_params[aspect\_ratio\_numer]}{uint}{}
+        \bsITEM{video\_params[aspect\_ratio\_denom]}{uint}{}
     \bsELSE
         \bsCODE{preset\_aspect\_ratio(index)}
     \bsEND
@@ -674,25 +651,25 @@ The process for extracting aspect ratio parameters is as follows:
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
-$preset\_aspect\_ratio(index)$ sets aspect ratio values as specified in Table \ref{table:aspectratiovalues}
+For $index>0$, $preset\_aspect\_ratio(index)$ sets aspect ratio values as specified in Table \ref{table:aspectratiovalues}
 (Appendix \ref{sourceparamspresets}).
 
 The true aspect ratio is $\dfrac{\SAspectRatioNumerator}{\SAspectRatioDenominator}$. 
 
-It is a pixel aspect ratio.
+It is a pixel aspect ratio and relates to frame dimensions and not field dimensions.
 
 \subsubsection{Clean area}
 \label{cleanarea}
 
 The process for extracting the clean area parameters is as follows:
 
-\begin{pseudo}{clean\_area}{}
+\begin{pseudo}{clean\_area}{video\_params}
 \bsITEM{clean\_area\_flag}{bool}{}
 \bsIF{clean\_area\_flag==\true}
-    \bsITEM{\SCleanWidth}{uint}{}
-    \bsITEM{\SCleanHeight}{uint}{}
-    \bsITEM{\SLeftOffset}{uint}{}
-    \bsITEM{\STopOffset}{uint}{}
+    \bsITEM{video\_params[clean\_width]}{uint}{}
+    \bsITEM{video\_params[clean\_height]}{uint}{}
+    \bsITEM{video\_params[left\_offset]}{uint}{}
+    \bsITEM{video\_params[top\_offset]}{uint}{}
 \bsEND
 \end{pseudo}
 
@@ -700,17 +677,17 @@ The clean area determines the part of the picture that should be displayed. The
 following restrictions shall apply:
 
 \begin{itemize}
-\item $\CleanWidth+\LeftOffset\leq \SLumaWidth$
-\item $\CleanHeight+\TopOffset\leq \SLumaHeight$
+\item $clean\_width+left\_offset\leq video\_params[frame\_width]$
+\item $clean\_height+top\_offset\leq video\_params[frame\_height]$
 \end{itemize}
 
 \subsubsection{Signal range}
 \label{signalrange}
 
-Picture component data output by the Dirac decoder is bipolar, in the range 
-$-2^{\SVideoDepth-1}$ to $2^{\SVideoDepth-1}-1$. 
-The signal range parameters determine how these data ranges should be
-adjusted prior to matrixing operations (Appendix \ref{signalranges}).
+The Signal Range parameters indicate how the signal range of the picture component data, decoded by the Dirac decoder, should be adjusted prior to the color matrixing operations (described in Appendix \ref{signalranges}). It shall also be used to determine the clipping levels applied to the decoded video (Section \ref{pictureclip}).
+
+Note that picture component data processed by the Dirac decoder is bipolar, and
+is adjusted to positive ranges when pictures are output.
 
 The process for extracting the signal range parameters is as follows:
 
@@ -719,30 +696,21 @@ The process for extracting the signal range parameters is as follows:
 \bsIF{signal\_range\_flag==\true}
     \bsITEM{index}{uint}{}
     \bsIF{index == 0}
-        \bsITEM{\SLumaOffset}{uint}{}
-        \bsITEM{\SLumaExcursion}{uint}{}
-        \bsITEM{\SChromaOffset}{uint}{}
-        \bsITEM{\SChromaExcursion}{uint}{}
+        \bsITEM{video\_params[luma\_offset]}{uint}{}
+        \bsITEM{video\_params[luma\_excursion]}{uint}{}
+        \bsITEM{video\_params[chroma\_offset]}{uint}{}
+        \bsITEM{video\_params[chroma\_excursion]}{uint}{}
     \bsELSE
-        \bsCODE{preset\_signal\_ranges(index)}
+        \bsCODE{preset\_signal\_ranges(video\_params,index)}
     \bsEND
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
-$preset\_signal\_ranges(index)$ sets signal range values as specified in Tables 
+$preset\_signal\_ranges(video\_paramsindex)$ sets signal range values as specified in Tables 
 \ref{table:lumasignalrangevalues} and
 \ref{table:chromasignalrangevalues} (Appendix \ref{sourceparamspresets}).
-
-The offset and excursion values shall satisfy the following constraints:
-
-\begin{itemize}
-\item $0\leq\SLumaOffset<2^\SVideoDepth$
-\item $0\leq\SLumaExcursion<2^\SVideoDepth$
-\item $0\leq\SChromaOffset<2^\SVideoDepth$
-\item $0\leq\SChromaExcursion<2^\SVideoDepth$
-\end{itemize}
 
 \subsubsection{Colour specification}
 \label{colourspec}
@@ -751,37 +719,38 @@ This section specifies the $colour\_spec()$ parsing process. The colour
 specification consists of primaries, matrix and transfer function. Defaults
 are available for all three collectively and individually. The process is:
 
-\begin{pseudo}{colour\_spec}{}
+\begin{pseudo}{colour\_spec}{video\_params}
 \bsITEM{colour\_spec\_flag}{bool}{}
 \bsIF{colour\_spec\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_colour\_specs(index)}
-    \bsIF{colour\_spec\_index == 0}
-        \bsCODE{colour\_primaries()}{\ref{colourprimaries}}
-        \bsCODE{colour\_matrix()}{\ref{colourmatrix}}
-        \bsCODE{transfer\_function()}{\ref{transferfunction}}
+    \bsIF{index == 0}
+        \bsCODE{colour\_primaries(video\_params)}{\ref{colourprimaries}}
+        \bsCODE{colour\_matrix(video\_params)}{\ref{colourmatrix}}
+        \bsCODE{transfer\_function(video\_params)}{\ref{transferfunction}}
+    \bsELSE
+        \bsCODE{preset\_colour\_specs(video\_params,index)}
     \bsEND
 \bsEND
 \end{pseudo}
 
-$index$ shall fall in the range 0 to 3.
+$index$ shall fall in the range 0 to 4.
 
-$preset\_colour\_spec(index)$ sets the colour primaries, matrix and transfer function as specified 
-in Table \ref{table:colourspecvalues} (Appendix \ref{sourceparamspresets}).
+$preset\_colour\_spec(index)$ shall set the colour primaries, matrix and transfer function as specified 
+in Table \ref{table:colourspecvalues} (Appendix \ref{sourceparamspresets}). If the index is 0, these values may be overridden as defined in the succeeding sections. 
 
 \paragraph{Colour primaries}
 \label{colourprimaries}
-$\ $\newline The $colour\_primaries()$ process is as follows:
+$\ $\newline The $colour\_primaries(video\_params)$ process is as follows:
 
-\begin{pseudo}{colour\_primaries}{}
+\begin{pseudo}{colour\_primaries}{video\_params}
 \bsITEM{colour\_primaries\_flag}{bool}{}
 \bsIF{colour\_primaries\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_colour\_primaries(index)}
+    \bsCODE{preset\_colour\_primaries(video\_params,index)}
 \bsEND
 \end{pseudo}
 
-$index$ shall fall in the range 0 to 3. $preset\_colour\_primaries(index)$ sets the colour primaries as specified
+$index$ shall fall in the range 0 to 3. $preset\_colour\_primaries(video\_params,index)$ shall set the colour primaries as specified
 in Table \ref{table:primariesvalues} (Appendix \ref{sourceparamspresets}).
 
 \paragraph{Colour matrix}
@@ -797,7 +766,7 @@ The $colour\_matrix()$ process is as follows:
 \bsEND
 \end{pseudo}
 
-$index$ shall fall in the range 0 to 2. $preset\_colour\_matrices(index)$ sets the colour matrix as specified
+$index$ shall fall in the range 0 to 2. $preset\_colour\_matrices(video\_params,index)$ shall set the colour matrix as specified
 in Table \ref{table:matrixvalues} (Appendix \ref{sourceparamspresets}).
 
 \paragraph{Transfer function}
@@ -816,8 +785,96 @@ The $transfer\_function()$ process is as follows:
 $index$ shall fall in the range 0 to 3. $preset\_transfer\_functions(index)$ sets the transfer function as specified
 in Table \ref{table:transfervalues} (Appendix \ref{sourceparamspresets}).
 
-\subsection{Picture}
+\subsection{Interlaced coding}
+\label{interlacedcoding}
+
+The Interlaced Coding part of the Access Unit Header shall determine whether source video is coded as frames or fields.
+
+Interlaced coding shall determine the interpretation of coded pictures in the stream. If video is coded as interlaced then coded pictures represent fields, else coded pictures represent frames. 
+
+Interlaced video is initially set as coded as fields (interlaced coding), and progressive video is initially set as coded as frames (progressive coding).
+
+The $interlace\_coding$ parsing process shall be as defined by the following table: 
+
+\begin{pseudo}{interlaced\_coding}{video\_params}
+\bsCODE{coding\_mode=video\_params[interlaced]}{\ref{defaultcodingmode}}	
+\bsITEM{scan\_coding\_flag}{bool}
+\bsIF{scan\_coding\_flag == \true}	
+  \bsCODE{coding\_mode=!coding\_mode}
+\bsEND
+\bsRET{coding\_mode}
+\end{pseudo}
+
+If video is coded as fields then the earliest field in each frame shall have an even picture number (Section \ref{}). That is the LSB of the frame number, expressed as a binary number, indicates field parity.
+
+With interlaced coding each frame shall be split into two fields as indicated by the Scan Format (Section \ref{scanformat}).
+
+An effect of interlace coding shall be to determine the vertical dimensions of coded pictures. Hence, once the interlace coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{}).
+
+\begin{informative}
+There are may be circumstances in which it is appropriate to interlaced source video as if it were progressive frames. This might be appropriate if there were limited motion in the video, in which case coding as if it were progressive frames would yield fewer coded bits. Sometimes progressively scanned video is conveyed as if it were interlaced, which is know as "film mode" or progressive segmented frames (psf). For a progressive video source, formatted as psf, it is appropriate to code it as progressive frames even though it is signaled as being interlaced.
+\end{informative}
+
+\subsection{Setting coding parameters}
+\label{codingparameters}
+
+The Coding Parameters process shall initialize the dimensions of the coded picture (frame or field) and the video depth (the maximum number of bits in a decoded video sample), which are needed to decode pictures. 
+
+Picture dimensions shall remain constant throughout a sequence and shall be initialized as elements of the decoder state. 
+Initialization of the coding parameters is as defined in the table below:
+
+\begin{pseudo}{coding\_parameters}{video\_format, video\_params, interlaced\_coding}
+\bsCODE{picture\_dimensions(video\_params, interlaced\_coding)}{\ref{picturedimensions}}
+\bsCODE{video\_depth(video\_params)}
+\bsCODE{format\_coding\_defaults(video\_format)}{\ref{formatcodingdefaults}}
+\end{pseudo}
+
+\subsubsection{Picture dimensions}
+The $picture\_dimensions$ process, which determines the size of coded pictures, shall be defined follows:
+
+\begin{pseudo}{picture\_dimensions}{video\_params, interlaced\_coding}
+\bsCODE{\SLumaWidth = video\_params[frame\_width]}
+\bsCODE{\SLumaHeight = video\_params[frame\_height]}
+\bsCODE{\SChromaWidth = \SLumaWidth}
+\bsCODE{\SChromaHeight = \SLumaHeight}
+\bsCODE{chroma\_format\_index = video\_params[chroma\_format\_index]}
+\bsIF{chroma\_format\_index == 1}
+  \bsCODE{\SChromaWidth //= 2}
+\bsELSEIF{chroma\_format\_index == 2}
+  \bsCODE{\SChromaWidth //= 2}
+  \bsCODE{\SChromaHeight //= 2}
+\bsEND
+\bsIF{interlace\_coding==\true}
+  \bsCODE{\SLumaHeight //=2}
+  \bsCODE{\SChromaHeight //=2}
+\bsEND
+\end{pseudo}
+
+The parameter $frame\_height$ in the video parameters refers to the height of a frame. The parameter $luma\_height$ in the state variables refers to the height of a picture.  A picture may be either a frame or a field depending on whether it is being coded in an interlaced or progressive mode.
+
+Frame heights shall be constrained such that the chroma height of pictures is equal to or an exact sub-multiple of the frame height. Thus for 4:4:4 and 4:2:2 chroma formats the frame height must be a multiple of 2 if interlaced coding is used. Similarly for 4:2:0 chroma format the frame height must always be a multiple of 2 and a multiple of 4 if interlaced coding is used. 
+ 
+\subsubsection{Video depth}
+The $video\_depth()$ process, which determines the maximum number of bits required to represent a sample of the decoded video, shall be defined as follows:
+
+\begin{pseudo}{video\_depth}{video\_params}
+\bsCODE{\SLumaDepth =\left\lceil \log_2(video\_params[luma\_excursion])\right\rceil}
+\bsCODE{\SChromaDepth =\left\lceil \log_2(video\_params[chroma\_excursion])\right\rceil}
+\end{pseudo}
+
+Note that for some video formats (specifically YCgCo) the luma and chroma depths may be different.
+
+\subsubsection{Format coding defaults}
+\label{formatcodingdefaults}
+[TBC]
+
+\section{Dirac picture syntax specification}
+
+This section specifies the structure of picture elements within a Dirac stream.
+
+\subsection{Picture parsing}
 \label{picture}
+\label{pictureparse}
 
 This Section specifies the operation of the $picture\_parse()$ process. The process for
 decoding and outputting pictures is specified in Section \ref{picturedec}.
@@ -829,7 +886,7 @@ $C1$ and $C2$)) -- and, optionally, motion vector data.
 
 The parsing process is:
 
-\begin{pseudo}{picture}{}
+\begin{pseudo}{picture\_parse}{}
 \bsCODE{init\_decode\_params()}{\ref{initdecodeparams}}
 \bsCODE{byte\_align()}
 \bsCODE{picture\_header()}{\ref{pictureheader}}
@@ -840,8 +897,6 @@ The parsing process is:
 \bsCODE{byte\_align()}
 \bsCODE{wavelet\_transform()}{\ref{wavelettransform}}
 \end{pseudo}
-
-
 
 \subsubsection{Initialising decoding parameters}
 \label{initdecodeparams}
@@ -1267,25 +1322,16 @@ $\ $\newline
 A variety of preset wavelet filters are available, encoded as a 
 values of $\WaveletIndex$, which is an index into
 Table \ref{wltfilterpresets}. Default wavelet filters
-are the Deslauriers-Debuc (9,5) filter for intra pictures
+are the Deslauriers-Debuc (9,7) filter for intra pictures
 and the LeGall (5,3) filter for inter pictures. If a flag is
 set, other presets may be used. Their interpretation and lifting 
 implementations are specified in Section \ref{wltfilters}. 
 
 \begin{pseudo}{wavelet\_filter}{}
-\bsITEM{non\_default\_wavelet\_flag}{bool}
-\bsIF{non\_default\_wavelet\_flag==\true}
-    \bsITEM{\WaveletIndex}{uint}
-\bsELSE
-    \bsIF{is\_intra()==\true}
-        \bsCODE{\WaveletIndex=\SWaveletIndex[\Intra]}
-    \bsELSE
-        \bsCODE{\WaveletIndex=\SWaveletIndex[\Inter]}
-    \bsEND
-\bsEND
+\bsITEM{\WaveletIndex}{uint}
 \end{pseudo}
 
-$\WaveletIndex$ shall lie in the range 0 to 7. 
+$\WaveletIndex$ shall lie in the range 0 to 6. 
 
 \begin{table}[!ht]
 \centering
@@ -1293,21 +1339,19 @@ $\WaveletIndex$ shall lie in the range 0 to 7.
 \hline
 \WaveletIndex & {\bf Filter} \\
 \hline
-0 & Deslauriers-Debuc (9,5) \\
+0 & Deslauriers-Debuc (9,7) \\
 \hline
 1 & LeGall (5,3) \\
 \hline
-2 & Deslauriers-Debuc (13,5) \\
+2 & Deslauriers-Debuc (13,7) \\
 \hline
 3 & Haar with no shift \\
 \hline
 4 & Haar with single shift per level\\
 \hline
-5 & Haar with double shift per level\\
+5 & Fidelity filter \\
 \hline
-6 & Fidelity filter \\
-\hline
-7 & Daubechies (9,7) integer approximation \\
+6 & Daubechies (9,7) integer approximation \\
 \hline
 \end{tabular}
 \caption{Wavelet filter presets}\label{wltfilterpresets}
@@ -1319,7 +1363,7 @@ and high-pass filters in the conventional prefiltering (i.e. before subsampling)
 model of wavelet filtering. They do not reflect the length of lifting filters, which
 operate in the subsampled domain: see Section \ref{wltfilters}. Deslauriers-Debuc
 filters are normally referred to in terms of the number of vanishing moments of their
-synthesis filters, so the (9,5) and (13,5) filters may be referred to in the literature
+synthesis filters, so the (9,7) and (13,7) filters may be referred to in the literature
 as (2,2) and (4,2) filters respectively.
 \end{informative}
 
@@ -1331,10 +1375,7 @@ wavelet filters may be applied. The $wavelet\_depth()$ parsing process is as
 follows:
 
 \begin{pseudo}{wavelet\_depth}{}
-\bsITEM{non\_default\_wavelet\_depth\_flag}{bool}
-\bsIF{non\_default\_wavelet\_depth\_flag==\true}
-    \bsITEM{\WaveletDepth}{uint}
-\bsEND
+\bsITEM{\WaveletDepth}{uint}
 \end{pseudo}
 
 Allowable $\WaveletDepth$ values are determined by the level and profile 
@@ -1349,45 +1390,33 @@ to be used for subbands at level $level$ is encoded in $\Codeblocks[level][v]$ a
 $\Codeblocks[level][h]$ respectively. 
 
 \begin{pseudo}{spatial\_partition}{}
+\bsCODE{\CodeblockMode=0}
 \bsITEM{spatial\_partition\_flag}{bool}
-\bsIF{spatial\_partition\_flag==\true}
-    \bsITEM{nondefault\_partition\_flag}{bool}
-    \bsIF{nondefault\_partition\_flag==\true}
-        \bsCODE{depth = \WaveletDepth}
-        \bsFOR{level=0}{depth}
-            \bsITEM{\Codeblocks[level][h]}{uint}
-            \bsITEM{\Codeblocks[level][v]}{uint}
-        \bsEND
-    \bsELSE
-        \bsIF{is\_intra()==\true}
-            \bsCODE{\Codeblocks=\SCodeblocks[\Intra]}
-        \bsELSE
-            \bsCODE{\Codeblocks=\SCodeblocks[\Inter]}
-        \bsEND
+\bsIF{spatial\_partition\_flag==\false}
+    \bsFOR{level=0}{\WaveletDepth}
+        \bsCODE{\Codeblocks[level][h]=1}
+        \bsCODE{\Codeblocks[level][v]=1}
     \bsEND
-    \bsITEM{index}{uint}
-    \bsCODE{\CodeblockMode=codeblock\_mode(index)}
+\bsELSE
+    \bsFOR{level=0}{\WaveletDepth}
+        \bsITEM{\Codeblocks[level][h]}{uint}
+        \bsITEM{\Codeblocks[level][v]}{uint}
+    \bsEND
+    \bsITEM{\CodeblockMode}{uint}
 \bsEND
 \end{pseudo}
 
-$index$ shall lie in the range 0 to 1, and $codeblock\_mode$ sets the codeblock mode
-according to Table \ref{codeblockmodes}. 
-
-\begin{comment}
-The maximum number of codeblocks vertically shall be less than or equal
-$subband\_height(level)//4$ and the number of codeblocks horizontally shall be less than
-or equal to $subband\_width(level)//4$ (subband dimensions as specified in Section {subbandwidthheight}).
-\end{comment}
+$\CodeblockMode$ shall lie in the range 0 to 1, whose meanings are as shown in Table \ref{codeblockmodes}. 
 
 \begin{table}[!ht]
 \centering
 \begin{tabular}{|c|c|}
 \hline
-$index$ & $\CodeblockMode$ \\
+ $\CodeblockMode$ & {\bf Description} \\
 \hline
-0 & \SingleQuantiser \\
+0 & Single Quantiser \\
 \hline
-1 & \MultipleQuantiser \\
+1 & Multiple Quantiser \\
 \hline
 \end{tabular}
 \caption{Codeblock modes}\label{codeblockmodes}
@@ -1451,18 +1480,9 @@ This section specifies the operation of the $quant\_matrix()$ process for settin
 \bsELSE
     \bsCODE{set\_quant\_matrix()}
 \bsEND
-\bsCODE{\LumaQuantOffset=0}
-\bsCODE{\COneQuantOffset=0}
-\bsCODE{\CTwoQuantOffset=0}
-\bsITEM{non\_zero\_quant\_offset\_flag}{bool}
-\bsIF{non\_zero\_quant\_offset\_flag==\true}
-    \bsITEM{\LumaQuantOffset}{sint}
-    \bsITEM{\COneQuantOffset}{sint}
-    \bsITEM{\CTwoQuantOffset}{sint}
-\bsEND
 \end{pseudo}
 
-The function $set\_quant\_matrix()$ sets default quantisation matrices for $\WaveletDepth\leq4$ and certain values of $\WaveletIndex$, as per Table \ref{presetqmatrices}. For values not represented in this table, $quant\_matrix\_index$ shall be 0 (custom quantisation matrix). 
+The function $set\_quant\_matrix()$ sets default quantisation matrices for $\WaveletDepth\leq4$ and certain values of $\WaveletIndex$, as per Table \ref{presetqmatrices}. For values not represented in this table, $non\_default\_quant\_matrix$ shall be $\True$ (custom quantisation matrix). 
  
 \begin{informative}
 Default quantisation matrices are ``unweighted'', and intended only to compensate for the differential power gain of the high-pass and low-pass filters. Perceptual weighting may be applied by designing a custom matrix as described in Appendix \ref{custommatrices}.

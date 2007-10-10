@@ -68,17 +68,15 @@ $\MotionVectorPrecision$ with respect to the chroma samples:
 \bsRET{sv}
 \end{pseudo}
 
-\begin{comment}
+\paragraph{Bit depth}
+\label{bitdepth}
 
-Throughout this Section, the following conventions are used.
-
-\begin{itemize}
-\item $x,y$ are co-ordinates in the predicted picture component
-\item $u,v$ are co-ordinates in a potentially upconverted reference picture component
-\end{itemize}
-
-[Are they??]
-\end{comment}
+In the case of YCgCo coding, bit depth may vary for luma and chroma components.
+Hence the variable $\BitDepth$ is set equal to 
+\[\LumaDepth\]
+if the component $c$ is Y, and
+\[\ChromaDepth\]
+otherwise.
 
 \begin{informative*}
 \subsubsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
@@ -133,14 +131,12 @@ are discarded.
 
 The motion compensation process forms an integer prediction $p[y][x]$ for each pixel in the predicted
 picture component $pic$, and adds it to the component data. This is then clipped to keep it in range.
-Note that this clipping is {\em in addition} to clipping performed on the output picture after motion
- compensation and/or the inverse wavelet transform (Section \ref{pictureclip}).
 
 \begin{pseudo*}
 \bsFOR{y=0}{lenY-1}
     \bsFOR{x=0}{lenX-1}
         \bsCODE{pic[y][x] += pixel\_predict(y, x, pic, ref1, ref2, c)}{\ref{pixelpredict}}
-        \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{\VideoDepth-1}, 2^{\VideoDepth-1}-1)}
+        \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{\BitDepth-1}, 2^{\BitDepth-1}-1)}
     \bsEND
 \bsEND
 \end{pseudo*}
@@ -154,8 +150,8 @@ block by:
 \begin{eqnarray*}
 xstart & = & \max(i*xbsep-xoffset, 0) \\
 ystart & = & \max(j*xbsep-xoffset, 0) \\
-xstop & = & \min\left( xstart+xblen, lenX\right)= \min\left( (i+1)*xbsep+xoffset, lenX\right)\\
-ystop & = & \min\left( ystart+yblen, lenY\right)= \min\left( (j+1)*ybsep+yoffset, lenY\right)\\
+xstop & = & \min\left( (i+1)*xbsep+xoffset, lenX\right)\\
+ystop & = & \min\left( (j+1)*ybsep+yoffset, lenY\right)\\
 B(i,j) & = & \{(x,y): xstart\leq x<xstop, ystart\leq y<ystop\}
 \end{eqnarray*}
 
@@ -213,7 +209,7 @@ the word widths necessary for processing OBMC. If we assume that
 the picture weights are complementary (i.e. the weights
 for reference 1 and reference 2 sum to $2^\RefsWeightPrecision$, 
 then the number of bits required for performing motion compensation 
-calculations is \[\VideoDepth+total\_wt\_bits+\RefsWeightPrecision\]
+calculations is \[\BitDepth+total\_wt\_bits+\RefsWeightPrecision\]
 unsigned bits. 8 bit video data encoded with block overlaps of 4 
 luminance pixels and the standard picture weights therefore
 requires 8+3+3+1=15 unsigned bits. The additional bit within 
@@ -259,7 +255,7 @@ strategy:
 \bsFOR{y=0}{lenY-1}
     \bsFOR{x=0}{lenX-1}
         \bsCODE{pic[y][x] += (b[y][x]+2^{total\_wt\_bits-1})\gg total\_wt\_bits}
-        \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{\VideoDepth-1}, 2^{\VideoDepth-1}-1)}
+        \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{\BitDepth-1}, 2^{\BitDepth-1}-1)}
     \bsEND
 \bsEND
 \end{pseudo*}
@@ -444,7 +440,7 @@ Upconversion is defined by means of a half-pixel interpolated reference array
 $upref$ of dimensions double that of the original reference picture component
 array, as per Section \ref{halfpel}. The values returned by $upconvert(ref,u,v)$
 are as specified in the succeeding subsections of this section.
-% edge extension}
+
 
 Motion vectors are allowed to extend beyond the edges of $upref$, with values lying outside the range determined by edge extension,
 and access to the array is via the function $up2by2(ref,u,v)$:
@@ -559,7 +555,7 @@ are supplied by edge extension. The overall process is thus defined by
 \bsEND
 \bsCODE{ref2[q][p] += 128}
 \bsCODE{ref2[q][p] \gg=8}
-\bsCODE{ref2[q][p] = \clip(ref2[q][p], 0, 2^\VideoDepth-1)}
+\bsCODE{ref2[q][p] = \clip(ref2[q][p], -2^{\BitDepth-1}, 2^{\BitDepth-1}-1)}
 \end{pseudo*}
 
 for each $(p,q)$ such that $0\leq p<\width(ref)$ and $0\leq q<2*\height(ref)$.
@@ -592,7 +588,7 @@ For $0\leq p<2*\width(ref)$ and $0\leq q<2*\height(ref)$ we have:
   \bsEND
   \bsCODE{upref[q][p] += 128}
   \bsCODE{upref[q][p] \gg=8}
-  \bsCODE{upref[q][p] = \clip(upref[q][p], 0, 2^\VideoDepth-1)}
+  \bsCODE{upref[q][p] = \clip(upref[q][p], -2^{\BitDepth-1}, 2^{\BitDepth-1}-1)}
 \bsEND
 \end{pseudo*}
 

@@ -76,7 +76,7 @@ restriction of values to particular ranges also restricts the colour
 gamut. 
 
 In the case of YCoCg coding, the $E_R$, $E_G$ and $E_B$ values are directly
-linearly scaled to integer ranges $[0,2^\VideoDepth-1]$ before a lossless 
+linearly scaled to integer ranges $[0,2^\LumaDepth-1]$ before a lossless 
 direct integer transform is applied to convert this data to $Y$, $C1$ (representing
 Co) and $C2$ (representing $Cg$) data. This transform is described in Section
 \ref{colourmatrix}. This supports efficient lossless RGB coding.
@@ -84,13 +84,13 @@ Co) and $C2$ (representing $Cg$) data. This transform is described in Section
 \subsubsection{Signal range}
 \label{signalranges}
 
-Video signals within the decoder are bi-polar. Offset and offset and excursion values 
+Video signals within the decoder are bi-polar. Offset  and excursion values 
 $\LumaOffset$, $\LumaExcursion$, $\ChromaOffset$ and
 $\ChromaExcursion$ should be used to convert the
 integer-valued decoded luma and chroma data $Y$, $C1$ ($Cb$) and $C2$ ($Cr$) 
 to intermediate values $E_Y$, $E_{Cb}$, and $E_{Cr}$ by the recipe
 \begin{eqnarray*}
-E_Y & = & \dfrac{Y}{\LumaExcursion}+dfrac{\LumaOffset}{\VideoDepth} = \dfrac{Y}{\LumaExcursion}+0.5\\
+E_Y & = & \dfrac{Y}{\LumaExcursion}+dfrac{\LumaOffset}{2^\LumaDepth} = \dfrac{Y}{\LumaExcursion}+0.5\\
 E_{Cb} & = & \dfrac{C1+\ChromaOffset}{\ChromaExcursion} \\
 E_{Cr} & = & \dfrac{C2+\ChromaOffset}{\ChromaExcursion}
 \end{eqnarray*}
@@ -210,7 +210,7 @@ I_B & = & t-(Co\gg1) \\
 I_R & = & I_B+Co
 \end{eqnarray*}
 The integer values are converted to unit-scale $E_R$, $E_G$, $E_B$ by dividing by 
-$2^\VideoDepth$ and clipping to $[0,1]$.
+$2^\LumaDepth$ and clipping to $[0,1]$.
 If the inverse transform has been correctly
 applied prior to coding and lossless coding employed, then clipping will
 be unnecessary, and reversing the above operations will reproduce $Y$, $Co$ and $Cg$
@@ -222,16 +222,11 @@ Cg & = & I_G-t = \approx I_G-(I_R+I_B)/2\\
 Y & = & t+(Cg\gg1) \approx I_G/2-(I_R+I_B)/4+(I_R+I_B)/2=I_R/4+I_G/2+I_B/4
 \end{eqnarray*}
 
-Note that these matrix operations give that the chroma ranges are twice the
-size of the luma range, due to the subtractions used to create chroma components. 
+Note that these matrix operations give that the chroma data requires an additional bit, due to the subtractions used to create chroma components. 
 So for 8-bit RGB ($I_R$, $I_G$, $I_B$) values, $Y$ will be 8 bits and $Co$ and
 $Cg$ will be 9 bits. 
 
-Hence $\VideoDepth$ should be set to 1 plus the original RGB resolution.
-
-Note also that $\LumaExcursion$ and $\ChromaExcursion$ are not required for
-these scaling operations. They should be set to $2^\VideoDepth-1$ and $2^\VideoDepth$
-respectively..
+Hence $\ChromaDepth$ should be set to $1+\LumaDepth$.
 
 \subsubsection{Transfer characteristics}
 \paragraph{TV transfer characteristic}
@@ -372,7 +367,7 @@ interpretation by a display device is described in Appendix \ref{vidsysmodel}.
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & $\SFrameRateNumerator$ & $\SFrameRateDenominator$ \\
+$index$ & $frame\_rate\_numer$ & $frame\_rate\_denom$ \\
 \hline
 1 & 24000 & 1001 \\
 \hline
@@ -398,7 +393,7 @@ $index$ & $\SFrameRateNumerator$ & $\SFrameRateDenominator$ \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & $\SAspectRatioNumerator$ & $\SAspectRatioDenominator$ \\
+$index$ & $aspect\_ratio\_numer$ & $aspect\_ratio\_denom$ \\
 \hline
 1 (Square Pixels) & 1 & 1 \\
 \hline
@@ -414,7 +409,7 @@ $index$ & $\SAspectRatioNumerator$ & $\SAspectRatioDenominator$ \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & $\SLumaOffset$ & $\SLumaExcursion$ \\
+$index$ & $luma\_offset$ & $luma\_excursion$ \\
 \hline
 1 (8 Bit Full Range) & 0 & 255 \\
 \hline
@@ -430,13 +425,13 @@ $index$ & $\SLumaOffset$ & $\SLumaExcursion$ \\
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & $\SChromaOffset$ & $\SChromaExcursion$ \\
+$index$ & $chroma\_offset$ & $chroma\_excursion$ \\
 \hline
-1 (8 Bit Full Range) & 128 & 255 \\
+1 (8 Bit Full Range) & 0 & 255 \\
 \hline
-2 (8 Bit Video) & 128 & 224 \\
+2 (8 Bit Video) & 0 & 224 \\
 \hline
-3 (10 Bit Video) & 512 & 896 \\
+3 (10 Bit Video) & 0 & 896 \\
 \hline
 \end{tabular}
 \caption{Chroma signal range available presets}\label{table:chromasignalrangevalues}
@@ -451,17 +446,19 @@ affects video quality adversely on a display device.
 
 \begin{table}[!ht]
 \centering
-\begin{tabular}{|c|c|l|l|l|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
 $index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & {\bf Transfer function}\\
 \hline
-0 & Custom, HDTV, PC \& Internet & 0 - ITU709 \& sRGB & 0 - HDTV/PC & 0 - TV \\ 
+0 & Custom & HDTV & HDTV & TV gamma \\ 
 \hline
-1 & NTSC                                    & 1 - SMPTE C           & 1 - SDTV      & 0 - TV \\
+1 & SDTV 525 & SDTV 525 & SDTV & TV gamma \\
 \hline
-2 & PAL                                       & 2 - EBU Tech 3213   & 1 - SDTV      & 0 - TV \\
+2 & SDTV 625 & SDTV 625 & SDTV & TV gamma \\
 \hline
-3 & D-Cinema                              & 3 - CIE XYZ             & 2 - YCoCg     & 3 - DCI \\
+3 & HDTV & HDTV & HDTV & TV gamma \\
+\hline
+4 & Cinema & CIE XYZ & Reversible & DCI Gamma \\
 \hline
 \end{tabular}
 \caption{Colour specification presets}\label{table:colourspecvalues}
@@ -469,17 +466,17 @@ $index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & 
 
 \begin{table}[!ht]
 \centering
-\begin{tabular}{|c|l|}
+\begin{tabular}{|c|c|c|c|}
 \hline
-$index$ &  {\bf Primaries}      \\
+$index$ &  {\bf Description} & {\bf Specification} & {\bf Comment}      \\
 \hline
-0          &  ITU709 \& sRGB  \\ 
+0       &  HDTV & ITU-R BT.709 & Also Computer, Web, sRGB \\ 
 \hline
-1          &  SMPTE C (as used for NTSC)          \\
+1       &  SDTV 525 & ITU-R BT.601 & 525 primaries          \\
 \hline
-2          &  EBU Tech 3213, as used for PAL   \\
+2       &  SDTV 625 & ITU-R BT.601 & 625 primaries  \\
 \hline
-3          & CIE XYZ              \\
+3       &  Cinema & SMPTE 428.1 & CIE XYZ              \\
 \hline
 \end{tabular}
 \caption{Colour primaries presets}\label{table:primariesvalues}
@@ -487,15 +484,15 @@ $index$ &  {\bf Primaries}      \\
 
 \begin{table}[!ht]
 \centering
-\begin{tabular}{|c|l|}
+\begin{tabular}{|c|c|c|c|c|}
 \hline
-$index$ &  {\bf Matrix}\\
+$index$ &  {\bf Description} & {\bf Specification} & {\bf Colour matrix} & {\bf Comment}\\
 \hline
-0 & HDTV, PC \& Internet: $K_R=0.2126$, $K_B=0.0722$ \\ 
+0 & HDTV & ITU-R BT.709 & $K_R=0.2126$, $K_B=0.0722$ & Also computer and web\\ 
 \hline
-1 & SDTV: $K_R=0.299$, $K_B=0.114$ \\
+1 & SDTV & ITU-R BT.601 & $K_R=0.299$, $K_B=0.114$ & \\
 \hline
-2 & Reversible: YCgCo \\
+2 & Reversible & ITU-T H.264 & YCgCo & \\
 \hline
 \end{tabular}
 \caption{Colour matrix presets}\label{table:matrixvalues}
@@ -503,21 +500,18 @@ $index$ &  {\bf Matrix}\\
 
 \begin{table}[!ht]
 \centering
-\begin{tabular}{|c|l|}
+\begin{tabular}{|c|c|c|}
 \hline
-$index$ & {\bf Transfer function}\\
+$index$ & {\bf Description} & {\bf Specification}\\
 \hline
-0 & TV \\ 
+0 & TV gamm & ITU-R BT.1361\\ 
 \hline
-1 & Extended Gamut \\
+1 & Extended Gamut & ITU-R BT.1361 1998 Annex 1\\
 \hline
-2 & Linear\\
+2 & Linear & Linear\\
 \hline
-3 & DCI Gamma\\
+3 & DCI Gamma & SMPTE 428.1\\
 \hline
 \end{tabular}
 \caption{Transfer function presets}\label{table:transfervalues}
 \end{table}
-
-
-

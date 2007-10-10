@@ -133,8 +133,8 @@ three values to the left, top-left and above a coefficient (if available).
 
 \begin{pseudo}{intra\_dc\_prediction}{band}
 \bsCODE{prediction = 0 }
-\bsFOR{v=0}{subband\_height(level)-1}
-  \bsFOR{h=0}{subband\_width(level)-1}
+\bsFOR{v=0}{\height(band)-1}
+  \bsFOR{h=0}{\width(band)-1}
     \bsIF{h>0}
         \bsIF{v>0}
             \bsCODE{prediction=\mean(band[v][h-1],band[v-1][h-1],band[v-1][h])}
@@ -184,7 +184,7 @@ The codeblock unpacking process is defined as:
 \begin{pseudo}{codeblock}{data,level,orient,quant\_index,y,x}
 \bsCODE{skipped=zero\_flag()}{\ref{zeroblockflag}}
 \bsIF{skipped==\false}
-  \bsCODE{quant\_idx += block\_quant\_offset()}{\ref{blockquantidx}}
+  \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{v=bottom}{top-1}
     \bsFOR{h=left}{right-1}
       \bsIF{using\_ac()==\true}
@@ -220,26 +220,35 @@ it is unpacked from the stream.
 \end{array} }
 \bsIF{num_blocks==1}
     \bsRET{\false}
-\bsELSE
+\bsELSEIF{using\_ac()==\true}
     \bsRET{ read\_boola(\ZeroCodeblock) }
+\bsELSE
+    \bsRET{read\_boolb()}
 \bsEND
 \end{pseudo}
 
-\paragraph{Block quantiser offset}
+\paragraph{Codeblock quantiser offset}
 $\ $\newline$\ $\newline
 \label{blockquantidx}
 
-If $\CodeblockMode=\SingleQuantiser$,  $block\_quant\_offset()$ shall return 0.
+The $codeblock\_quant\_offset()$ process shall be as follows:
+\begin{pseudo}{codeblock\_quant\_offset}{}
+\bsIF{\CodeblockMode==0}
+    \bsRET{0}
+\bsELSEIF{using\_ac()==\true}
+    \bsRET{ read\_uinta(quant\_contexts()) }
+\bsELSE
+    \bsRET{read\_uintb()}
+\bsEND
+\end{pseudo}
 
-If $\CodeblockMode=\MultipleQuantiser$ then the quantiser index offset
-is extracted from the stream -- $read\_sinta(quant\_contexts())$ is returned, where
-$quant\_contexts()$ returns the context set:
-
-\begin{itemize}
-\item{Follow= \{\QOffsetFollow\}}
-\item{Data=\QOffsetData}
-\item{Sign=\QOffsetSign}
-\end{itemize}
+Where arithmetic coding is employed ($using\_ac()==\true$), the function $quant\_contexts()$ shall
+return the context set:
+  \begin{itemize}
+  \item{Follow= \{\QOffsetFollow\}}
+  \item{Data=\QOffsetData}
+  \item{Sign=\QOffsetSign}
+  \end{itemize}
 
 \subsubsection{Subband coefficients}
 
@@ -251,7 +260,7 @@ for unpacking an individual coefficient in position $(h,v)$
 in the subband $data[level][orient]$.
 
 Unpacking a coefficient makes use of arithmetic decoding, inverse quantisation
-and, in the case of DC (level 0) bands of Intra frames, neighbourhood prediction.
+and, in the case of DC (level 0) bands of Intra pictures, neighbourhood prediction.
 
 Arithmetic coding uses a highly compact set of contexts, 
 with magnitudes contextualised on whether parent values
@@ -262,12 +271,17 @@ $\ $\newline
 The overall process for unpacking an individual coefficient is:
 
 \begin{pseudo}{coeff\_unpack}{data,level,orient,quant\_index,v,h}
+\bsIF{using\_ac()==\true}
     \bsCODE{parent = parent\_val(data,level,orient, v, h)}{\ref{parentval}}
     \bsCODE{nhood = zero\_nhood(data[level][orient],v,h)}{\ref{zeronhood}}
     \bsCODE{sign\_pred = sign\_predict(data[level][orient],orient,v,h)}{\ref{signpredict}}
     \bsCODE{context\_set = select\_coeff\_ctxs(nhood, parent, sign\_pred)}{\ref{selectcoeffcontext}}
     \bsCODE{quant\_coeff = read\_sinta( context\_set )}{}
-    \bsCODE{data[level][orient][v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
+\bsELSE
+    \bsCODE{quant\_coeff = read\_sintb()}{}
+\bsEND
+\bsCODE{data[level][orient][v][h] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
+
 \end{pseudo}
 
 \paragraph{Parent values}

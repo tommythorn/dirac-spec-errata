@@ -66,7 +66,8 @@ There are three types of compound data:
 \item[Set] A collection of variables or values with no particular indexing. 
 A set containing members $A,B,C,\ldots$ is denoted $\{A,B,C,\ldots\}$. The usual
 set-theoretic operations $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
-apply.
+apply. Note that sets are used to define other entities in this specification, s
+uch as mean and median values and other compound data types, and are used in the control structures of the pseudocode.
 
 \item[Map]
 
@@ -105,7 +106,29 @@ specification can be implemented using only integer and logical operations.
 All operations are to be implemented with sufficiently large integers so 
 that overflow cannot occur.
 
-The following arithmetic operators are defined on numerical values:
+\subsubsection{Assignment}
+
+The assignment operation  = applies to all variable types. After performing 
+\[a=b\]
+the value of $a$ shall become equal to that of $b$, and the value of $b$ shall remain unchanged.
+
+\subsubsection{Boolean functions and operators}
+\label{booleanops}
+The following functions and operators are defined for one or more Boolean arguments:
+\begin{description}
+\item[not or !] 		(not a) or !a returns True for a boolean value a if and only if a is False
+\item[and] 		(a and b) returns True if and only if a and b are both True. Operator "and" may be used in pseudo-code conditions to denote the logical AND between Boolean values, for example: if (condition1 and condition2): …etc.
+\item[or] 		(a or b) returns True if either a or b are True, else it returns False.  Operator "or" may be used in pseudo-code conditions to denote the logical OR between Boolean values, for example: if (condition1 or condition2): … etc.
+\item[xor] 		(a xor b) returns True if one, and only one, of a or b are True, else it returns False.  Operator "xor" may be used in pseudo-code conditions to denote the logical exclusive OR between Boolean values, for example: if (condition1 xor condition2): … etc.
+\item[majority]		Given a set, S = {s0,…, sn-1} of Boolean values, majority(S) returns the majority condition. That is, if the number of True values is greater than or equal to the number of False values, majority(S) returns True, otherwise it returns False.
+\end{description}
+
+Boolean operations are to be distinguished from bitwise operations which operate on non-negative 
+integer values, and are defined in Section \ref{integerops}.
+
+\subsubsection{Integer functions and operators}
+
+The following functions and operators are defined on integer values:
 
 \begin{description}
 \item[Absolute value] $|a|=\left\lbrace\begin{array}{l} a \text{ if $a\geq 0$}\\ 
@@ -151,8 +174,8 @@ and $t$ (top):
 \end{array} \right.
 \]
 
-i.e. round towards zero as per C/C++ conventions. Note that explicit division of potentially negative numbers
-is avoided in this specification for clarity.
+i.e. round towards zero as per C/C++ conventions. Note that explicit division of 
+potentially negative numbers is avoided in this specification for clarity.
 
 \item[Remainder] For integers $a,b$, with $b>0$, the remainder $a\%b$ is equal to 
 
@@ -217,6 +240,37 @@ $13\wedge 6$ is $\text{b1101}\wedge\text{b110}$, which equals $\text{b1011}$, or
 These operations are also defined on boolean values, interpreted as single-bit integers, 
 where 0 is interpreted as $\false$ and 1 as $\true$ and vice-versa. Logical NOT is 
 not defined bitwise, to avoid ambiguity concerning leading zeroes).
+
+\subsubsection{Set functions and operators}
+
+The following functions and operators are defined for sets, maps and arrays. 
+\begin{description}
+\item[Indexing]		For an array $a$, $a[index]$ returns an element of $a$. If $a$ is a map the index shall be a token, else if $a$ is a map the index shall be an integer.
+\item[Scalar Assignment]	Where the notation $a = 0$ is used for an array of integer values, it means "set all elements of the array to zero".
+\item[Insertion]		a[index] = b inserts a copy of b into set a if the element does not already exist.
+\item[Tokens]		for a map a, arg(a) returns the set of the indexing tokens.
+\item[Length]		for a one dimensional array a, length(a) returns the number of elements in the array.
+\item[Width]		for a two dimensional array a, width(a) returns the width the array. The width is the number of scalar elements corresponding to the right most array index.
+\item[Height]					for a two dimensional array a, height(a) returns the height the array. The height is the number of one dimensional arrays in the two dimensional array and the "height" dimension corresponds to the left most array index.
+\end{description}
+\subsubsection{Precedence and associativity of operators}
+\label{operatorprecedence}
+To avoid any confusion over the order of operator precedence, every equation makes extensive use of the expression operators "(" and ")". All operations recursively execute the innermost expression(s) first until the calculation has been completed. In cases where the expression operators do not make clear the order of precedence, the following table defines the descending order of operator precedence and the associativity of each operator.
+[Table tbc]
+\begin{comment}
+Operator Precedence	Associativity
+( ) [ ]	left to right
+* // %	left to right
++ -	left to right
+<< >>	left to right
+< <= > >=	left to right
+== !=	left to right
+! (not)	right to left
+& (and)	left to right
+^ (xor)	left to right
+|	left to right
+= += -= *= //= %= &= ^= |= <<= >>=	right to left
+\end{comment}
 
 \subsection{Pseudocode}
 \label{pseudocode}
@@ -411,40 +465,3 @@ When it is false, the loop breaks to the next statement(s) outside the block.
 \bsEND
 \bsCODE{block2}
 \end{pseudo*}
-
-\subsubsection{Logical (boolean) operations}
-\label{booleanops}
-
-A logical operator takes a variable or pair of variables as arguments and
-returns the boolean values $\true$ or $\false$.
-
-The following logical operators are defined:
-
-\paragraph*{$==$} Test of equality of two variables. $a==b$ is $\true$ if and
-only if the value of $a$ equals the value of $b$. 
-
-\paragraph*{$<$}	Less than
-
-\paragraph*{$\leq$} Less than or equal to
-
-\paragraph*{$>$}	Greater than
-
-\paragraph*{$\geq$} Greater than or equal to
-
-\paragraph*{$!$} Not. $!a$ is $\true$ for a boolean value $a$ if and only if $a$ is $\false$
-
-\paragraph*{$!=$} not equal to. $a!=b$ is equivalent to $!(a==b)$
-
-When used in pseudocode conditions, the words ``and" and ``or" are used to denote logical AND
-and logical (inclusive) OR between boolean values, for example:
-
-\begin{pseudo*}
-\bsIF{condition1 \text{ and } condition2 }
-    \bsCODE{\hdots}
-\bsEND
-\end{pseudo*}
-
-\paragraph*{Majority} Given a set $S=s_0, \hdots, s_{n-1}$ of boolean values, $\majority(S)$ 
-returns $\mean(S)$ where the elements of $S$ are intepreted as $0$ if $\false$ and 1 if $\true$.
-So if the number of $\true$ values is greater than or equal to the number of $\false$ values, $\majority(S)$ returns
-$\true$, otherwise it returns $\false$.
