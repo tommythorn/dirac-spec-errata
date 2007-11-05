@@ -1,4 +1,985 @@
 \label{wltunpacking}
-\input{unpack-common}
-\subsection{Core syntax wavelet coefficient unpacking}\input{core-wlt-dec}
-\subsection{Low delay wavelet coefficient unpacking}\input{low-delay}
+
+This section specifies the $transform\_data()$ process for
+unpacking (parsing, entropy decoding and inverse
+quantising) of wavelet coefficient data
+from the Dirac stream. . Wavelet coefficients shall be signed integer 
+values and shall be extracted using the integer VLC and (optionally) arithmetic decoding functions  defined in Appendix \ref{dataenc}. 
+
+The result of this process shall be a set
+of fully-populated wavelet subband data arrays, as defined in
+Section \ref{wltdecodeconventions}.
+
+Wavelet coefficients are packed in one of two possible formats:
+
+\begin{itemize}
+\item In the core syntax, coefficients shall be grouped within individual
+subbands, representing a range of spatial frequencies, from the
+lowest to the highest. A full set of subbands shall be encoded for each
+video component in turn. 
+
+\item In the low delay syntax, coefficients
+shall be grouped into `slices' which represent coefficients pertaining
+to an area of the picture. Each slice shall contain data for all video 
+components and spatial frequency bands. Unpacking a slice 
+allows an area of picture to be extracted without extracting (or even
+receiving) the remaining picture data.
+\end{itemize}
+
+The overall process for unpacking transform data shall be as follows:
+
+\begin{pseudo}{transform\_data}{}
+\bsIF{is\_low\_delay()==\false}
+    \bsCODE{\YTransform = core\_transform\_data(Y)}{\ref{transformdec}}
+    \bsCODE{\COneTransform = core\_transform\_data(C1)}{\ref{transformdec}}
+    \bsCODE{\CTwoTransform = core\_transform\_data(C2)}{\ref{transformdec}}
+\bsELSE
+    \bsCODE{low\_delay\_transform\_data()}{\ref{ldpicture}}
+\bsEND
+\end{pseudo}
+
+Unpacked wavelet coefficient data shall be stored in the state variables $\YTransform$, $COneTransform$ and $CTwoTransform$ for subsequent picture decoding 
+(Section \ref{picturedec}).
+
+\subsection{Subband data structures}
+\label{wltdecodeconventions}
+
+Subband data shall be ordered by level (0, 1, 2, 3 etc) and orientation (LL, HL, LH and HH). In level 0, only the LL orientation shall be available (known also as the DC band); in the other levels only the HL, LH and HH orientations shall be available.
+
+The 0-LL subband shall be presented first in each slice (low delay coding) or component (core syntax coding). Within each subband depth level, the orientation order shall be x-HL, x-LH, x-HH (where ‘x’ is the transform depth level).
+
+The subbands partition the spatial frequencies by orientation and level so that a four-level subband array is as illustrated in Figure \ref{fig:orientlevel}. 
+
+
+\setlength{\unitlength}{1em}
+\begin{figure}[!ht]
+\centering
+\begin{picture}(25,35)
+
+%Main Grid
+\multiput(0,0)(16,0){3}%
+  {\line(0,1){32}}
+\multiput(0,0)(0,16){3}%
+  {\line(1,0){32}}
+
+%Second Grid
+\put(0,24){\line(1,0){16}}
+\put(8,16){\line(0,1){16}}
+
+%Third Grid
+\put(0,28){\line(1,0){8}}
+\put(4,24){\line(0,1){8}}
+
+%Fourth Grid
+\put(0,30){\line(1,0){4}}
+\put(2,28){\line(0,1){4}}
+
+
+%Put Levels
+
+\put(24,34){Level 4}
+\put(23,36){\vector(0,-1){3}}
+
+\put(13,34){Level 3}
+\put(12,36){\vector(0,-1){3}}
+
+\put(7,34){2}
+\put(6,36){\vector(0,-1){3}}
+
+\put(4,34){1}
+\put(3,36){\vector(0,-1){3}}
+
+%Put decomposition numbers
+\put(23,24){4-HL}
+\put(7,8){4-LH}
+\put(23,8){4-HH}
+\put(11,28){3-HL}
+\put(3,20){3-LH}
+\put(11,20){3-HH}
+\put(5,30){2-HL}
+\put(1,26){2-LH}
+\put(5,26){2-HH}
+\put(2.2,31){\tiny 1-HL}
+\put(0.2,29){\tiny 1-LH}
+\put(2.2,29){\tiny 1-HH}
+\put(0.2,31){\tiny 0-LL}
+
+  
+\end{picture}
+\caption{Subband decomposition of the spatial frequency domain showing subband 
+numbering, for a 4-level wavelet decomposition}\label{fig:orientlevel}
+
+\end{figure}
+
+
+\subsubsection{Wavelet data initialisation}
+
+\label{wltinit}
+
+This section specifies the $initialise\_wavelet\_data(comp)$ process, which returns a structure which will
+contain the wavelet coefficients for the component (Y, C1 or C2) indicated by $comp$. 
+
+The coefficient data shall comprise the four dimensional array $coeff\_data$, where
+ individual subbands shall be two-dimensional arrays accessed by level $level$ and orientation $orient$: e.g. 
+\[band = coeff\_data[level][orient] \]
+
+Valid levels shall be integer values in the range 0 to $\TransformDepth$ inclusive. 
+
+Level 0 shall consists of a single subband with orientation \LL. 
+
+All other levels shall consist of 3 subbands of orientation \LH, \HL, 
+and \HH in that order within the Dirac stream.
+
+The orientations correspond to either low- or high-pass filtering
+horizontally and vertically: so e.g. the \LH band consists of coefficients derived
+from horizontal low-pass filtering and vertical high-pass filtering. 
+
+Each subband array shall be initialised so that:
+\begin{eqnarray*}
+\width(data[level][orient]) & = & subband\_width(level,comp) \\
+\height(data[level][orient]) & = & subband\_height(level,comp)
+\end{eqnarray*}
+
+as specified in Section \ref{subbandwidthheight}. These dimensions correspond 
+to a wavelet transform being performed on a copy of the component data which 
+has been padded (if necessary) so that its
+dimensions are a multiple of $2^{\TransformDepth}$.
+
+Individual subband coefficients shall be signed integers accessed by vertical and 
+horizontal coordinates within the subband
+\[c = coeff\_data[level][orient][y][x]\]
+
+where the range of allowable coordinates for a subband coefficient is 
+$0\leq x<subband\_width(level,comp)$ and
+$0\leq y<subband\_height(level,comp)$.
+
+\subsubsection{Subband dimensions}
+\label{subbandwidthheight}
+
+This section defines the values of the $subband\_width(level, comp)$ and $subband\_height(level,comp)$
+functions, giving the width and height of subbands at a given level for a given component, and hence the range
+of subband vertical and horizontal indices. 
+
+If $comp==Y$, set
+\begin{eqnarray*}
+w & = & \LumaWidth \\
+h & = & \LumaHeight
+\end{eqnarray*}
+
+Otherwise, set
+\begin{eqnarray*}
+w & = & \ChromaWidth \\
+h & = & \ChromaHeight
+\end{eqnarray*}
+
+The padded dimensions of the component shall be defined by:
+\begin{eqnarray*}
+scale & = & 2^\TransformDepth \\
+pw & = & scale*((w+scale-1)//scale)\\ 
+ph & = & scale*((h+scale-1)//scale)
+\end{eqnarray*}
+
+If $level==0$,
+\begin{eqnarray*}
+subband\_width(level) & = & pw//2^{\TransformDepth} \\
+subband\_height(level) & = & ph//2^{\TransformDepth}
+\end{eqnarray*}
+
+If $level>0$
+\begin{eqnarray*}
+subband\_width(level) & = & pw//2^{\TransformDepth-level+1}\\
+subband\_height(level) & = & ph//2^{\TransformDepth-level+1}
+\end{eqnarray*}
+
+\begin{informative}
+In encoding, these padded dimensions may be achieved by padding the 
+component data up to the padded dimensions and applying the forward
+Discrete Wavelet Transform (the inverse of the operations specified in
+Section \ref{idwt}). Any values may be used for the padded data, although
+the choice will affect wavelet coefficients at the right and bottom 
+edges of the subbands. Good results, in compression terms, may be obtained
+ by using edge extension for intra pictures and zero extension for inter 
+pictures. A poor choice of padding may cause visible artefacts near the
+bottom and right edges at high levels of compression.
+\end{informative}
+
+\subsection{Inverse quantisation}
+\label{invquant}
+
+This section specifies the operation of inverse quantisation, which scales the
+dynamic range of unpacked wavelet coefficients according to a pre-determined factor.
+The inverse quantisation operation is common to both the low-delay and core syntax.
+
+The $inverse\_quant()$ function shall be defined as follows:
+
+\begin{pseudo}{inverse\_quant}{quantised\_coeff, quant\_index}
+\bsCODE{magnitude = |{quantised\_coeff}|}
+\bsIF{magnitude!=0}
+  \bsCODE{magnitude *= quant\_factor(quant\_index)}{\ref{quantfacs}}
+  \bsCODE{magnitude += quant\_offset(quant\_index)}{\ref{quantfacs}}
+  \bsCODE{magnitude += 2}
+  \bsCODE{magnitude = magnitude//4}
+\bsEND
+\bsRET{\sign( quantised\_coeff )*magnitude}
+\end{pseudo}
+
+\begin{informative}
+\begin{enumerate}
+\item Dirac quantisation is an integer approximation of dead-zone quantisation,
+in which a value is quantised as
+\[\left| x\right| // q\]
+for $x\geq 0$ or 
+\[-\left| x\right| // q\]
+\item The pseudocode description separates inverse quantisation from coefficient unpacking. However, 
+since dead-zone quantisation is used, the $inverse\_quant()$ function must compute
+the magnitude. Hence it is more efficient to first extract the coefficient magnitude,
+then inverse quantise, and then extract the coefficient sign. 
+\end{enumerate}
+\end{informative}
+
+\subsubsection{Quantisation factors and offsets}
+\label{quantfacs}
+
+This section specifies the operation of the $quant\_factor()$ and 
+$quant\_offset()$ functions for performing inversion quantisation.
+
+Quantisation factors shall be determined as follows:
+
+\begin{pseudo}{quant\_factor}{index}
+\bsCODE{base = 2^{q//4}}
+\bsIF{ (q\%4)==0 }
+  \bsRET{4*base}
+\bsELSEIF{ (q\%4)==1 }
+  \bsRET{(503829*base+52958)//105917}
+\bsELSEIF{ (q\%4)==2 }
+  \bsRET{(665857*base+58854)//117708}
+\bsELSEIF{ (q\%4)==3 }
+  \bsRET{(440253*base+32722)//65444}
+\bsEND
+\end{pseudo}
+
+For intra pictures, offsets are approximately $1/2$ of the 
+quantisation factors, and for inter pictures they are $3/8$ - these
+mark the reconstruction point within the quantisation interval:
+
+\begin{pseudo}{quant\_offset}{index}
+\bsIF{index==0}
+  \bsCODE{offset = 1}
+\bsELSE
+  \bsIF{ is\_intra() }
+    \bsIF{index==1}
+      \bsCODE{offset = 2}
+    \bsELSE
+      \bsCODE{ offset=(quant\_factor(index)+1)//2 }
+    \bsEND
+  \bsELSE
+    \bsCODE{ offset=(quant\_factor(index)*3+4)//8 }
+  \bsEND
+\bsEND
+\bsRET{offset}
+\end{pseudo}
+
+The value of $index$ passed to both functions shall be greater than or equal 0. 
+
+\begin{informative}
+The quantisation offsets have been selected so as to make inverse quantisation
+and re-quantisation by the same quantisation factor transparent. This requires that
+\[3\leq quant\_offset+2<quant\_factor\] -- hence the special conditions for 
+quantisation indexes 0 and 1.
+\end{informative}
+
+\subsection{Intra DC subband prediction}
+\label{intradcprediction}
+$\ $\newline
+This section defines the operation of the $intra\_dc\_prediction(band)$ function
+for reconstructing values within Intra picture DC subbands using spatial prediction.
+
+This function may be applied once all coefficients within the DC
+band have been unpacked, although it may be applied progressively to each coefficient
+as soon as it has been unpacked.
+
+Intra DC values shall be derived by spatial prediction using the mean of the
+three values to the left, top-left and above a coefficient (where available).
+
+The Intra DC subband prediction process shall be defined as follows:
+
+\begin{pseudo}{intra\_dc\_prediction}{band}
+\bsCODE{prediction = 0 }
+\bsFOR{v=0}{\height(band)-1}
+  \bsFOR{h=0}{\width(band)-1}
+      \bsIF{h>0 \text{\bf and} v>0}
+            \bsCODE{prediction=\mean(band[v][h-1],band[v-1][h-1],band[v-1][h])}
+      \bsELSEIF{h>0 \text{\bf and} v==0}
+            \bsCODE{prediction=band[0][h-1]}
+      \bsELSEIF{h==0 \text{\bf and} v>0}
+            \bsCODE{prediction=band[v-1][0]}
+      \bsELSE
+            \bsCODE{prediction = 0}
+      \bsEND
+      \bsCODE{band[v][h] += prediction}
+  \bsEND
+\bsEND
+\end{pseudo}
+
+\subsection{Core syntax wavelet coefficient unpacking}
+
+\label{transformdec}
+
+This section specifies the overall operation of the $core\_transform\_data(comp)$ process
+for unpacking the set of coefficient subbands corresponding
+to a video component (Y, C1 or C2) of a picture in the core Dirac syntax, 
+according to the conventions set out in Section \ref{wltdecodeconventions}.
+
+
+In the Dirac core syntax, subband data shall be entropy coded. It shall be arranged by 
+level and orientation, from level 0 up to level \TransformDepth. Coefficients may
+be VLC or arithmetic coded. Where arithmetic coding is used, the unpacking process
+ for each subband is contingent on data from subbands of the same orientation in 
+ the next lower level. This is the {\em parent} subband; the subband of the same orientation in the next
+higher level is the {\em child} subband. 
+
+Unpacking an individual subband therefore requires prior unpacking of the parent subband,
+and of its parent, and so on until level 1 is reached (unpacking level 1 subbands does not depend upon the single level 0 DC band).
+
+\begin{informative}
+The data for each subband consists of a subband header and a block of 
+coded coefficient data. The subband header contains a length code giving the number of
+bytes of the block of coded data. The transform data can therefore be
+parsed without invoking entropy decoding at all, since the length codes allow a 
+parser to skip from one subband header to the next.
+\end{informative}
+
+
+\subsubsection{Overall process}
+The overall $core\_transform\_data()$ process shall be defined as follows:
+
+\begin{pseudo}{core\_transform\_data}{comp}
+\bsCODE{coeff\_data=initialise\_wavelet\_data(comp)}{\ref{wltinit}}
+\bsCODE{byte\_align()}
+\bsCODE{subband(coeff\_data, 0, \LL)}{\ref{subbanddecodeprocess}}    
+\bsFOR{level=1}{\TransformDepth}
+  \bsFOREACH{orient}{\HL,\LH,\HH}
+    \bsCODE{byte\_align()}
+    \bsCODE{subband(coeff\_data, level, orient)}{\ref{subbanddecodeprocess}}
+  \bsEND
+\bsEND
+\bsRET{data}
+\end{pseudo}
+
+\subsubsection{Subbands}
+
+\label{subbanddecodeprocess}
+
+This section defines the process for unpacking coefficients of a specified level
+and orientation $orient$. 
+
+The overall process shall consist of reading a byte-aligned header for each
+subband, including a length code for the subsequent arithmetically-coded data.
+Subband data shall be initialised to 0. If the length code is 0, the subband shall be 
+skipped and all data within it shall remain set to zero.
+
+Intra DC bands are predicted, and so must additionally be reconstructed.
+
+The subband unpacking process shall be defined as follows:
+
+\begin{pseudo}{subband}{coeff\_data, level, orient}
+\bsITEM{length}{uint}
+\bsCODE{zero\_subband\_data(coeff\_data[level][orient])}{\ref{zerosubband}}
+\bsIF{length == 0}
+  \bsCODE{byte\_align()}
+\bsELSE
+    \bsCODE{quant\_index = read\_uint()}
+    \bsCODE{byte\_align()}
+    \bsCODE{subband\_coeffs(coeff\_data,level,orient,length,quant\_index)}{\ref{subbandcoeffs}}
+\bsEND 
+\bsIF{is\_intra() \text{ and } level==0}
+    \bsCODE{intra\_dc\_prediction(coeff\_data[level][orient])}{\ref{intradcprediction}}
+\bsEND
+\end{pseudo}
+
+\paragraph{Zero subband}
+\label{zerosubband}
+$\ $\newline$\ $\newline
+The $zero\_subband()$ process shall sets all coefficients in a given subband to 0.
+
+ It shall be defined as follows:
+
+\begin{pseudo}{zero\_subband\_data}{band}
+\bsFOR{y=0}{\height(band)-1}
+  \bsFOR{x=0}{\width(band)-1}
+    \bsCODE{band[y][x] = 0}
+  \bsEND
+\bsEND
+\end{pseudo}
+
+\paragraph{Non-skipped subbands}
+\label{subbandcoeffs}
+$\ $\newline$\ $\newline
+Data within subbands may be split into one or more rectangular codeblocks (Figure \ref{codeblocks}). Codeblocks shall be scanned in raster order across the subband
+ and coefficients shall be scanned in raster order within each codeblock. 
+
+\begin{figure}
+[Include codeblock figure \label{codeblocks}]
+\end{figure}
+
+The  $subband\_coeffs()$ process shall be defined as follows:
+
+\begin{pseudo}{subband\_coeffs}{coeff\_data,level,orient,length}
+\bsCODE{\ABitsLeft= 8*length}
+\bsIF{using\_ac()==\true}
+    \bsCODE{ctx\_labels=
+\begin{array}{l} [\SignZero, \SignPos, \SignNeg, \ZPZNFollowOne,\\
+                    \ZPNNFollowOne, \ZPFollowTwo, \ZPFollowThree, 
+                      \ZPFollowFour, \ZPFollowFive, \ZPFollowSixPlus,\\
+                    \NPZNFollowOne, \NPNNFollowOne, \NPFollowTwo, 
+                      \NPFollowThree, \NPFollowFour,\\
+                    \NPFollowFive, \NPFollowSixPlus, \CoeffData, \ZeroCodeblock,\\
+                    \QOffsetFollow, \QOffsetData, \\
+                     \QOffsetSign]
+\end{array}
+}
+    \bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
+\bsEND
+\bsFOR{y=0}{\CodeblocksY[level]-1}
+    \bsFOR{x=0}{\CodeblocksX[level]-1}
+        \bsCODE{codeblock(coeff\_data,level,orient,x,y,quant\_index)}{\ref{codeblocks}}
+    \bsEND
+\bsEND
+\bsCODE{flush\_inputb()}{\ref{blockreadbit}}
+\end{pseudo}
+
+The key to the context labels is explained in Section \ref{selectcoeffcontext}.
+
+\subsubsection{Subband codeblocks}
+\label{codeblocks}
+
+This section defines the operation of the process: 
+
+$codeblock(band,parent,level, orient,x,y,quant\_index)$
+
+This process unpacks coefficients within the codeblock at position $(x,y)$.
+The codeblock dimensions shall be as defined in Section \ref{codeblockdimensions}.
+
+The process for unpacking coefficients within the codeblock shall be defined as follows: 
+
+\begin{pseudo}{codeblock}{coeff\_data,level,orient,x,y,quant\_index}
+\bsCODE{skipped=zero\_flag(level)}{\ref{zeroblockflag}}
+\bsIF{skipped==\false}
+  \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
+  \bsFOR{v=cb\_top(y,band,level)}{cb\_bottom(y,band,level)-1}{\ref{codeblockdimensions}}
+    \bsFOR{h=cb\_left(x,band,level)}{cb\_right(x,band,level)-1}{\ref{codeblockdimensions}}
+          \bsCODE{coeff\_unpack(coeff\_data,level,orient,quant_idx,v,h)}{\ref{wltcoeff}}
+      \bsEND
+    \bsEND
+  \bsEND
+\bsEND
+
+\end{pseudo}
+
+If the codeblock is skipped, then coefficients within that codeblock shall remain zero.
+
+
+\paragraph{Codeblock dimensions}
+$\ $\newline
+\label{codeblockdimensions}
+
+Each codeblock shall cover coefficients in the horizontal range $cb\_left$ to 
+$cb\_right–1$ 
+and in the vertical range $cb\_top$ to $cb\_bottom–1$ where these values shall be
+ defined by the functions: 
+
+\begin{eqnarray*}
+  cb\_left(x,band,level) & = & (\width(band)*x)//\CodeblocksX[level]\\
+  cb\_right(x,band,level) & = & (\width(band)*(x+1))//\CodeblocksX[level] \\
+  cb\_top(y,band,level) & = & (\height(band)*y)//\CodeblocksY[level][vertical] \\
+  bc\_bottom(y,band,level) & = & (\height(band)*(y+1))//\CodeblocksY[level][vertical]
+\end{eqnarray*}
+
+where $x$ and $y$ are the codeblock coordinates within the subband.
+
+
+\paragraph{Skipped codeblock flag}
+\label{zeroblockflag}
+$\ $\newline$\ $\newline
+The skipped codeblock flag process shall be as follows:
+
+\begin{pseudo}{zero\_flag}{level}
+\bsCODE{num\_blocks=\CodeblocksX[level]* \CodeblocksY[level] }
+\bsIF{num_blocks==1}
+    \bsRET{\false}
+\bsELSEIF{using\_ac()==\true}
+    \bsRET{ read\_boola(\ZeroCodeblock) }
+\bsELSE
+    \bsRET{read\_boolb()}
+\bsEND
+\end{pseudo}
+
+If the number of codeblocks is 1, then $zero\_flag()$ shall return  $\false$.
+
+\paragraph{Codeblock quantiser offset}
+$\ $\newline$\ $\newline
+\label{blockquantidx}
+The $codeblock\_quant\_offset()$ process shall be defined as follows:
+
+\begin{pseudo}{codeblock\_quant\_offset}{}
+\bsIF{\CodeblockMode==0}
+    \bsRET{0}
+\bsELSEIF{using\_ac()==\true}
+    \bsRET{ read\_sinta(quant\_context\_probs()) }
+\bsELSE
+    \bsRET{read\_sintb()}
+\bsEND
+\end{pseudo}
+
+$quant\_context\_probs()$ shall return the context probability label set:
+\[\{[\QOffsetFollow],\QOffsetData,\QOffsetSign\}\]
+
+\subsubsection{Subband coefficients}
+
+\label{wltcoeff}
+
+This section describes the operation of the 
+$coeff\_unpack(coeff\_data,level,orient,quant\_idx,x,y)$ process
+for unpacking an individual coefficient in position $(x,y)$ 
+in the subband $coeff\_data[level][orient]$.
+
+Unpacking a coefficient shall make use of entropy decoding, inverse quantisation
+and, in the case of DC (level 0) bands of Intra pictures, neighbourhood prediction.
+
+Arithmetic coding uses a highly compact set of contexts, 
+with magnitudes contextualised on whether parent values
+and neighbouring values are zero or non-zero. See Appendix \ref{arithdecoding}
+for a definition of the Dirac arithmetic decoder. 
+
+The process for coefficient unpacking shall comprise up to four stages:
+\begin{itemize}
+\item	(for arithmetic coding only) determination of the magnitude context, based on whether the parent or neighbouring values are zero,
+\item	 (for arithmetic coding only) determination of the sign context, based on the predicted sign value,
+\item	 entropy decoding of the quantized coefficient value, and
+\item	 inverse quantization of the quantized value.
+\end{itemize}
+
+The $coeff\_unpack()$ process shall be defined as follows:
+
+\begin{pseudo}{coeff\_unpack}{coeff\_data,level,orient,quant\_index,x,y}
+\bsIF{using\_ac()==\true}
+    \bsCODE{parent = zero\_parent(coeff\_data,level,orient, x, y)}{\ref{zeroparent}}
+    \bsCODE{nhood = zero\_nhood(coeff\_data[level][orient],x,y)}{\ref{zeronhood}}
+    \bsCODE{sign\_pred = sign\_predict(coeff\_data[level][orient],orient,x,y)}{\ref{signpredict}}
+    \bsCODE{context\_prob\_set = select\_coeff\_ctxs(nhood, parent, sign\_pred)}{\ref{selectcoeffcontext}}
+    \bsCODE{quant\_coeff = read\_sinta( context\_prob\_set )}{}
+\bsELSE
+    \bsCODE{quant\_coeff = read\_sintb()}{}
+\bsEND
+\bsCODE{coeff\_data[level][orient][x][y] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
+\end{pseudo}
+
+\paragraph{Zero parent}
+\label{zeroparent}
+$\ $\newline
+The function $zero\_parent(coeff\_data,level,orient,v, h)$ shall return a boolean flag indicating
+whether the parent value of a coefficient in a subband is zero. The parent coefficient
+shall be the co-located coefficient in the parent subband, if there is one. There is deemed to be a parent if $level\geq 2$. If a parent coefficient does not exist, $\true$ shall be
+returned.
+
+Note: Levels 0 and 1 have the same number of coefficients. Thus the first level that can be used as a parent is level 1, with level 2 as its child.
+
+The parent value shall be determined as follows:
+
+\begin{pseudo}{zero\_parent}{data,level,orient,x,y}
+\bsIF{level>=2}
+    \bsCODE{parent = data[level-1][orient][y//2][x//2]}
+\bsELSE
+    \bsCODE{parent = 0}
+\bsEND
+\bsRET{parent==0}
+\end{pseudo}
+
+\paragraph{Zero neighbourhood}
+\label{zeronhood}
+$\ $\newline
+The $zero\_nhood()$ function shall return a booleanflag  indicating whether the 
+neighbouring values of a given subband coefficient are all zero.
+
+The zero neighbourhood value shall be determined as follows:
+
+\begin{pseudo}{zero\_nhood}{band,x,y}
+\bsIF{y>0 \text{ and } x>0}
+  \bsIF{( band[y-1][x-1])!=0 \text{ or } band[y][x-1]!=0 ) \text{ or } band[y-1][x]!=0}
+    \bsRET{\false}
+  \bsEND
+\bsELSEIF{y>0 \text{ and } x==0}
+    \bsIF{band[y-1][0])!=0}
+      \bsRET{\false}
+    \bsEND
+\bsELSEIF{y==0 \text{ and } x>0}
+    \bsIF{ band[0][x-1] !=0}
+      \bsRET{\false}
+    \bsEND
+\bsEND
+\bsRET{\true}
+\end{pseudo}
+
+\paragraph{Sign prediction}
+\label{signpredict}
+$\ $\newline
+The $sign\_predict()$ function shall return a prediction for the sign of the 
+current pixel. 
+
+Correlation within subbands depends upon orientation,
+and so this is taken into account in forming the prediction.
+
+For vertically-oriented (HL) bands, the predictor shall be the sign of the
+coefficient above the current coefficient; for horizontally-oriented (LH)
+bands, the predictor shall be the sign of the coefficient to the left. 
+
+The predictions shall be used only for the conditioning of the sign contexts.
+
+The sign prediction value shall be determined as follows:
+
+\begin{pseudo}{sign\_predict}{band,orient,x,y}
+\bsIF{orient==HL \text{ and } y==0}
+    \bsRET{0}
+\bsELSEIF{orient==HL \text{ and } y>0}
+    \bsRET{\sign(band[y-1][x])}
+\bsELSEIF{orient==LH \text{ and } x==0}
+    \bsRET{0}
+\bsELSEIF{orient==LH \text{ and } x>0}
+    \bsRET{\sign(band[y][x-1])}
+\bsELSE
+  \bsRET{0}
+\bsEND{}
+\end{pseudo}
+
+\paragraph{Coefficient context selection}
+\label{selectcoeffcontext}
+$\ $\newline
+This section defines the coefficient context selection function which shall return a map
+ of context probability labels for decoding a coefficient value. Context probabilities 
+shall be as defined in Appendix \ref{arithcontexts}.
+
+The map m shall comprise three elements, accessed by the labels: FOLLOW, DATA, and SIGN, where:
+\begin{itemize}
+\item $m$[FOLLOW] is an array of labels for accessing follow bit context probabilities
+\item $m$[DATA] is a label for accessing data bit context probabilities
+\item $m$[SIGN] is a label for accessing data bit context probabilities 
+\end{itemize}
+
+The elements of the map returned by 
+\[select\_coeff\_contexts(zero\_nhood,parent,sign\_pred)\]
+
+shall be as defined in Table \ref{contexttable} where the context labels are used to access
+context probability values in the map $\AContexts$.
+
+
+%% Table of context sets for signed coefficient extraction %%
+\begin{table}[!ht]
+\begin{tabular}{|c|c|c||l|l|}
+\hline
+ $zero\_parent$ & $zero\_nhood$ & $sign\_pred$ & \multicolumn{2}{c|}{\bf{Context map}} \\
+
+% Zero parent, zero neighbour, zero sign prediction
+\hline
+\true & \true & 0 &  FOLLOW & [\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                            \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &   &  DATA & \CoeffData \\ \cline{4-5}
+  &   &   &  SIGN & \SignZero \\
+
+% Zero parent, zero neighbour, -ve sign prediction
+\hline
+\true & \true & $<0$ &  FOLLOW & [\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &    &  DATA & \CoeffData \\ \cline{4-5}
+  &   &    &  SIGN & \SignNeg \\
+
+% Zero parent, zero neighbour, +ve sign  prediction
+\hline
+\true & \true & $>0$ &  FOLLOW & [\ZPZNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                               \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &    &  DATA & \CoeffData \\ \cline{4-5}
+  &   &    &  SIGN & \SignPos \\
+
+% Zero parent, non-zero neighbour, zero sign prediction
+\hline
+\true & \false & 0 &  FOLLOW & [\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                             \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &   &   &  DATA & \CoeffData \\ \cline{4-5}
+  &   &   &  SIGN & \SignZero \\
+
+% Zero parent, non-zero neighbour, -ve sign prediction
+\hline
+\true & \false & $<0$ &  FOLLOW & [\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &        &    &  DATA & \CoeffData \\ \cline{4-5}
+  &        &    &  SIGN & \SignNeg \\
+
+% Zero parent, non-zero neighbour, +ve sign prediction
+\hline
+\true & \false & $>0$ &  FOLLOW & [\ZPNNFollowOne,\ZPFollowTwo,\ZPFollowThree,
+                                \ZPFollowFour,\ZPFollowFive,\ZPFollowSixPlus] \\ \cline{4-5}
+  &        &      &  DATA & \CoeffData \\ \cline{4-5}
+  &        &      &  SIGN & \SignPos \\
+
+% Non-zero parent, zero neighbour, zero sign prediction
+\hline
+\false &  \true & 0 & FOLLOW & [\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  DATA & \CoeffData \\ \cline{4-5}
+& &      &  SIGN & \SignZero \\
+
+% Non-zero parent, zero neighbour, -ve sign prediction
+\hline
+\false & \true & $<0$ &  FOLLOW & [\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  DATA & \CoeffData \\ \cline{4-5}
+& &      &  SIGN & \SignNeg \\
+
+% Non-zero parent, zero neighbour, +ve sign prediction
+\hline
+\false & \true & $>0$ &  FOLLOW & [\NPZNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                      \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  DATA & \CoeffData \\ \cline{4-5}
+& &      &  SIGN & \SignPos \\
+
+% Non-zero parent, non-zero neighbour, zero sign prediction
+\hline
+\false & \false & 0 &  FOLLOW & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                    \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  DATA & \CoeffData \\ \cline{4-5}
+& &      &  SIGN & \SignZero \\
+
+% Zero parent, non-zero neighbour, -ve sign prediction
+\hline
+\false & \false & $<0$ &  FOLLOW & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                       \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  DATA & \CoeffData \\ \cline{4-5}
+& &      &  SIGN & \SignNeg \\
+
+% Zero parent, non-zero neighbour, +ve sign prediction
+\hline
+\false & \false  & $>0$ &  FOLLOW & [\NPNNFollowOne,\NPFollowTwo,\NPFollowThree,
+                                        \NPFollowFour,\NPFollowFive,\NPFollowSixPlus] \\ \cline{4-5}
+& &      &  DATA & \CoeffData \\ \cline{4-5}
+& &      &  SIGN & \SignPos \\
+\hline
+
+\end{tabular}
+\caption{Subband coefficient context sets}\label{contexttable}
+\end{table}
+
+\clearpage
+
+\subsection{Low delay wavelet coefficient unpacking}
+\label{lowdelayparsing}
+
+This section defines the stream syntax that shall be used for low delay profiles. T
+his section defines the syntax and parsing operations only; picture decoding operations
+ are defined in Section \ref{picturedec}.
+
+In low delay operation, the Dirac syntax shall partition the wavelet coefficients into a
+ number of slices, from all subbands, corresponding to localized areas of the picture 
+(see Figure \ref{}).
+
+A slice shall meet the following requirements:
+\begin{enumerate}
+\item A single quantizer, weighted for each subband by a quantization matrix, shall be used for quantization of the coefficients in each slice.
+\item All wavelet coefficients shall be entropy-coded using variable-length coding alone. Arithmetic coding shall not be used.
+\item The number of bytes used per slice shall be the same, to within one byte, for each slice in a picture.
+\item Each picture may change the slice parameters within the picture by setting the relevant wavelet transform parameters (Section \ref{sliceparams}).
+\end{enumerate}
+
+\begin{informative}
+\begin{enumerate}
+\item The slice structure implies that in practice incremental picture decoding can be easily achieved without accumulating an entire picture data set, yielding a decoding delay
+ proportional to the height of the slices. (The actual achievable delay may be more than one slice height due to vertical filtering delay).
+\item Using a fixed number of bits per slice does impact on compression efficiency but
+ simplifies both encoder and decoder hardware, and assists a chain of multiple encoders
+ and decoders using the same slice parameters in producing identical coding decisions
+ and hence no cascading loss. These factors are of great significance in a
+professional environment.
+\end{enumerate}
+\end{informative}
+
+\subsubsection{Overall process}
+\label{ldpicture}
+
+The low delay transform data process shall be defined as follows:
+
+\begin{pseudo}{low\_delay\_transform\_data()}{}
+\bsCODE{\YTransform = initialise\_wavelet\_data(Y)}{\ref{wltinit}}
+\bsCODE{\COneTransform = initialise\_wavelet\_data(C1)}{\ref{wltinit}}
+\bsCODE{\CTwoTransform = initialise\_wavelet\_data(C2)}{\ref{wltinit}}
+\bsFOR{sy=0}{\SlicesY-1}
+  \bsFOR{sx=0}{\SlicesX-1}
+    \bsCODE{slice(sx, sy)}{\ref{sliceparsing}}
+  \bsEND
+\bsEND
+\bsCODE{intra\_dc\_prediction(\YTransform[0][\LL])}{\ref{intradcprediction}}
+\bsCODE{intra\_dc\_prediction(\COneTransform[0][\LL])}{\ref{intradcprediction}}
+\bsCODE{intra\_dc\_prediction(\CTwoTransform[0][\LL])}{\ref{intradcprediction}}
+\end{pseudo}
+
+DC values at the top and left edges of a slice shall be predicted from DC values in
+ previously decoded slices, which must therefore be retained.
+
+\subsubsection{Slices}
+\label{sliceparsing}
+
+This section specifies the operation of the $slice(sx,sy)$ process for unpacking
+ coefficients within the slice with coordinates $(sx,sy)$. 
+
+Each slice shall contain the relevant coefficients from all subbands and for all 
+components. Luma data shall be unpacked rst, and shall be followed by the chroma
+ data, in which the chroma component coefficients shall be interleaved. A length code
+ shall allow the luma and chroma coefficients each to be terminated early, with remaining
+values set to zero by means of bounded read operations.
+
+The overall slice unpacking process shall be defined as follows:
+
+\begin{pseudo}{slice}{sy,sx}
+\bsCODE{slice\_bits\_left = 8*slice\_bytes(sx,sy)}{\ref{slicebytes}}
+\bsCODE{qindex=read\_nbits(7)}
+\bsCODE{slice\_bits\_left -= 7}
+\bsCODE{slice\_quantisers(qindex)}{\ref{slicequantisers}}
+\bsCODE{length\_bits = \intlog2(8*slice\_bytes(sx,sy)-7)}
+\bsCODE{slice\_y\_length=read\_nbits(length\_bits)}
+\bsCODE{slice\_bits\_left -= length\_bits}
+\bsCODE{\ABitsLeft=slice\_y\_length}
+\bsCODE{luma\_slice\_band(0,\LL,sx,sy)}{\ref{lumasliceband}}
+\bsFOR{level=1}{\TransformDepth}
+  \bsFOREACH{orient}{\HL,\LH,\HH}
+    \bsCODE{luma\_slice\_band(level,orient,sx,sy)}{\ref{lumasliceband}}
+  \bsEND
+\bsEND
+\bsCODE{flush\_inputb()}{\ref{blockreadbit}}
+\bsCODE{slice\_bits\_left -= slice\_y\_length}
+\bsCODE{\ABitsLeft=slice\_bits\_left}
+\bsCODE{chroma\_slice\_band(0,\LL,sx,sy)}{\ref{chromasliceband}}
+\bsFOR{level=1}{\TransformDepth}
+  \bsFOREACH{orient}{\HL,\LH,\HH}
+    \bsCODE{chroma\_slice\_band(level,orient,sx,sy)}{\ref{chromasliceband}}
+  \bsEND
+\bsEND
+\bsCODE{flush\_inputb()}{\ref{blockreadbit}}
+\end{pseudo}
+
+$slice\_y\_length$ shall satisfy the following condition:
+\[slice\_y\_length = 8*slice\_bytes(sx, sy)-7-length\_bits\]
+
+\begin{informative}
+Slice decoding makes use of bounded read functions, which return 1 when $\ABitsLeft$
+ is zero. This means that remaining coefficients are set to 0, since a solitary 1 is the VLC for 0. The logic of slice decoding applies this twice in each slice: once for luma coefficients, initializing the bits left to $slice\_y\_length$, and a second time to
+the chroma coefficients, initializing to the number of bits remaining.
+\end{informative}
+
+\subsubsection{Slice bytes}
+\label{slicebytes}
+
+This section specifies the $slice\_bytes(sx,sy)$ function for determining the number of bytes to be used for the slice at location $(sx,sy)$:
+
+\begin{pseudo}{slice\_bytes}{sx,sy}
+\bsCODE{slice\_num=sy*\SlicesX+sx}
+\bsCODE{\begin{array}{rcl}
+bytes & = & ((slice\_num+1)*\SliceBytesNum)// \\
+& & \SliceBytesDenom
+\end{array}}
+\bsCODE{\begin{array}{rcl}
+bytes &-= & ((slice\_num)*\SliceBytesNum)// \\
+& & \SliceBytesDenom
+\end{array}}
+\bsRET{bytes}
+\end{pseudo}
+
+\subsubsection{Setting slice quantisers}
+\label{slicequantisers}
+
+This section specifies how quantisers for individual subbands are determined from the quantisation matrix and the quantisation index.
+
+\begin{pseudo}{set\_band\_quantisers}{qindex}
+\bsCODE{\Quant[0][\LL]=\max(qindex-\QuantMatrix[0][\LL],0)}
+\bsFOR{level=1}{\TransformDepth}
+    \bsFOREACH{orient}{HL, LH, HH}
+        \bsCODE{qval=\max(qindex-\QuantMatrix[level][orient],0)}
+        \bsCODE{\Quant[level][orient]=qval}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+\subsubsection{Slice subbands}
+\label{sliceband}
+
+This section specifies the operation of the $luma\_slice\_band( level,orient,sx,sy)$ for 
+unpacking individual luma slice subbands, and $chroma\_slice\_band( level,orient,sx,sy)$. for 
+unpacking individual chroma slice subbands.
+
+\paragraph{Slice subband dimensions}
+$\ $\newline\label{slicedimensions}
+The rectangular set of coefficients covered by a slice component ($Y$, $C1$ and $C2$) 
+is demarcated by the values $slice\_left, slice\_right, slice\_top, slice\_bottom$, defined as fractions
+of the subband dimensions (Section \ref{subbandwidthheight}) by the following functions:
+\begin{eqnarray*}
+  slice\_left(sx,level,c) & = & (subband\_width(level,c)*sx)//\SlicesX \\
+  slice\_right(sx,level,c) & = & (subband\_width(level,c)*(sx+1))//\SlicesX \\
+  slice\_top(sy,level,c) & = & (subband\_height(level,c)*sy)//\SlicesY \\
+  slice\_bottom(sy,level,c) & = & (subband\_height(level,c)*(sy+1))//\SlicesY
+\end{eqnarray*}
+
+where $c=Y$ for luma coefficients, and $C1$ or $C2$ for chroma coefficients.
+
+\begin{informative}
+\begin{itemize}
+\item The slice subband area formulae correspond to the codeblock area 
+formulae for the core syntax (Section \ref{}).
+\item Slice subbands may change dimension by 1 from one slice to another 
+if $\SlicesX$ or $\SlicesY$ do not divide the horizontal or vertical dimensions 
+exactly.
+\item Chroma slice subbands might not have exactly the scaled dimensions of 
+the luma slice subband, since the $\SlicesX$ and $SlicesY$ values may exactly
+ divide luma dimensions but not chroma dimensions; and chroma components 
+may receive different padding, depending on the transform depth.
+\item These issues may be easily avoided in particular applications by choosing 
+suitable values for the transform depth and $\SlicesX$ and $SlicesY$.
+\end{itemize}
+\end{informative}
+
+\paragraph{Luma slice subband data}
+\label{lumasliceband}
+$\ $\newline
+The process for unpacking luma slice coefficients shall be defined as follows:
+
+\begin{pseudo}{luma\_slice\_band}{level, orient, sx, sy}
+\bsFOR{y=slice\_top(sy,level,Y)}{slice\_bottom(sy,level,Y)-1}{\ref{slicedimensions}}
+  \bsFOR{x=slice\_left(sx,level,Y)}{slice\_right(sx,level,Y)-1}{\ref{slicedimensions}}
+    \bsITEM{val}{sintb}{\ref{segol}}
+    \bsCODE{q=\Quant[Y][level][orient]}
+    \bsCODE{\YTransform[level][orient][y][x]=inverse\_quant(val,q)}
+  \bsEND
+\bsEND
+\end{pseudo}
+
+\paragraph{Chroma slice subband data}
+\label{chromasliceband}
+$\ $\newline
+Chroma slice subband coefficients shall follow luma coefficients within each slice. 
+The two chroma components shall be interleaved coefficient-by-coefficient. The 
+process for unpacking chroma slice coefficients shall be defined as
+follows:
+
+\begin{pseudo}{luma\_slice\_band}{level, orient, sx, sy}
+\bsFOR{y=slice\_top(sy,level,C1)}{slice\_bottom(sy,level,C1)-1}{\ref{slicedimensions}}
+  \bsFOR{x=slice\_left(sx,level,C1)}{slice\_right(sx,level,C1)-1}{\ref{slicedimensions}}
+    \bsCODE{q=\Quant[level][orient]}
+    \bsITEM{val}{sintb}{\ref{segol}}
+    \bsCODE{\COneTransform[level][orient]=inverse\_quant(val,q)}{\ref{invquant}}
+    \bsITEM{val}{sintb}{\ref{segol}}
+    \bsCODE{\CTwoTransform[level][orient]=inverse\_quant(val,q2)}{\ref{invquant}}
+  \bsEND
+\bsEND
+\end{pseudo}
+
+\begin{comment}
+\begin{informative*}
+\subsection{Data adaption and application requirements}
+\label{apps}
+\end{informative*}
+\end{comment}

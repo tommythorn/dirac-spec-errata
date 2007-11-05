@@ -1,16 +1,7 @@
 \label{videoformatdefaults}
 
-This Section specifies the default values for decoder state variables that are determined
-by the value of $\SVideoFormat$. These defaults reduce overhead by allowing a
-large number of parameters to be set without explicit signalling. The defaults
-are applied to $\SeqStateName$ variables immediately on parsing the $\VVideoFormat$
-variable value.  
-
-In the case $\SVideoFormat==0$ (Custom), these tables specify only the initial
-value of $\SeqStateName$ parameters: sequence and source parameter values may 
-be overridden within the Access Unit header. 
-
-\subsection{Sequence parameters}
+[TBC!!]
+\begin{comment}
 
 \begin{table}[!ht]
 \begin{tabular}{|l|c|c|c|c|c|c|c|}
@@ -19,13 +10,13 @@ be overridden within the Access Unit header.
 \hline
  &0 -- Custom &1 -- QSIF & 2 -- QCIF & 3 -- SIF & 4 -- CIF &	5 -- 4SIF	& 6 -- 4CIF \\
 \hline
-\VLumaWidth&640&176&176&352&352&704&704\\
-\VLumaHeight&480&120&144&240&288&480&576\\
+\SLumaWidth&640&176&176&352&352&704&704\\
+\SLumaHeight&480&120&144&240&288&480&576\\
 \hline
-\VChromaFormat&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0\\
+%\VChromaFormat&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0\\
 \hline
-\VLumaDepth&8&8&8&8&8&8&8\\
-\VChromaDepth&8&8&8&8&8&8&8\\
+\SLumaDepth&8&8&8&8&8&8&8\\
+\SChromaDepth&8&8&8&8&8&8&8\\
 \hline
 \end{tabular}
 \caption{Default sequence parameters for video formats 0--6}
@@ -38,21 +29,18 @@ be overridden within the Access Unit header.
 \hline
    &7 -- SD480 & 8 -- SD576 & 9 -- HD720 &10 -- HD1080 & 11 -- 2KCinema & 12 -- 4KCinema\\
 \hline
-\VLumaWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
-\VLumaHeight & 480 & 576 & 720 & 1080 & 1556 & 3112\\
+\SLumaWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
+\SLumaHeight & 480 & 576 & 720 & 1080 & 1556 & 3112\\
 \hline
-\VChromaFormat & 4:2:0 & 4:2:0 & 4:2:0 & 4:2:0 &4:4:4 & 4:4:4\\
+%\VChromaFormat & 4:2:0 & 4:2:0 & 4:2:0 & 4:2:0 &4:4:4 & 4:4:4\\
 \hline
-\VLumaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
-\VChromaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
+\SLumaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
+\SChromaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
 \hline
 
 \end{tabular}
 \caption{Default sequence parameters for video formats 7--12}
 \end{table}
-
-
-\subsection{Source parameters}
 
 \begin{table}[!ht]
 \begin{tabular}{|l|c|c|c|c|c|c|c|}
@@ -61,35 +49,35 @@ be overridden within the Access Unit header.
 \hline
  &0 -- Custom &1 -- QSIF & 2 -- QCIF & 3 -- SIF & 4 -- CIF &	5 -- 4SIF	& 6 -- 4CIF \\
 \hline
-\VInterlaced & \false & \false & \false & \false & \false & \false & \false\\
-\VTopFieldFirst & \true & \true & \true & \true & \true & \true & \true \\
-\VSequentialFields & \false & \false & \false & \false & \false & \false & \false \\
+\SInterlaced & \false & \false & \false & \false & \false & \false & \false\\
+\STopFieldFirst & \true & \true & \true & \true & \true & \true & \true \\
+
 \hline
-\VFrameRateNumerator&30&15000&25&15000&25&15000&25\\
-\VFrameRateDenominator&1&1001&2&1001&2&1001&2\\
+\SFrameRateNumerator&30&15000&25&15000&25&15000&25\\
+\SFrameRateDenominator&1&1001&2&1001&2&1001&2\\
 \hline
-\VAspectRatioNumerator&1&10&12&10&12&10&12\\
-\VAspectRatioDenominator&1&11&11&11&11&11&11\\
+\SAspectRatioNumerator&1&10&12&10&12&10&12\\
+\SAspectRatioDenominator&1&11&11&11&11&11&11\\
 \hline
-\VCleanWidth&640&176&176&352&352&704&704\\
-\VCleanHeight&480&120&144&240&288&480&576\\
+\SCleanWidth&640&176&176&352&352&704&704\\
+\SCleanHeight&480&120&144&240&288&480&576\\
 \hline
-\VLeftOffset&0&0&0&0&0&0&0\\
-\VTopOffset&0&0&0&0&0&0&0\\
+\SLeftOffset&0&0&0&0&0&0&0\\
+\STopOffset&0&0&0&0&0&0&0\\
 \hline
-\VLumaOffset&128&128&128&128&128&128&128\\
-\VLumaExcursion&255&255&255&255&255&255&255\\
-\VChromaOffset&0&0&0&0&0&0&0\\
-\VChromaExcursion&254&254&254&254&254&254&254\\
+\SLumaOffset&128&128&128&128&128&128&128\\
+\SLumaExcursion&255&255&255&255&255&255&255\\
+\SChromaOffset&0&0&0&0&0&0&0\\
+\SChromaExcursion&254&254&254&254&254&254&254\\
 \hline
-\VColourSpec&0&1&2&1&2&1&2\\
+\SColourSpecIndex&0&1&2&1&2&1&2\\
 \hline
-\VColourPrimaries&ITU709&SMPTE C&EBU3213&SMPTE C&EBU3213&SMPTE C&EBU3213\\
+\SColourPrimariesIndex&ITU709&SMPTE C&EBU3213&SMPTE C&EBU3213&SMPTE C&EBU3213\\
 \hline
 $K_{R}$ & 0.2126 &0.299&0.299&0.299&0.299&0.299&0.299\\
 $K_{B}$ & 0.0722 &0.144&0.144&0.144&0.144&0.144&0.144\\
 \hline
-\VTransferFunction&TV&TV&TV&TV&TV&TV&TV\\
+\STransferFunction&TV&TV&TV&TV&TV&TV&TV\\
 \hline
 
 \end{tabular}
@@ -103,264 +91,38 @@ $K_{B}$ & 0.0722 &0.144&0.144&0.144&0.144&0.144&0.144\\
 \hline
    &7 -- SD480 & 8 -- SD576 & 9 -- HD720 &10 -- HD1080 & 11 -- 2KCinema & 12 -- 4KCinema\\
 \hline
-\VInterlaced & \false & \false & \false & \false & \false & \false \\
-\VTopFieldFirst & \true & \true & \true & \true & \true & \true\\
-\VSequentialFields & \false & \false & \false & \false & \false & \false\\
+\SInterlaced & \false & \false & \false & \false & \false & \false \\
+\STopFieldFirst & \true & \true & \true & \true & \true & \true\\
+
 \hline
-\VFrameRateNumerator & 24000 & 25 & 24 &24 &24 &24 \\
-\VFrameRateDenominator& 1001 & 1 & 1 & 1 & 1 & 1 \\
+\SFrameRateNumerator & 24000 & 25 & 24 &24 &24 &24 \\
+\SFrameRateDenominator& 1001 & 1 & 1 & 1 & 1 & 1 \\
 \hline
-\VAspectRatioNumerator & 10 & 12 & 1 & 1 & 1 & 1 \\
-\VAspectRatioDenominator& 11 & 11 & 1 & 1 & 1 & 1 \\
+\SAspectRatioNumerator & 10 & 12 & 1 & 1 & 1 & 1 \\
+\SAspectRatioDenominator& 11 & 11 & 1 & 1 & 1 & 1 \\
 \hline
-\VCleanWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
-\VCleanHeight & 480 & 576 & 720 & 1080 & 1536 & 3072\\
+\SCleanWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
+\SCleanHeight & 480 & 576 & 720 & 1080 & 1536 & 3072\\
 \hline
-\VLeftOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
-\VTopOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
+\SLeftOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
+\STopOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
 \hline
-\VLumaOffset & 128 & 128 & 128 & 128 & 32768 & 32768\\
-\VLumaExcursion & 235 & 235 & 235 & 235 & 65535 & 65535\\
-\VChromaOffset & 0 & 0 & 0 & 0 & 0 & 0\\
-\VChromaExcursion & 224 & 224 & 224 & 224 & 65534 & 65534\\
+\SLumaOffset & 128 & 128 & 128 & 128 & 32768 & 32768\\
+\SLumaExcursion & 235 & 235 & 235 & 235 & 65535 & 65535\\
+\SChromaOffset & 0 & 0 & 0 & 0 & 0 & 0\\
+\SChromaExcursion & 224 & 224 & 224 & 224 & 65534 & 65534\\
 \hline
-\VColourSpec & 1 & 2 & 0 & 0 & 3 & 3\\
+\SColourSpecIndex & 1 & 2 & 0 & 0 & 3 & 3\\
 \hline
-\VColourPrimaries & SMPTE C & EBU3213 & ITU709 & ITU709 & Not defined & Not defined\\
+\SColourPrimariesIndex & SMPTE C & EBU3213 & ITU709 & ITU709 & Not defined & Not defined\\
 \hline
 $K_{R}$ & 0.299 & 0.299 & 0.2126 & 0.2126 & 0.25 & 0.25\\
 $K_{B}$ & 0.144 & 0.144 & 0.0722 & 0.0722 & 0.25 & 0.25\\
 \hline
-\VTransferFunction&TV&TV&TV&TV&Linear&Linear \\
+\STransferFunction&TV&TV&TV&TV&Linear&Linear \\
 \hline
 \end{tabular}
 \caption{Default source parameters for video formats 7--12}
-\end{table}
-
-\clearpage
-\subsection{Decoding parameters}
-
-\begin{table}[!ht]
-\begin{tabular}{|l|c|c|c|c|c|c|c|}
-\hline
-& \multicolumn{7}{|c|}{{\bf Video Formats}} \\
-\hline
- &0 -- Custom &1 -- QSIF & 2 -- QCIF & 3 -- SIF & 4 -- CIF &	5 -- 4SIF	& 6 -- 4CIF \\
-\hline
-\VLumaXBSep & 8 & 4 & 4 & 8 & 8 & 8 & 8\\
-\VLumaXBLen & 12 & 8 & 8 & 12 & 12 & 12 & 12\\
-\VLumaYBSep & 8 & 4 & 4 & 8 & 8 & 8 & 8\\
-\VLumaYBLen & 12 & 8 & 8 & 12 & 12 & 12 & 12\\
-\hline
-\VMotionVectorPrecision & 2 & 2 & 2 & 2 & 2 & 2 & 2 \\
-\hline
-\VPictureWeightRefOne & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
-\VPictureWeightRefTwo & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
-\VPictureWeightBits & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
-\hline
-\VCodeblocks ($h\times v$)  & & & & & & &\\
-\Intra & & & & & & & \\
- -- levels 0-2 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level $>2$  & 4 ,3 & 4,3 & 4,3 & 4,3 & 4,3 & 4,3 & 4,3 \\
-\Inter & & & & & & & \\
- -- levels 0-1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level 2  & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 \\
- -- level $> 2$  & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 \\
-\hline
-\end{tabular}
-\caption{Default decoding parameters for video formats 0--6}
-\end{table}
-
-\begin{table}[!ht]
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-& \multicolumn{6}{|c|}{{\bf Video Formats}} \\
-\hline
-   &7 -- SD480 & 8 -- SD576 & 9 -- HD720 &10 -- HD1080 & 11 -- 2KCinema & 12 -- 4KCinema\\
-\hline
-\VLumaXBSep & 8 & 8 & 12 & 16 & 16 & 16 \\
-\VLumaXBLen & 12 & 12 & 16 & 24 & 24 & 24 \\
-\VLumaYBSep & 8 & 8 & 12 & 16 & 16 & 16 \\
-\VLumaYBLen & 12 & 12 & 16 & 24 & 24 & 24 \\
-\hline
-\VMotionVectorPrecision & 2 & 2 & 2 & 2 & 2 & 2 \\
-\hline
-\VPictureWeightRefOne 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
-\VPictureWeightRefTwo 1 & 1 & 1 & 1 & 1 & 1 & 1  \\
-\VPictureWeightBits 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
-\hline
-\VCodeblocks ($h\times v$) & & & & & & \\
-\Intra & & & & & & \\
- -- levels 0-2 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level $>2$  & 4 ,3 & 4,3 & 4,3 & 4,3 & 4,3 & 4,3  \\
-\Inter & & & & & & \\
- -- levels 0-1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level 2  & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 \\
- -- level $> 2$  & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 \\
-\hline
-
-\end{tabular}
-\caption{Default decoding parameters for video formats 7--12}
-\end{table}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-\begin{comment}
-
-\begin{table}
-\begin{tabular}{|l|c|c|c|c|c|c|c|}
-\hline
-& \multicolumn{7}{|c|}{{\bf Video Formats}} \\
-\hline
- &0 -- Custom &1 -- QSIF & 2 -- QCIF & 3 -- SIF & 4 -- CIF &	5 -- 4SIF	& 6 -- 4CIF \\
-\hline
-{\bf \begin{tabular}{ll} Sequence \\ parameters \end{tabular}} &  \multicolumn{7}{|c|}{}  \\
-\hline
-\VLumaWidth&640&176&176&352&352&704&704\\
-\VLumaHeight&480&120&144&240&288&480&576\\
-\hline
-\VChromaFormat&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0\\
-\hline
-\VLumaDepth&8&8&8&8&8&8&8\\
-\VChromaDepth&8&8&8&8&8&8&8\\
-\hline
-{\bf \begin{tabular}{ll} Source \\ parameters \end{tabular} } &  \multicolumn{7}{|c|}{}  \\
-\hline
-\VInterlaced & \false & \false & \false & \false & \false & \false & \false\\
-\VTopFieldFirst & \true & \true & \true & \true & \true & \true & \true \\
-\VSequentialFields & \false & \false & \false & \false & \false & \false & \false \\
-\hline
-\VFrameRateNumerator&30&15000&25&15000&25&15000&25\\
-\VFrameRateDenominator&1&1001&2&1001&2&1001&2\\
-\hline
-\VAspectRatioNumerator&1&10&12&10&12&10&12\\
-\VAspectRatioDenominator&1&11&11&11&11&11&11\\
-\hline
-\VCleanWidth&640&176&176&352&352&704&704\\
-\VCleanHeight&480&120&144&240&288&480&576\\
-\hline
-\VLeftOffset&0&0&0&0&0&0&0\\
-\VTopOffset&0&0&0&0&0&0&0\\
-\hline
-\VLumaOffset&128&128&128&128&128&128&128\\
-\VLumaExcursion&255&255&255&255&255&255&255\\
-\VChromaOffset&0&0&0&0&0&0&0\\
-\VChromaExcursion&254&254&254&254&254&254&254\\
-\hline
-\VColourSpec&0&1&2&1&2&1&2\\
-\hline
-\VColourPrimaries&ITU709&SMPTE C&EBU3213&SMPTE C&EBU3213&SMPTE C&EBU3213\\
-\hline
-$K_{R}$ & 0.2126 &0.299&0.299&0.299&0.299&0.299&0.299\\
-$K_{B}$ & 0.0722 &0.144&0.144&0.144&0.144&0.144&0.144\\
-\hline
-\VTransferFunction&TV&TV&TV&TV&TV&TV&TV\\
-\hline
-{\bf \begin{tabular}{ll} Decoding \\ parameters \end{tabular} } &  \multicolumn{7}{|c|}{} \\
-\hline
-\VLumaXBSep & 8 & 4 & 4 & 8 & 8 & 8 & 8\\
-\VLumaXBLen & 12 & 8 & 8 & 12 & 12 & 12 & 12\\
-\VLumaYBSep & 8 & 4 & 4 & 8 & 8 & 8 & 8\\
-\VLumaYBLen & 12 & 8 & 8 & 12 & 12 & 12 & 12\\
-\hline
-\VMotionVectorPrecision & 2 & 2 & 2 & 2 & 2 & 2 & 2 \\
-\hline
-\VPictureWeightRefA & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
-\VPictureWeightRefB & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
-\VPictureWeightBits & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
-\hline
-\VCodeblocks ($h\times v$)  & & & & & \\
-\Intra & & & & & \\
- -- levels 0-2 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level $>2$  & 4 ,3 & 4,3 & 4,3 & 4,3 & 4,3 & 4,3 & 4,3 \\
-\Inter & & & & & \\
- -- levels 0-1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level 2  & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 \\
- -- level $> 2$  & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 \\
-\hline
-\end{tabular}
-\caption{Default video parameters for video formats 0--6.}
-\end{table}
-
-\begin{table}
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-& \multicolumn{6}{|c|}{{\bf Video Formats}} \\
-\hline
-   &7 -- SD480 & 8 -- SD576 & 9 -- HD720 &10 -- HD1080 & 11 -- 2KCinema & 12 -- 4KCinema\\
-\hline
-{\bf \begin{tabular}{ll} Sequence \\ parameters \end{tabular}} &  \multicolumn{6}{|c|}{}  \\
-\hline
-\VLumaWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
-\VLumaHeight & 480 & 576 & 720 & 1080 & 1556 & 3112\\
-\hline
-\VChromaFormat & 4:2:0 & 4:2:0 & 4:2:0 & 4:2:0 &4:4:4 & 4:4:4\\
-\hline
-\VLumaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
-\VChromaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
-\hline
-{\bf \begin{tabular}{ll} Source \\ parameters \end{tabular} } &  \multicolumn{6}{|c|}{}  \\
-\hline
-\VInterlaced & \false & \false & \false & \false & \false & \false \\
-\VTopFieldFirst & \true & \true & \true & \true & \true & \true\\
-\VSequentialFields & \false & \false & \false & \false & \false\\
-\hline
-\VFrameRateNumerator & 24000 & 25 & 24 &24 &24 &24 \\
-\VFrameRateDenominator& 1001 & 1 & 1 & 1 & 1 & 1 \\
-\hline
-\VAspectRatioNumerator & 10 & 12 & 1 & 1 & 1 & 1 \\
-\VAspectRatioDenominator& 11 & 11 & 1 & 1 & 1 & 1 \\
-\hline
-\VCleanWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
-\VCleanHeight & 480 & 576 & 720 & 1080 & 1536 & 3072\\
-\hline
-\VLeftOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
-\VTopOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
-\hline
-\VLumaOffset & 16 & 16 & 16 & 16 & 0 & 0\\
-\VLumaExcursion & 235 & 235 & 235 & 235 & 65535 & 65535\\
-\VChromaOffset & 128 & 128 & 128 & 128 & 32768 & 32768\\
-\VChromaExcursion & 244 & 244 & 244 & 244 & 65534 & 65534\\
-\hline
-\VColourSpec & 1 & 2 & 0 & 0 & 3 & 3\\
-\hline
-\VColourPrimaries & SMPTE C & EBU3213 & ITU709 & ITU709 & Not defined & Not defined\\
-\hline
-$K_{R}$ & 0.299 & 0.299 & 0.2126 & 0.2126 & 0.25 & 0.25\\
-$K_{B}$ & 0.144 & 0.144 & 0.0722 & 0.0722 & 0.25 & 0.25\\
-\hline
-\VTransferFunction&TV&TV&TV&TV&Linear&Linear \\
-\hline
-{\bf \begin{tabular}{ll} Decoding \\ parameters \end{tabular} } &  \multicolumn{6}{|c|}{} \\
-\hline
-\VLumaXBSep & 8 & 8 & 12 & 16 & 16 & 16 \\
-\VLumaXBLen & 12 & 12 & 16 & 24 & 24 & 24 \\
-\VLumaXBSep & 8 & 8 & 12 & 16 & 16 & 16 \\
-\VLumaXBLen & 12 & 12 & 16 & 24 & 24 & 24 \\
-\hline
-\VMotionVectorPrecision & 2 & 2 & 2 & 2 & 2 & 2 \\
-\hline
-\VPictureWeightRefA 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
-\VPictureWeightRefB 1 & 1 & 1 & 1 & 1 & 1 & 1  \\
-\VPictureWeightBits 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
-\hline
-\VCodeblocks ($h\times v$) & & & & & & \\
-\Intra & & & & & & \\
- -- levels 0-2 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level $>2$  & 4 ,3 & 4,3 & 4,3 & 4,3 & 4,3 & 4,3  \\
-\Inter & & & & & & \\
- -- levels 0-1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 & 1,1 \\
- -- level 2  & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 & 8,6 \\
- -- level $> 2$  & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 & 12,8 \\
-\hline
-\end{tabular}
-\caption{Default video parameters for video formats 7--12}
 \end{table}
 
 \end{comment}

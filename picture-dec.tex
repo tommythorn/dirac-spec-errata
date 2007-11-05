@@ -5,212 +5,6 @@
 
 \label{picturedec}
 
-This section specifies the process for decoding pictures from the Dirac stream. Picture decoding depends upon
-correctly parsing the Dirac bitstream, and decoding operations are dependent upon the parsing operations
-set out in Sections \ref{streamstructure}, \ref{motiondec} and \ref{transformdec}.
-
-This section does not specify how pictures are encoded, nor how pictures are reordered and presented for 
-display, which is described in Section \ref{profilelevel}. 
-
-\subsection{Introduction}
-
-Dirac supports both intra and inter picture coding, with forward and backward prediction. This means that
-pictures may be encoded in the stream in non-display order: reordering pictures will be required in order
-to display them correctly, and  decoded picture buffer will be necessary to store pictures while temporally 
-prior pictures are decoded. Note that the core Dirac specification does not encompass the operation of the
-decoded picture buffer: this is specified in conjunction with the level and profile values extracted from
-the stream (Section \ref{parseparameters}), in Appendix \ref{profilelevel}. 
-
-Decoded pictures may, however, be reference pictures, used for the prediction of subsequent pictures
-in the Dirac stream. Reference pictures are stored in a reference picture buffer $\RefBuffer$. The operation
-of $\RefBuffer$ does form part of the core Dirac specification, and the rules for management of the
-buffer are set out in Section \ref{refbuffer}.
-
-\subsection{Decoding sequences}
-\label{sequencedecoding}
-
-The process for decoding a picture sequence (in coded order) is as follows:
-
-\begin{pseudo}{decode\_sequence}{}
-   \bsCODE{\SeqStateName = \{\}}
-   \bsCODE{video\_params = \{\}}
-   \bsCODE{decoded\_pictures = \{\}}
-   \bsCODE{\RefBuffer=\{\}}
-   \bsCODE{\RetiredPictureList=\{\}}
-   \bsCODE{parse\_info()}{\ref{parseinfo}}
-   \bsWHILE{is\_end\_of\_sequence() == \false}
-      \bsIF{is\_AU()==\true}
-         \bsCODE{video\_params = access\_unit\_header()}{\ref{auheader}}
-      \bsELSEIF{is\_picture()==\true}
-         \bsCODE{picture\_parse()}{\ref{pictureparse}}
-         \bsCODE{decoded\_pictures[\PictureNumber] = picture\_decode()}{\ref{picturedecprocess}}
-         \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
-         \bsIF{is\_ref()}
-           \bsCODE{ref\_buffer\_add()}{\ref{refbuffer}}
-         \bsEND
-         \bsCODE{offset\_output\_data(decoded\_pictures[\PictureNumber])}{\ref{videooutput}}
-      \bsEND
-      \bsCODE{parse\_info()}{\ref{parseinfo}}
-   \bsEND
-   \bsRET{\{video\_params, decoded\_pictures\}}
-\end{pseudo}
-
-The process returns the video parameters, consisting of the essential metadata required for 
-display and interpretation of the video data, and the array of decoded pictures. Each decoded
-picture contains the three video component data arrays together with a picture number.
-
-The pseudocode describes the decoding process. Decoding starts by clearing the decoder state 
-and the decoder output. Thus video sequences may be decoded as independent entities. The 
-first data extracted from the Dirac stream is parse information. Parse Info indicates what type of 
-Data Unit follows, and this information is stored in the decoder state. The decoder continues to read
- pairs of Data Unit and Parse Info until the end of the sequence is reached. The end of sequence 
-is indicated by data in the final Parse Info header. If a Data Unit is an Access Unit Header the 
-decoded video parameters are updated with the information contained in the header. If the 
-Data Unit is a Picture then:
-\begin{itemize}
-\item the picture is parsed, then decoded
-\item the picture is placed in the correct position in the output array
-\item the reference picture buffer is managed by deleting obsolete pictures and, if the current picture
-is a reference, adding it to the reference buffer
-\end{itemize}
-
-Note that for clarity this code ignores the presence of Auxiliary Data and Padding Data in the sequence. 
-Nor does it illustrate providing the picture numbers, which are coded in the stream, nor details of the 
-coding parameters, which may be required by some applications.
-
-Note also that various operations, such as editing, may result in a discontinuity of picture number 
-values between sequences within a Dirac stream, even taking into account picture re-ordering.
-
-\subsection{Reference picture buffer management}
-\label{refbuffer}
-
-This section specifies how the Dirac stream data is used to manage the reference 
-picture buffer $\RefBuffer$. The reference picture buffer has a maximum size of
-$\RefBufferSize$ elements, as set in the applicable level (Appendix \ref{profilelevel}).
-
-The $ref\_picture\_remove()$ process operates as
-follows:
-
-\begin{pseudo}{ref\_picture\_remove}{}
-\bsFOR{i=0}{\length(\RetiredPictureList)-1}
-    \bsCODE{n=\RetiredPictureList[i]}
-    \bsFOR{k=0}{\RefBufferSize-1}
-       \bsIF{\RefBuffer[k][pic\_number]==n}
-            \bsFOR{j=k}{\RefBufferSize-1}
-                \bsCODE{\RefBuffer[j]=\RefBuffer[j+1]}
-            \bsEND
-        \bsEND
-    \bsEND
-\bsEND
-\bsCODE{\RetiredPictureList=\emptyset}
-\end{pseudo}
-
-The $get\_ref(n)$ function returns the (first) reference picture in the buffer with 
-picture number $n$.  
-
-The $ref\_picture\_add()$ process for adding pictures to the reference picture
-buffer proceeds according to the following rules:
-
-{\bf Case 1.} If the reference picture buffer is not full i.e. has fewer than $\RefBufferSize$ elements,
-then add the $\CurrentPicture$ data to the end of the buffer. 
-
-{\bf Case 2.} If the reference picture is full i.e. it has $\RefBufferSize$ elements, then remove the
-first (i.e. oldest) element of the buffer, $\RefBuffer[0]$, set
-\[\RefBuffer[i] = \RefBuffer[i+1] \]
-for $i=0$ to $\RefBufferSize-2$, and set the last element $\RefBuffer[\RefBufferSize-1]$ equal to
-a copy of $\CurrentPicture$.
-
-\subsection{Video output ranges}
-\label{videooutput}
-
-Video output data ranges are deemed to be non-negative, so that the offset and excursion values 
-may be applied by subsequent processing. Since decoded video data is bipolar, it must be 
-suitably offset before output:
-
-\begin{pseudo}{offset\_output\_data}{picture\_data}
-\bsFOREACH{c}{Y, C1, C2}
-    \bsIF{c==Y}
-        \bsCODE{\BitDepth=\LumaDepth}
-    \bsELSE
-        \bsCODE{\BitDepth=\ChromaDepth}
-    \bsEND
-    \bsCODE{comp=picture\_data[c]}
-    \bsFOR{y=0}{\height{comp}-1}
-        \bsFOR{x=0}{\width{comp}-1}
-            \bsCODE{comp[y][x]+=2^{\BitDepth-1}}
-        \bsEND
-    \bsEND
-\bsEND
-\end{pseudo}
-
-\subsection{Random access}
-\label{randomaccess}
-
-Many applications involve random access of a Dirac sequence. In the context of this specification, this
-means beginning reading and parsing data from the beginning of an Access Unit header, located
-at some point not at the beginning of a sequence. In such circumstances, the process of Section 
-\ref{sequencedecoding} is followed, except that parsing begins from the AU header and pictures
-that cannot be decoded, since they use as references pictures not previously accessible or decoded, are discarded.
-Clearly, what is decodeable depends upon the point at which the sequence has been accessed.
-
-Compliant Dirac streams shall be so constructed that after parsing and partially decoding one whole
-access unit, all pictures in subsequent access units may be fully decoded. Hence the placing of
-an AU header within the stream constitutes a guarantee of ultimate decodeability.
-
-\begin{informative*}
-\subsection{Non-sequential picture decoding (Informative)}
-
-The ability to decode pictures in a non-sequential manner is important for many applications, 
-such as video editing. Non-sequential access means decoding a stream in any manner other 
-than decoding pictures sequentially from the beginning of the stream to the end: this may
-include decoding only intra pictures, decoding backwards, or decoding pictures in random
-parts of the stream. Non-sequential 
-picture access is outside the scope of this specification. Nevertheless the Dirac stream has 
-been designed to support this feature. This section provides informative notes on this aspect 
-of the Dirac stream specification.
-
-Stream navigation, including non-sequential access is supported by the information in the Parse 
-Info headers in the stream. Details of Parse Info headers are defined in Section \ref{parseinfo}. However, 
-in order to discuss stream navigation, it is necessary to indicate the information contained within 
-a Parse Info header. A Parse Info headers contains four components: a Parse Info Prefix, a 
-Parse Code, a Next Parse Offset and a Previous Parse Offset.  The Parse Info Prefix is a fixed 
-4 byte sequence. The Parse Code specifies the type of the following Data Unit. The Next and 
-Previous Parse Offsets specify the number of bytes until the next, or from the previous, Parse 
-Info header.
-
-In order to start decoding, other than at the start of a stream, the decoder must first synchronize 
-to the stream. The Parse Info Prefix is present to support such synchronization. A decoder would 
-first search for the Parse Info Prefix to locate the start of a Parse Info header. The Parse Info 
-Prefix is not guaranteed to occur uniquely within Parse Info headers (the entropy coding used in 
-Dirac precludes this), the Parse Info Prefix may, by chance, occur within a Data Unit. The decoder 
-may read the Next or Previous Parse Info Offsets to confirm that an occurrence of the Parse Info 
-Prefix corresponds to a Parse Info header.
-
-When the decoder finds a Parse Info Prefix it may skip forward or back by the value of the appropriate offset
- and check whether the next four bytes are again those of the Parse Info Prefix. If so the 
-decoder can be reasonably certain that it has found a Parse Info Header. The probability of a spurious 
-prefix occuring is low: 1 in $2^{32}$, since the prefix is 4 bytes long. The probability of finding 
-two spurious Prefix sequences separated by the value of Next Parse Offset is 1 in $2^{64}$. The test outlined is, therefore, 
-more than adequate in practice. 
-
-Having synchronized with the stream the decoder now needs to locate an Access Unit Header in 
-order to find parameters needed to decode pictures. This may be done by moving forward (or backward) 
-through the stream, between successive Parse Info block, using Next (or Previous) Parse Offsets, 
-until a Parse Info header is found containing the Parse Code for an Access Unit Header. Decoding 
-may now commence, as if from the beginning of the stream.
-
-The Dirac stream also supports seeking to a particular picture number. The first four bytes of either 
-an Access Unit Header or a Picture contain a 4 byte picture number. Picture numbers provide an
- identifier for each picture with a sequence. So, to find a particular picture, the decoder may 
-move forward or backward in the stream, using the offsets in the Parse Info headers, until the 
-correct picture number is reached. A picture may be decoded once the parameters within an 
-Access Unit Header, in the same sequence, have been read. Picture decoding depends upon decoding
-all references upon which a picture depends, and all references upon which they {\em they} depend
-and so on. The requirements of Section \ref{randomaccess} imply that this will be at most the
-contents of two access units, and with MPEG-style Group of Picture structuring will normally
-be much less.
-\end{informative*}
-
 \subsection{Overall picture decoding process}
 \label{overallpicturedec}
 
@@ -238,22 +32,18 @@ all values $\CurrentPicture[C1][y][x]$ and $\CurrentPicture[C2][y][x]$ set to 0
 The process for decoding a picture within a Dirac sequence can commence 
 when: 
 \begin{itemize}
-\item an Access Unit header has been located, and parsed, and the default parameters set
-\item a picture data unit has been located and parsed, overriding default parameters
-\item any reference pictures for the current picture have been decoded
+\item a sequence header has been located, and parsed, and the default parameters set, and
+\item a picture data unit has been located and parsed, overriding default parameters, and
+\item all reference pictures for the current picture have been decoded
 \end{itemize}
 
-At this point the reference picture buffer shall be initialised with no 
-reference pictures and picture data initialised as per Section \ref{picdataconventions}.
-
-This initialisation process need only occur once within a sequence, since
-apart from the AU picture number, all AU headers within a sequence are
-identical. 
-
-After this initialisation process, decoding a picture with picture number 
-$n$ in a Dirac sequence consists of:
+Decoding a picture with picture number 
+$n=\PictureNumber$ in a Dirac sequence consists of:
 
 \begin{pseudo}{picture\_decode}{}
+\bsIF{is\_ref(()}
+    \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
+\bsEND
 \bsCODE{init\_picture\_data()}{\ref{picdataconventions}}
 \bsIF{\ZeroResidual==\false}
     \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
@@ -270,21 +60,61 @@ $n$ in a Dirac sequence consists of:
     \bsCODE{motion\_compensate(ref1[C2], ref2[C2],  \CurrentPicture[C2], c)}{\ref{motioncompensate}}
 \bsEND
 \bsCODE{clip\_picture()}{\ref{pictureclip}}
+\bsIF{is\_ref()}
+    \bsCODE{ref\_buffer\_add()}{\ref{refbuffer}}
+\bsEND
+\bsCODE{offset\_output\_picture(\CurrentPicture)}{\ref{videooutput}}
 \bsRET{\CurrentPicture}
 \end{pseudo}
 
+\begin{informative}
 When randomly accessing a sequence, a picture may not be decodeable because reference pictures
 may not be available in the buffer. In this case the current picture may be discarded, although some
 decoders may be designed to produce an output. 
 
-A Dirac sequence shall be so constructed so that if
-pictures are decoding commences from the beginning of the stream and pictures are decoded in 
-stream order, there shall be no undecodeable pictures i.e. the reference pictures associated with
-any picture in the sequence shall have occurred prior to that picture in the sequence.
-
 Picture numbers within the stream may not be in numerical order, and subsequent reordering may be
 required: the size of the decoded picture buffer required to perform any such reordering is specified
 as part of the application profile and level (Appendix \ref{profilelevel}).
+\end{informative}
+
+\subsection{Reference picture buffer management}
+\label{refbuffer}
+
+This section specifies how the Dirac stream data shall be used to manage the reference 
+picture buffer $\RefBuffer$. The reference picture buffer has a maximum size of
+$\RefBufferSize$ elements, as set in the applicable level (Appendix \ref{profilelevel}).
+
+The $ref\_picture\_remove()$ process shall be defined as
+follows:
+
+\begin{pseudo}{ref\_picture\_remove}{}
+\bsCODE{n=\RetiredPicture}
+\bsFOR{k=0}{\RefBufferSize-1}
+   \bsIF{\RefBuffer[k][pic\_number]==n}
+        \bsFOR{j=k}{\RefBufferSize-2}
+            \bsCODE{\RefBuffer[j]=\RefBuffer[j+1]}
+        \bsEND
+        \bsCODE{\RefBufferSize -= 1}
+    \bsEND
+\bsEND
+\end{pseudo}
+
+The $get\_ref(n)$ function shall returns the reference picture in the buffer with 
+picture number $n$.  If there is no such picture it shall return an all-zero picture.
+
+The $ref\_picture\_add()$ process for adding pictures to the reference picture
+buffer shall proceed according to the following rules:
+
+{\bf Case 1.} If the reference picture buffer is not full i.e. has fewer than $\MaxRefBufferSize$ elements,
+then add $\CurrentPicture$ to the end of the buffer. 
+
+{\bf Case 2.} If the reference picture is full i.e. it has $\MaxRefBufferSize$ elements, then remove the
+first (i.e. oldest) element of the buffer, $\RefBuffer[0]$, set
+\[\RefBuffer[i] = \RefBuffer[i+1] \]
+for $i=0$ to $\RefBufferSize-2$, and set the last element $\RefBuffer[\RefBufferSize-1]$ equal to
+a copy of $\CurrentPicture$.
+
+
 
 \subsection{Inverse discrete wavelet transform}
 \input{idwt}
@@ -307,13 +137,13 @@ used as a reference:
 
 \begin{pseudo}{clip\_component}{comp\_data,c}
 \bsIF{c==Y}
-    \bsCODE{\BitDepth=\LumaDepth}
+    \bsCODE{bit\_depth=\LumaDepth}
 \bsELSE
-    \bsCODE{\BitDepth=\ChromaDepth}
+    \bsCODE{bit\_depth=\ChromaDepth}
 \bsEND
 \bsFOR{y=0}{\height(comp\_data)-1}
     \bsFOR{x=0}{\width(comp\_data)-1}
-        \bsCODE{data = \clip(comp\_data[y][x], -2^{\BitDepth-1}, 2^{\BitDepth-1}-1)}
+        \bsCODE{data = \clip(comp\_data[y][x], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
      \bsEND
 \bsEND
 \end{pseudo}
@@ -322,3 +152,58 @@ used as a reference:
 Note that clipping is incorporated into motion compensation, so that strictly speaking additional
 clipping is only required for intra pictures.
 \end{informative}
+
+
+\subsection{Clipping}
+\label{pictureclip}
+
+Picture data must be clipped prior to being output or being
+used as a reference:
+
+\begin{pseudo}{clip\_picture}{}
+\bsFOREACH{c}{Y,C1,C2}
+    \bsCODE{clip\_component(\CurrentPicture[c])}
+\bsEND
+\end{pseudo}
+
+
+\begin{pseudo}{clip\_component}{comp\_data,c}
+\bsIF{c==Y}
+    \bsCODE{bit\_depth=\LumaDepth}
+\bsELSE
+    \bsCODE{bit\_depth=\ChromaDepth}
+\bsEND
+\bsFOR{y=0}{\height(comp\_data)-1}
+    \bsFOR{x=0}{\width(comp\_data)-1}
+        \bsCODE{data = \clip(comp\_data[y][x], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
+     \bsEND
+\bsEND
+\end{pseudo}
+
+\begin{informative}
+Note that clipping is incorporated into motion compensation, so that strictly speaking additional
+clipping is only required for intra pictures.
+\end{informative}
+
+\subsection{Video output ranges}
+\label{videooutput}
+
+Video output data ranges are deemed to be non-negative, so that the offset and excursion values 
+may be applied by subsequent processing. Since decoded video data is bipolar, it must be 
+suitably offset before output:
+
+\begin{pseudo}{offset\_output\_data}{picture\_data}
+\bsFOREACH{c}{Y, C1, C2}
+    \bsIF{c==Y}
+        \bsCODE{bit\_depth=\LumaDepth}
+    \bsELSE
+        \bsCODE{bit\_depth=\ChromaDepth}
+    \bsEND
+    \bsCODE{comp=picture\_data[c]}
+    \bsFOR{y=0}{\height{comp}-1}
+        \bsFOR{x=0}{\width{comp}-1}
+            \bsCODE{comp[y][x]+=2^{bit\_depth-1}}
+        \bsEND
+    \bsEND
+\bsEND
+\end{pseudo}

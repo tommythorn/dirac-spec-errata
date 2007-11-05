@@ -3,46 +3,40 @@
 % - conventions                                - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsection{State machine decoder representation}
+\subsection{State representation}
 
-This specification uses a state-machine model to express parsing and
-decoding operations. The state of the decoder/parser is stored in the
-global variable $\StateName$, and individual variable values are accessed
-by means of named tokens, e.g. $\StateName[var\_name]$ (i.e. they
-are {\em maps} as defined in Section \ref{datatypes}). All the individual
-variables are therefore also globally accessible from all decoder functions.
+This standard uses a state model to express parsing and decoding operations. 
+The state of the decoder/parser shall be stored in the variable state. Individual elements of the decoder $\StateName$ (state variables) may be accessed
+ by means of 
+named labels, e.g. $\StateName[\text{VAR\_NAME}]$ (i.e. state is a map, as defined in Section \ref{datatypes}). 
 
-A default state variable, $\SeqStateName$ is also defined, which is
-initialised on accessing the stream. State values revert to the default
-state values on beginning to parse each picture, as described in 
-Section \ref{streamstructure}.
+The decoder state shall be globally accessible within the decoder. Other 
+variables, not declared as inputs to a process, shall be local to that process.
+The parsing and decoding operations are defined in terms of modifying the 
+decoder state. The state variables need not directly correspond to elements 
+of the stream, but may be calculated from them taking into account the decoder 
+state as a whole. For example, a state variable value may be differentially 
+encoded with respect to another value, with the difference, not the variable 
+itself, encoded in the stream. 
 
-The parsing and decoding operations are specified in terms of modifying
-the decoder state. The state variables may not directly correspond
-to elements of the stream, but may be calculated from them taking into
-account the decoder state as a whole. For example, a state variable value 
-may be differentially encoded with respect to another value, with the
-difference, not the variable itself, encoded in the stream. 
-
-The Dirac stream syntax is illustrated in parse diagrams, which 
-are presented in Appendix \ref{parsediagrams}. The parsing process
-is defined by means of pseudocode and/or mathematical formulae. The
+The Dirac stream syntax structure is illustrated with informative parse diagrams,
+contained in Appendix \ref{parsediagrams},
+ that complement the normative stream syntax definitions. The parsing process 
+is defined by means of pseudocode and/or mathematical formulae. The 
 conventions for these elements are described in the following sections.
-In the event of any conflict between the parse diagrams and the specified
-parsing processes, the latter shall be deemed to be correct.
+
 
 \subsection{Number formats}
 \label{mathnotation}
 
 Numbers without a prefix shall be interpreted as decimal numbers.
 
-The prefix b indicates that the following value is to be interpreted as a binary
+The prefix b indicates that the following value shall be interpreted as a binary
 natural number (non-negative integer). 
 
 {\bf Example} The value b1110100 is equal to the decimal value 116. 
 
-The prefix 0x indicates the following value is to be interpreted as a hexadecimal (base 16)
-natural number. 
+The prefix 0x shall indicate that the following value is to be interpreted as a hexadecimal (base 16) natural number. 
 
 {\bf Example} The value 0x7A is equal to the decimal value 122. 
 
@@ -51,76 +45,77 @@ natural number.
 
 \subsubsection{Elementary data types}
 
-Only three basic types are used in the pseudo code:
+Three basic types are used in the pseudo code:
 \begin{description}
 \item[Boolean] - A Boolean variable that has only two possible values: $\true$ and $\false$.
 \item[Integer] - A positive or negative whole number or zero.
-\item[Unsigned] - A non-negative ($\geq 0$) whole number, of arbitrary size.
+\item[Label] - a unique immutable value used in control structures and to 
+access maps (see below).
 \end{description}
 
 \subsubsection{Compound data types}
 
-There are three types of compound data:
+Elementary and compound data types may be aggregated into a single 
+compound data type.
+There are three compound data type:
 
 \begin{description}
-\item[Set] A collection of variables or values with no particular indexing. 
-A set containing members $A,B,C,\ldots$ is denoted $\{A,B,C,\ldots\}$. The usual
-set-theoretic operations $\cup$ (union), $\cap$ (intersection), $\in$ (membership)
-apply. Note that sets are used to define other entities in this specification, s
-uch as mean and median values and other compound data types, and are used in the control structures of the pseudocode.
+\item[Set]
+ A collection of data types. A set is indicated by enclosing the elements within 
+curly braces, for example $\{a,b,c\}$ represents a set containing the values $a,b$
+ and $c$. An empty set may be indicated by $\{\}$. The usual set-theoretic 
+operations such as: $\cup$ (union), $\cap$ (intersection), $\in$ (membership) 
+apply to sets and the other compound data types. 
 
-\item[Map]
-
-A map is a set accessed by token names. For example
-$p[Y]$, $p[C1]$, $p[C2]$ might give the value of the different video components
-(Y, C1 and C2) of a pixel. The set of argument tokens of a map $m$ can be accessed by $\args(m)$,
-so that $\args(p)=\{Y,C1,C2\}$.
-
-\item[Array] 
-
-An array is a set with an integer index or indices. All arrays are indexed from 0. 
-Elements of a 1-dimensional array $a$ are accessed by $a[n]$ for $n$ in the
-range 0 to $\length(a)-1$. Elements of a 2-dimensional array are accessed by
-$a[n][m]$ for $0\leq m\leq\width(a)-1$ and $0\leq n\leq\height(a)-1$.
-
-A 1-dimensional array can be explicitly defined by the syntax $a=[u, v, w, \hdots]$.
-Then $a[0]=u$, 
-$a[1]=v$ and so on.
+\item[Map] A set of data types whose elements are accessed by their 
+corresponding label. For example, $p[Y] ,p[C1] ,p[C2] $ might be the values 
+of the different video components of a pixel. The set of  labels corresponding to 
+the elements of a map $m$ can be accessed by $\args(m)$, so that, for example, $args(p)$ returns$\{Y,U,V\}$.
+\item[Array]  A collection of data types accessed by a non-negative integer index.
+ This compound data type is typically used to represent an array of variables. Elements of a 1-dimensional array $a$ are accessed by $a[n]$ for $n$
+ in the range 0 to $\length(a) - 1$. 
 \end{description}
 
-The elements contained within any compound data type may be other compound data types.
+A compound data type may contain other compound data types. For example, 
+a two dimensional array is an array of one dimensional arrays. Elements of a 2-dimensional array are accessed by $a[n][m]$ for $0\leq m\leq(\width(a)-1)$, 
+and $0\leq n\leq (\height(a)-1)$. Compound data types may be more complex. 
+For example, picture data, pic, may be considered to be a map of arrays, where $pic[Y]$ is a 2-dimensional array storing luma data, and $pic[C1]$ and $pic[C2]$
+ are two-dimensional arrays storing chroma data.
 
+Elements may be added to a map or array by assignment using the appropriate
+ index (label or integer). For example, $a[7]=2$, adds element 7 to the array $a$,
+ if a does not already contain element 7, then this element is assigned the value 2.
 
 \subsection{Numerical functions and operators}
 \label{functionoperators}
 
 This section defines the functions and operators used 
-in the pseudo-code in this specification. Functions and operators
+in the pseudocode in this specification. Functions and operators
 are similar but functions use the syntax, $(arg1, arg2,\ldots)$ 
 whereas operators are simply placed before or between operands, 
 e.g. $a+b$. The difference is purely syntactic and is to 
 correspond with conventional mathematical notation.
 
-All arithmetic defined by this specification is exact: the entire 
-specification can be implemented using only integer and logical operations.
-All operations are to be implemented with sufficiently large integers so 
-that overflow cannot occur.
-
 \subsubsection{Assignment}
 
 The assignment operation  = applies to all variable types. After performing 
 \[a=b\]
-the value of $a$ shall become equal to that of $b$, and the value of $b$ shall remain unchanged.
+the value of $a$ shall become equal to that of $b$, and the value of $b$ shall remain unchanged. For a set (or map or array) this constitutes an element-wise copy
+ i.e.
+\[a[x]=b[x]\]
+for all valid values of $x$.
 
 \subsubsection{Boolean functions and operators}
 \label{booleanops}
 The following functions and operators are defined for one or more Boolean arguments:
 \begin{description}
-\item[not or !] 		(not a) or !a returns True for a boolean value a if and only if a is False
-\item[and] 		(a and b) returns True if and only if a and b are both True. Operator "and" may be used in pseudo-code conditions to denote the logical AND between Boolean values, for example: if (condition1 and condition2): …etc.
+\item[not] 		(not a) or returns $\true$ for a boolean value $a$ if and only if 
+$a$ is $\false$
+\item[and] 		(a and b) returns $\true$ if and only if a and b are both $\true$. Operator "and" may be used in pseudo-code conditions to denote the logical AND between Boolean values, for example: if (condition1 and condition2): …etc.
 \item[or] 		(a or b) returns True if either a or b are True, else it returns False.  Operator "or" may be used in pseudo-code conditions to denote the logical OR between Boolean values, for example: if (condition1 or condition2): … etc.
-\item[xor] 		(a xor b) returns True if one, and only one, of a or b are True, else it returns False.  Operator "xor" may be used in pseudo-code conditions to denote the logical exclusive OR between Boolean values, for example: if (condition1 xor condition2): … etc.
-\item[majority]		Given a set, S = {s0,…, sn-1} of Boolean values, majority(S) returns the majority condition. That is, if the number of True values is greater than or equal to the number of False values, majority(S) returns True, otherwise it returns False.
+\item[majority]		Given a set, $S =\{s_0,…, s_{n-1}\}$ of Boolean values, $\majority(S)$ returns the majority condition. That is, if the number of $\true$ 
+values is greater than or equal to the number of $\false$ values, $majority(S)$
+ returns $\true$, otherwise it returns $\false$.
 \end{description}
 
 Boolean operations are to be distinguished from bitwise operations which operate on non-negative 
@@ -137,9 +132,9 @@ The following functions and operators are defined on integer values:
 \item[Sign] $\sign(a)$ is defined by
 \[\sign(a)=
 \left\{\begin{array}{l} 
-1 \text{ if $a>0$} \\
--1 \text{ if $a<0$} \\
-0 \text{ if $a=0$}
+1 \text{ if $a\geq0$} \\
+0 \text{ if $a==0$}
+-1 \text{ if $a<0$} 
 \end{array}\right.\]
 
 \item[Addition] The sum of $a$ and $b$ is represented by $a+b$.
@@ -148,13 +143,21 @@ The following functions and operators are defined on integer values:
 
 \item[Multiplication] $a$ times $b$ is represented, for clarity, by $a*b$.
 
-\item[Real division] The real number value of $a$ divided by $b$ is represented by $a/b$ or $\frac{a}{b}$.
+\item[Integer division] Integer division is defined for integer values $a,b$ with 
+$b>0$ where: $n=a//b$ is defined to be the largest integer $n$ such that
+\[n*b\leq a\] 
 
+\item[Remainder] For integers $a,b$, with $b>0$, the remainder $a\%b$ is 
+equal to 
+
+\[a\%b = a-(a//b)*b \]
+
+ $a\%b$ always lies between 0 and $b-1$.
+
+
+i.e. numbers are rounded towards -infinity. N.B. this differs from C/C++ conventions
+of round towards 0.
 \item[Exponentiation] For integers $a, b$, $b>0$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
-
-\item[Ceiling] $\lceil a \rceil$, the least integer greater than or equal to a real number $a$
-
-\item[Floor] $\lfloor a \rfloor$, the greatest integer less than or equal to a real number $a$
 
 \item[Maximum] $\max(a,b)$ returns the largest of $a$ and $b$.
 
@@ -164,54 +167,19 @@ The following functions and operators are defined on integer values:
 and $t$ (top):
 \[\clip(a,b,t)=\min(\max(a,b),t)\]
 
-\item[Integer division] Integer division is defined for $a$ and $b$ integer values, $b>0$ by
-
-\[a//b= \left\{ 
-\begin{array}{l} 
-\left\lfloor \dfrac{a}{b} \right\rfloor \text{ if } a>0 \\
-\\
-\left\lceil \dfrac{a}{b} \right\rceil \text{ if } a\leq 0
-\end{array} \right.
-\]
-
-i.e. round towards zero as per C/C++ conventions. Note that explicit division of 
-potentially negative numbers is avoided in this specification for clarity.
-
-\item[Remainder] For integers $a,b$, with $b>0$, the remainder $a\%b$ is equal to 
-
-\[a-\left\lfloor\dfrac{a}{\left| b \right|}\right\rfloor *\left| b\right| \]
-
- $a\%b$ always lies between 0 and $b-1$.
-
 \item[Shift down] For integers $a,b$, with $b\geq 0$, $a\gg b$ is defined as 
+$a//2^b$.
 
-\[\left\lfloor\dfrac{a}{2^b}\right\rfloor \]
+\item[Shift up] For integers $a,b$, with $b\geq 0$, $a\ll b$ is defined as $a*2^b$.
 
-Note that this is {\em not} equivalent to $a//2^b$, since shifting down rounds towards $-\infty$, not 0.
+\item[Integer logarithm] $m=\intlog2(n)$, for $n>0$, $m$ is the integer such that
+$2^{m-1}<n\leq 2^m$.
 
-\item[Shift up] For integers $a,b$, with $b\geq 0$, $a\ll b$ is $a*2^b$.
 
-\item[Rounded integer division] For integers $a,b$ with $b>0$, $\rounddivide(a,b)$ is the unbiased
-integer division of $a$ by $b$, defined by
-
-\[\left\lfloor\dfrac{a+(b//2)}{b}\right\rfloor\]
-
-\end{description}
-
-\begin{informative}
-Note that $\rounddivide(a,2^b)=(a+2^{b-1})\gg b$. Note also that if $N$ is any sufficiently large integer 
-(i.e. bigger than $\left\lceil\dfrac{a}{b}\right\rceil$), then
-
-\[\rounddivide(a,b)=(a+b*N+(b//2))//b - N\]
-
-which may be used to avoid a branch condition.
-\end{informative}
-
-\begin{description}
 \item[Mean] Given a set  $S=\{s_0, s_1, \hdots, s_{n-1}\}$ of integer values, the integer unbiased mean, $\mean(S)$, is defined
 to be
 
-\[\rounddivide(s_0+s_1+\hdots +s_{n-1},n)\]
+\[(s_0+s_1+\hdots +s_{n-1}+(n//2))//n\]
 
 \item[Median] Given a set $S=\{s_0, s_1, \hdots, s_{n-1} \}$ of integer values the median, $\median(S)$, 
 returns the middle value. If $t_0\leq t_1\leq \hdots \leq t_{n-1}$ are the values $s_i$ placed in ascending order, this
@@ -233,25 +201,51 @@ $13|6$ is $\text{b1101}\text{|}\text{b110}$, which equals $\text{b1111}$, or 15.
 
 \item[${\mathbf \wedge}$] Logical XOR is applied between the corresponding bits in the binary representation of two numbers, e.g.
 $13\wedge 6$ is $\text{b1101}\wedge\text{b110}$, which equals $\text{b1011}$, or 11.
-\begin{comment}
-\item[!] Logical NOT is applied to all bits in the representation of a number e.g. $!(b010)=b101$.
-\end{comment}
-\end{description}
-These operations are also defined on boolean values, interpreted as single-bit integers, 
-where 0 is interpreted as $\false$ and 1 as $\true$ and vice-versa. Logical NOT is 
-not defined bitwise, to avoid ambiguity concerning leading zeroes).
 
-\subsubsection{Set functions and operators}
+\item[$\mathbf{\&=}$]	 $a \&= b$ is equivalent to $a = (a \& b)$.
+\item[$\mathbf{|=}$]	 $a |= b$ is equivalent to $a = (a | b)$.
+\item[$\mathbf{\wedge=}$]	$a\wedge^= b$ is equivalent to $a = (a \wedge b)$.
+\end{description}
+
+Bitwise-not is not defined for integers to avoid ambiguity concerning leading 
+zeroes
+
+The following logical operators are defined for integer and boolean arguments:
+\begin{description}
+\item[==] Test of equality of two variables. $a == b$ is $\true$ if and only if the 
+value of a equals the value of b.
+\item[!=] Not equal to. $a != b$ is equivalent to not $(a == b)$
+\end{description}
+
+The following logical operators are defined for integer arguments only:
+\begin{description}
+\item[<] 	Less than
+\item[<=]	Less than or equal to
+\item[>]	Greater than
+\item[>=]	Greater than or equal to
+
+\end{description}
+
+The following combined assignment operators are defined for integer 
+arguments:
+Operators $+, -, *, //, \%, \gg, \ll, \&, |, \wedge$, may be combined with the assignment operator (as for the Boolean operators $\&$, $|$, and $\wedge$
+ above). For example $a += b$ is equivalent to $a = (a + b)$.
+
+\subsubsection{Map and array functions and operators}
 
 The following functions and operators are defined for sets, maps and arrays. 
 \begin{description}
-\item[Indexing]		For an array $a$, $a[index]$ returns an element of $a$. If $a$ is a map the index shall be a token, else if $a$ is a map the index shall be an integer.
+\item[Indexing]		For an array $a$, $a[index]$ returns an element of $a$. If $a$ is a map the index shall be a label, else if $a$ is an array the index shall be an integer.
 \item[Scalar Assignment]	Where the notation $a = 0$ is used for an array of integer values, it means "set all elements of the array to zero".
-\item[Insertion]		a[index] = b inserts a copy of b into set a if the element does not already exist.
-\item[Tokens]		for a map a, arg(a) returns the set of the indexing tokens.
-\item[Length]		for a one dimensional array a, length(a) returns the number of elements in the array.
-\item[Width]		for a two dimensional array a, width(a) returns the width the array. The width is the number of scalar elements corresponding to the right most array index.
-\item[Height]					for a two dimensional array a, height(a) returns the height the array. The height is the number of one dimensional arrays in the two dimensional array and the "height" dimension corresponds to the left most array index.
+\item[Insertion]		$a[index] = b$ inserts a copy of $b$ into set $a$ 
+if the element does not already exist.
+\item[Tokens]		for a map $a$, $\args(a)$ returns the set of the indexing tokens.
+\item[Length]		for a one dimensional array $a$, $\length(a)$ 
+returns the number of elements in the array.
+\item[Width]		for a two dimensional array $a$, $\width(a)$ returns the 
+width the array. The width is the number of scalar elements corresponding to the right most array index.
+\item[Height]					for a two dimensional array $a$, $\height(a)$ returns 
+the height the array. The height is the number of one dimensional arrays in the two dimensional array and the "height" dimension corresponds to the left most array index.
 \end{description}
 \subsubsection{Precedence and associativity of operators}
 \label{operatorprecedence}
@@ -275,14 +269,21 @@ Operator Precedence	Associativity
 \subsection{Pseudocode}
 \label{pseudocode}
 
-The bulk of the normative specification is defined by means of pseudocode. 
-The syntax used is an amalgam of Python and BASIC. It is not intended
-to be executable code, but rather both precise and descriptive. 
-In particular, all the arithmetic functions and
-operations defined in the preceding section may be applied to variables within
-a pseudocode process.
+Most of the normative specification is defined by means of pseudocode. 
+The syntax is intended to be both precise and descriptive; the pseudocode is 
+not intended to form the basis for the implementation of a Dirac decoder.
 
-\subsubsection{Processes}
+All processing defined by this standard is precise and the entire specification
+can be implemented using only the data types, functions and operators 
+defined herein. That is, no operations on "real" or "floating point" numbers
+ are required. All operations shall be implemented with sufficiently large 
+integers so that overflow cannot occur.
+
+The type of variables in the pseudocode is not explicitly declared. 
+A variable assumes a type when it is assigned a value, which shall always 
+have a defined type.
+
+\subsubsection{Processes and functions}
 \label{functionsprocesses}
 
 Decoding and parsing operations are specified by means of processes
@@ -297,7 +298,7 @@ taking in variables $in1$ and $in2$ looks like:
 \bsCODE{\hdots}
 \end{pseudo}
 
-whilst a function process looks like
+Whilst a function process looks like:
 
 \begin{pseudo}{bar}{in1, in2}
 \bsCODE{op1(in1)}
@@ -309,11 +310,13 @@ whilst a function process looks like
 The right-hand column in the pseudocode representation contains a cross-reference to the 
 section in the specification containing the definition of other processes used at that line.
 
-Note well: all input variables are deemed to be passed {\em by reference} in this
+\subsubsection{Variables}
+
+All input variables are deemed to be passed {\em by reference} in this
 specification. This means that any modification to a variable value that
 occurs within a process also applies to that variable within the calling process
 {\em even if it has a different name} in the calling process. One way to understand
-this is to envisage variable names as labels for pointers to workspace memory.
+this is to envisage variable names as pointers to workspace memory.
 
 For example, if we define $foo$ and $bar$ by
 
@@ -331,8 +334,8 @@ and
 
 then at the end of $foo$, $\StateName[var\_name]$ has been set to 1.
 
-The only global variables are the state variables encapsulated in $\StateName$
-and $\SeqStateName$. If a variable is not declared as an input to
+The only global variables are the state variables encapsulated in $\StateName$.
+ If a variable is not declared as an input to
 the process and is not a state variable, then it is local to the function.
 
 If a process is particularly complex, it may be broken into a number of steps with 
@@ -357,29 +360,10 @@ the parts of the pseudocode specification:
 \bsCODE{even more code}
 \end{pseudo*}
 
-Note that the intervening text may define or modify variables used in the succeeding
+The intervening text may define or modify variables used in the succeeding
 pseudocode, and must be considered as a normative part of the specification of the process.
 This is done as it is sometimes much more clear to split up a long and complicated process
 into a number of steps.
-
-
-\paragraph{Assignment and equality}
-$\ $\newline$\ $\newline
-Assignment between variables $a$ and $b$ is denoted by $a=b$, and is a copy
-operation between the data contained within $b$ to $a$. 
-
-It is to be distinguished from
-the boolean identity operator $a==b$ (Section \ref{booleanops}).
-
-Occasionally the notation $a={\bf 0}$ will be used for an array of integer values:
-it means set all elements of the array to 0.
-
-For integer variables, assignment can be combined with arithmetic and bit-wise
-operations in the usual programming manner: for example, 
-\[x+=y\]
-means $x=x+y$, and
-\[x |= \text{0x4B}\]
-means $x=x|\text{0x4B}$.
 
 \subsubsection{Control flow}
 \label{controlflow}

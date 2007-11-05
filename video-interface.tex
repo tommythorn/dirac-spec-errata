@@ -1,0 +1,83 @@
+\begin{comment}
+This section defines the video formats supported by the Dirac codec.
+
+Dirac is a general purpose video codec that does not constrain the video source that is
+ the target for Dirac compression. However, for easy recognition, the video formats 
+that can be supported by a Dirac codec can be characterized by three broad
+ categories:
+\begin{enumerate}
+\item	 General purpose Dirac codecs that can support a well-defined group of video formats.
+\item	 Application-specific codecs that are designed for a target application and support a single video format or a restricted range of video formats.
+\item	 Specialized Dirac codecs that are designed with unusual video formats that typically offer very high performance in one or more aspects of the video format. These may include specialized colour systems, ultra-high sample rate resolutions, ultra-high bit depths and more.
+\end{enumerate}
+\subsection{Video formats}
+The primary video formats are those defined in Normative Annex C and all these
+ formats should be supported by general purpose Dirac codecs. These video formats
+ are characterized by their widespread use in television, cinema and multimedia
+ applications.
+
+The Dirac codec permits other video formats by individual definitions of each video
+ characteristic. 
+\subsection{Colour transform}
+Dirac supports any video format that codes the raw image colours in a luminance
+ component with two associated colour components. These components are referred
+ to as Y, C1 and C2.
+
+In ITU defined systems (including ITU-BT.709, ITU-BT.1361 and ITU-BT.1700), the
+ Y, C1 and C2 values shall relate to the E'Y, E'U and E'V colour components
+ respectively. These colour components are also widely referred to as Y, U, V
+ and Y, CB, CR.
+In the proposed ISO-IEC reversible colour transform, the Y, C1 and C2 values shall
+ correspond to the colour components Y, CO, CG.
+Note: coding using Y, CO, CG. provides a simple conversion from R-G-B components
+ by using lossless integer transforms. The use of Y, CO, CG supports lossless coding
+ of RGB video and allows Dirac to be treated as an RGB codec for applications that
+ require this feature.
+
+\subsection{Component sampling}
+All colour components shall be sampled at the same picture rate. A picture may be
+ a progressively scanned video frame or an interlaced field.
+
+Colour components C1 and C2 may be coded with the same dimensions as the Y component (4:4:4) sampling, or with half-width (4:2:2) or half-dimension (4:2:0) sampling
+
+Note: All pictures are considered as individual entities whether or not all lines were
+ sampled at the same instant. In video sequences that are not frame-based, such as
+ 30fps interlaced video carrying 24fps progressive images in a 3:2 pull-down
+ sequence, the compression performance may not be optimum. In such cases, a
+ pre-processor may provide the codec with a more easily compressed source such as
+ the original 24fps source pictures. Such pre-processing does not form any part of this
+ standard.
+
+\subsection{Bit resolution}
+
+The bit depth of each component sample is, in principle, unrestricted.  Codecs
+ designed for general purpose video use should be able to support bit depths of 8 
+and 10 bits. Application-specific codecs may restrict the supported bit depth to a
+ single value or a limited range of values. Specialized codecs may use extreme bit
+ resolutions beyond 16 bits.
+
+Video is represented internally within the decoder specification as a bipolar signal, with
+ zero representing mid-grey. Video is presented at the video interface as an unsigned
+ integer value by addition of an offset to these value (Section \ref{}).
+
+\subssection{Picture Frame Size and Rate}
+Normative Annex C, Table C.1 defines combinations of video formats that are in
+ widespread industry use. The combinations listed are identified by an integer value
+ that defines the essential metadata of the source image thereby avoiding the need to
+ individually define individual video parameters.
+
+Other combinations of active picture size and frame rate can be supported by
+ overriding the default metadata values identified in table C1 with new values decoded
+ from the stream (i.e. Frame Rate, Pixel Depth, Frame Width, Frame Height, colour
+Format and Pixel Aspect Ratio).
+
+General purpose Dirac codecs shall support all the formats defined in Normative Annex
+ C. 
+
+Application specific Dirac codecs may support a limited number of formats defined in
+ Annex C.
+Specialized Dirac codecs define custom values for one of more of the Frame Rate,
+ Pixel Depth, Frame Width, Frame Height, colour Format and Pixel Aspect Ratio
+ parameters. Specialized Dirac codecs may also support any of the formats identified
+ in Annex C, Table A.1.
+\end{comment}

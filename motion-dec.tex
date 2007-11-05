@@ -77,7 +77,7 @@ motion data element is consists of an entropy coded block preceded by a length c
 \bsCODE{prediction\_modes()}{\ref{blockpredmodes}}
 \bsCODE{vector\_elements(1, 0)}{\ref{blockmvelements}}
 \bsCODE{vector\_elements(1, 1)}{\ref{blockmvelements}}
-\bsIF{\NumRefs==2}
+\bsIF{num\_refs()==2}
     \bsCODE{vector\_elements(2,0)}{\ref{blockmvelements}}
     \bsCODE{vector\_elements(2,1)}{\ref{blockmvelements}}
 \bsEND
@@ -201,7 +201,7 @@ bit of the block prediction mode is decoded separately.
 \bsCODE{pred\_mode\_residue = read\_boola(\PredModeOne)}
 \bsCODE{\BlockData[ypos][xpos][mode][1] =pred\_mode\_residue}
 \bsCODE{\BlockData[ypos][xpos][mode][1] \wedge=mode\_prediction(ypos, xpos, 1)}{\ref{modeprediction}}
-\bsIF{\NumRefs == 2}
+\bsIF{num\_refs() == 2}
     \bsCODE{pred\_mode\_residue = read\_boola(\PredModeTwo)}
     \bsCODE{\BlockData[ypos][xpos][mode][2] =pred\_mode\_residue}
     \bsCODE{\BlockData[ypos][xpos][mode][2]\wedge= mode\_prediction(ypos, xpos, 2)} {\ref{modeprediction}}

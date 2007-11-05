@@ -44,6 +44,7 @@
 %\bibliographystyle{IEEEtran}
 %\renewcommand\bibname{References}
 
+\DeclareMathOperator{\intlog2}{intlog_2}
 \DeclareMathOperator{\clip}{clip}
 \DeclareMathOperator{\sign}{sign}
  \DeclareMathOperator{\row}{row}
@@ -67,9 +68,11 @@
 
 \newenvironment{informative*}[0]%
 {
-\begin{shaded}
+%\begin{shaded}
 }
-{\end{shaded}}
+{
+%\end{shaded}
+}
 
 \setcounter{secnumdepth}{4}
 \setcounter{tocdepth}{4}
@@ -187,6 +190,6 @@
          }
 \tableofcontents \clearpage
 \input{spec-structure}
-\clearpage
-\printindex
+%\clearpage
+%\printindex
 \end{document}

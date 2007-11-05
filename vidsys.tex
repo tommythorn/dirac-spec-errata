@@ -51,7 +51,7 @@ range $[0,1]$ and the chroma
 values to the range $[-0.5, 0.5]$. This is YUV coding and
 sometimes the chroma components are subsampled, either horizontally or
 both horizontally and vertically. UV sampling is specified by the
-$\ChromaFormat$ value. 
+chroma format value. 
 
 \paragraph{Conventional YUV coding}
 $\ $\newline
@@ -85,23 +85,23 @@ Co) and $C2$ (representing $Cg$) data. This transform is described in Section
 \label{signalranges}
 
 Video signals within the decoder are bi-polar. Offset  and excursion values 
-$\LumaOffset$, $\LumaExcursion$, $\ChromaOffset$ and
-$\ChromaExcursion$ should be used to convert the
+$\SLumaOffset$, $\SLumaExcursion$, $\SChromaOffset$ and
+$\SChromaExcursion$ should be used to convert the
 integer-valued decoded luma and chroma data $Y$, $C1$ ($Cb$) and $C2$ ($Cr$) 
 to intermediate values $E_Y$, $E_{Cb}$, and $E_{Cr}$ by the recipe
 \begin{eqnarray*}
-E_Y & = & \dfrac{Y}{\LumaExcursion}+dfrac{\LumaOffset}{2^\LumaDepth} = \dfrac{Y}{\LumaExcursion}+0.5\\
-E_{Cb} & = & \dfrac{C1+\ChromaOffset}{\ChromaExcursion} \\
-E_{Cr} & = & \dfrac{C2+\ChromaOffset}{\ChromaExcursion}
+E_Y & = & \dfrac{Y}{\SLumaExcursion}+dfrac{\SLumaOffset}{2^\LumaDepth} = \dfrac{Y}{\SLumaExcursion}+0.5\\
+E_{Cb} & = & \dfrac{C1+\SChromaOffset}{\SChromaExcursion} \\
+E_{Cr} & = & \dfrac{C2+\SChromaOffset}{\SChromaExcursion}
 \end{eqnarray*}
 
 $E_Y$ is normally clipped to the range $[0,1]$ and $E_{Cb}$, $E_{Cr}$
 to the range $[-0.5,0.5]$. This effectively clips integer $Y$ values within
 the codec to 
 the interval
-\[ [-\LumaExcursion/2, \LumaExcursion/2] \]
+\[ [-\SLumaExcursion/2, \SLumaExcursion/2] \]
 and $C1$, $C2$ values to
-\[ [-\ChromaExcursion/2,\ChromaExcursion/2] \]
+\[ [-\SChromaExcursion/2,\SChromaExcursion/2] \]
 
 However, maintaining an extended RGB gamut may mean that either such
 clipping is not done, or non-standard offset and excursion values are
@@ -201,9 +201,9 @@ $\ $\newline
 In the case of YCoCg coding, integer $I_R$, $I_G$, $I_B$ should be directly computed from
 the decoded $Y$, $C1$ ($Co$) and $C2$ ($Cg$) values by
 \begin{eqnarray*}
-Y & -= & \LumaOffset \\
-Co=C1 & -= & \ChromaOffset \\
-Cg=C2 & -= & \ChromaOffset \\
+Y & -= & \SLumaOffset \\
+Co=C1 & -= & \SChromaOffset \\
+Cg=C2 & -= & \SChromaOffset \\
 t & = & Y-(Cg\gg1) \\
 I_G & = & t+Cg \\
 I_B & = & t-(Co\gg1) \\
@@ -279,11 +279,11 @@ $\ $\newline
 A linear transfer characteristic has $f(x)=x$. 
 
 \subsubsection{Frame rate}
-The ratio of the frame rate values $\FrameRateNumerator$ and $\FrameRateDenominator$
+The ratio of the frame rate values $\SFrameRateNumer$ and $\SFrameRateDenom$
  encodes the intended rate at which frames should be
-displayed subsequent to decoding. If $\Interlaced$ is $\true$, then fields are
+displayed subsequent to decoding. If $\SInterlaced$ is $\true$, then fields are
 displayed at double the frame rate, in the order specified by the
-$\TopFieldFirst$ flag.
+$\STopFieldFirst$ flag.
 
 \subsubsection{Aspect ratios and clean area}
 The aspect ratio of an image is the ratio of the intended
@@ -303,9 +303,9 @@ near the picture edges: at high levels of compression it may only be appropriate
  to display the clean area rather than the whole picture. 
 
 The top-left corner of the clean area has coordinates
-\[(\LeftOffset,\TopOffset)\]
+\[(\SLeftOffset,\STopOffset)\]
 counting from the top-left corner of the picture data, and
-dimensions $\CleanWidth$ by $\CleanHeight$.
+dimensions $\SCleanWidth$ by $\SCleanHeight$.
 
 Note that these dimensions refer to pixels within a picture, not a frame,
 so a change from interlaced to progressive picture coding will
@@ -314,7 +314,7 @@ necessitate a change of clean area if a custom clean area is used.
 The clean area and the pixel aspect ratio together determine the
 aspect ratio of the displayed image which is the ratio of the width of the intended
 display area to the height of the intended display area:
-\[\dfrac{\CleanWidth*\AspectRatioNumerator}{\CleanHeight*\AspectRatioDenominator}\]
+\[\dfrac{\SCleanWidth*\SAspectRatioNumer}{\SCleanHeight*\SAspectRatioDenom}\]
 
 Given two separate sequences, with identical image aspect ratio, if the
 top left corner and bottom right corners of their clean apertures are

@@ -36,22 +36,22 @@ storage may be employed.
 Pictures are deemed to be output from the decoder and placed in the DPB instantaneously at multiples
 of the (real number) picture sample interval $\PictureInterval$. This interval is defined as follows:
 \begin{itemize}
-\item if $\Interlaced$ is $\true$ and $\SequentialFields$ is $\true$ (i.e. pictures are fields) then 
+\item if $\SInterlaced$ is $\true$ (i.e. pictures are fields [WRONG!!])
 \begin{equation*}
-\PictureInterval=\dfrac{\FrameRateDenominator}{2*\FrameRateNumerator}
+\PictureInterval=\dfrac{\SFrameRateDenom}{2*\SFrameRateNumer}
 \end{equation*}
 \item otherwise (i.e. pictures are frames) then 
 \begin{equation*}
-\PictureInterval=\dfrac{\FrameRateDenominator}{\FrameRateNumerator}
+\PictureInterval=\dfrac{\SFrameRateDenom}{\SFrameRateNumer}
 \end{equation*}
 \end{itemize}
 
 If a picture is output from the DPB, it is deemed to occur at the same instant as a picture is
 added, resulting in no net increase in DPB occupancy.
 
-A decoder may access a Dirac stream at an AU header. Let $N_n$ denote
+A decoder may access a Dirac stream at an sequence header. Let $N_n$ denote
 the picture number of the $r$th picture in coded order after
-the AU header, with $N_0=\AUPictureNumber$. Picture decoding/parsing 
+the AU header, with $N_0r$ the first one. Picture decoding/parsing 
 is deemed to start at this point. 
 
 In case $\DPBSize$ is 0, the picture output at time $t_0+n*\PictureInterval$
@@ -156,6 +156,9 @@ how an identically-sized encoder stream buffer (ESB) would operate to ensure cor
 in practice some encoder-side headroom may be required.
 
 [TBC]
+
+\subsection{Supported profiles}
+
 
 \subsection{Supported levels}
 [TBC]

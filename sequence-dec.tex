@@ -1,0 +1,83 @@
+\label{sequencedecoding}
+
+There is no one unique way of describing a Dirac decoder. However the pseudocode 
+below is illustrative code for a sample decoder. It emphasizes which parts of the decoding
+ process generate decoded output data. Note that the potential presence of padding or auxiliary data is ignored for clarity.
+
+\begin{pseudo}{decode\_sequence}{}
+   \bsCODE{\StateName=\{\}}
+   \bsCODE{decoded\_pictures = \{\}}
+   \bsCODE{\RefBuffer=\{\}}
+   \bsCODE{parse\_info()}{\ref{parseinfo}}
+   \bsCODE{\VideoParams = sequence\_header()}{\ref{sequenceheader}}
+   \bsCODE{parse\_info()}{\ref{parseinfo}}
+   \bsWHILE{is\_end\_of\_sequence() == \false}
+      \bsIF{is\_seq\_header()==\true}
+         \bsCODE{\VideoParams = sequence\_header()}{\ref{sequenceheader}}
+      \bsELSEIF{is\_picture()==\true}
+         \bsCODE{picture\_parse()}{\ref{pictureparse}}
+         \bsCODE{decoded\_pictures[\PictureNumber] = picture\_decode()}{\ref{picturedecprocess}}
+      \bsEND
+      \bsCODE{parse\_info()}{\ref{parseinfo}}
+   \bsEND
+   \bsRET{\{\VideoParams, decoded\_pictures\}}
+\end{pseudo}
+
+The process returns the video parameters, consisting of the essential metadata required for 
+display and interpretation of the video data, and the array of decoded pictures. Each decoded picture contains the three video component data arrays together with a picture number.
+
+The pseudocode describes the decoding process. Decoding starts by clearing the 
+decoder state and the decoder output. Thus video sequences may be decoded as independent entities. The first data extracted from the Dirac stream is parse information. The parse info header indicates what type of data unit follows, and this information is stored in the decoder state. The decoder continues to read pairs of data unit and parse info 
+headers until the end of the sequence is reached. The end of sequence 
+is indicated by data in the final parse info header. If a data unit is a sequence header the 
+decoded video parameters are updated with the information contained in the header. If the 
+data unit is a picture then:
+\begin{itemize}
+\item the picture is parsed, then decoded
+\item the picture is placed in the correct position in the output array
+\end{itemize}
+
+Note that since Dirac supports inter as well as intra picture coding, picture numbers
+within the stream may not be sequential, and the decoded output pictures will not be
+placed in the output buffer in order. Appendix \ref{profilelevel} defines the constraints
+which may be placed upon re-ordering depth.
+
+\subsection{Random access}
+\label{randomaccess}
+
+Many applications involve random access of a Dirac sequence. In the context
+ of this specification, this means beginning reading and parsing data from the 
+beginning of an sequence header, located at some point not at the beginning
+ of a sequence. In such circumstances, the process of Section 
+\ref{sequencedecoding} is followed, except that parsing begins from the sequence header
+ and pictures that cannot be decoded, since they use as references pictures not
+ previously accessible or decoded, are discarded. Clearly, what is decodeable depends
+ upon the point at which the sequence has been accessed.
+
+Sequence headers and prediction structures must be so arranged so that all pictures
+are decodeable after reading no more than three sequence headers and parsing and decoding (where possible) all pictures in between (Section \ref{picture-dec}).
+
+\subsection{Non-sequential picture decoding}
+
+The ability to decode pictures in a non-sequential manner is important for many
+ applications, such as video editing. Non-sequential access means decoding a 
+stream in any manner other than decoding pictures sequentially from the beginning 
+of the stream to the end: this may include decoding only intra pictures, decoding backwards, or decoding pictures in random parts of the stream. 
+
+Stream navigation, including non-sequential access is supported by the information 
+in the parse info headers in the stream (Section \ref{parseinfo}). 
+
+In order to start decoding, other than at the start of a sequence, the decoder 
+must first synchronize to the stream. The parse info prefix is present to support such synchronization. A decoder would first search for the parse info prefix to locate 
+the start of a parse info header. The parse info prefix is not guaranteed to occur
+ uniquely within parse info headers (the entropy coding used in 
+Dirac precludes this). However, the probability of a spurious 
+prefix occuring is low: 1 in $2^{32}$, since the prefix is 4 bytes long. The probability of finding 
+two spurious prefix sequences separated by the value of the next (or previous) parse 
+offset is 1 in $2^{64}$.  
+
+Having synchronized with the stream the decoder now needs to locate a sequence Header in order to find parameters needed to decode pictures. This may be done by moving back (or forward) through the stream, using the parse offsets.
+
+The Dirac stream also supports seeking to a particular picture number, since this
+is contained in each picture header.
+
