@@ -1,128 +1,131 @@
 \label{videoformatdefaults}
+This annex defines the default values of video parameters that are determined by the 
+value of the base video format. These defaults reduce overhead by allowing a large 
+number of parameters to be set without explicit signaling.
 
-[TBC!!]
-\begin{comment}
+The collection of default values for each value of the base video format constitutes 
+a map, which shall be returned by the $set\_source\_defaults(base\_video\_format)$
+function and used as a basis for defining the source video
+format in the sequence header as per Section \ref{setsourcedefaults}.
 
-\begin{table}[!ht]
-\begin{tabular}{|l|c|c|c|c|c|c|c|}
+All source parameters for any of the predefined video formats may be overridden as required in the sequence header.
+
+
+\begin{sidewaystable}[!ht]
+\begin{tabular}{|r|c|c|c|c|c|c|c|c|c|}
 \hline
-& \multicolumn{7}{|c|}{{\bf Video Formats}} \\
+\multicolumn{10}{|c|}{\cellcolor[gray]{0.75}\bf Video Formats}\\
 \hline
- &0 -- Custom &1 -- QSIF & 2 -- QCIF & 3 -- SIF & 4 -- CIF &	5 -- 4SIF	& 6 -- 4CIF \\
+{\bf
+\begin{tabular}{r}
+Base video format\\
+index value
+\end{tabular}} 
+& 0 & 1 & 2 & 3 & 4 &	5 & 6 & 7 & 8 \\
 \hline
-\SLumaWidth&640&176&176&352&352&704&704\\
-\SLumaHeight&480&120&144&240&288&480&576\\
+{\bf Name (informative)}
+&Custom & QSIF525 & QCIF & SIF525 & 4CIF &	4SIF525 & 4CIF  & 
+\begin{tabular}{c}SD480\\-60I\end{tabular} & \begin{tabular}{c}SD576\\-50I\end{tabular}\\
 \hline
-%\VChromaFormat&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0\\
+{\bf Frame Width:}&640&176&176&352&352&704&704&720&720\\
+{\bf Frame Height:}&480&120&144&240&288&480&576&480&576\\
 \hline
-\SLumaDepth&8&8&8&8&8&8&8\\
-\SChromaDepth&8&8&8&8&8&8&8\\
+{\bf Sampling Format:}&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:0&4:2:2&4:2:2\\
+\hline
+{\bf Interlaced:} & \false & \false & \false & \false & \false & \false & \false & \true & \true \\
+{\bf Top Field First:} & \false & \false & \true & \false & \true & \false & \true & \false & \true \\
+\hline
+{\bf Frame Rate Index} &1 &9 &10 &9 &10 &9 &10 &4 &3\\
+{\bf Numerator} & 24000   & 15000 & 25 & 15000 & 25 & 15000 & 25 & 30000 & 25\\
+{\bf Denominator} & 1001 & 1001   &  2   & 1001  &  2 & 1001  & 2     & 1001  & 1\\
+\hline
+{\bf Aspect Ratio Index} &1 &2 &3 &2 &3 &2 &3 &2 &3\\
+{\bf Numerator} & 1   & 10 & 12 & 10 & 12 & 10 & 12 & 10 & 12\\
+{\bf Denominator}& 1 & 11 &11 & 11 &  11 & 11 & 11 & 11  & 11\\
+\hline
+{\bf Clean Width:}&640&176&176&352&352&704&704&704&704\\
+{\bf Clean Height:}&480&120&144&240&288&480&576&480&576\\
+{\bf Clean Left Offset} & 0 & 0 &0 &0 &0 &0 &0 &8 &8\\
+{\bf Clean Top Offset} & 0 &0 &0 &0 &0 &0 &0 &0 &0\\
+\hline
+{\bf Signal Range Index} &1 &1 &1 &1 &1 &1 &1 &3 & 3\\
+{\bf Luma Offset} &0 &0 &0 &0 &0 &0 &0 &64 &64\\
+{\bf Luma Excursion} &255 &255 &255 &255 &255 &255 &255 &876 & 876\\
+{\bf Chroma Offset} &128 &128 &128 &128 &128 &128 &128 &512 & 512\\
+{\bf Chroma Excursion} &255 &255 &255 &255 &255 &255 &255 & 896 & 896\\
+\hline
+{\bf Colour Specification Index} &0 & 1 & 2& 1&	2&1 & 2& 1&	2\\
+&Custom&SDTV 525&SDTV 625&SDTV 525&SDTV 625&SDTV 525&SDTV 625&SDTV 525&SDTV 625\\
+\hline
+{\bf Colour Primaries Index} &0&	1&2&1&2&1&2&1&2\\
+&HDTV&SDTV 525&SDTV 625&SDTV 525&SDTV 625&SDTV 525&SDTV 625&SDTV 525&SDTV 625\\
+\hline
+{\bf Colour Matrix Index} &0&1&1&1&1&1&1&1&1\\
+&HDTV&SDTV&SDTV&SDTV&SDTV&SDTV&SDTV&SDTV&SDTV\\
+\hline
+{\bf Transfer Function Index} &0&0&0&0&0&0&0&0&0\\
+&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma\\
 \hline
 \end{tabular}
-\caption{Default sequence parameters for video formats 0--6}
-\end{table}
+\caption{Predefined video format parameters for video formats 0--8}
+\end{sidewaystable}
 
-\begin{table}[!ht]
-\begin{tabular}{|l|c|c|c|c|c|c|}
+\begin{sidewaystable}[!ht]
+\begin{tabular}{|r|c|c|c|c|c|c|c|c|}
 \hline
-& \multicolumn{6}{|c|}{{\bf Video Formats}} \\
+\multicolumn{9}{|c|}{\cellcolor[gray]{0.75}\bf Video Formats}\\
 \hline
-   &7 -- SD480 & 8 -- SD576 & 9 -- HD720 &10 -- HD1080 & 11 -- 2KCinema & 12 -- 4KCinema\\
+{\bf\begin{tabular}{r}
+Base video format\\
+index value
+\end{tabular}} 
+& 9 & 10 & 11 & 12 & 13 &	14 & 15 & 16 \\
 \hline
-\SLumaWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
-\SLumaHeight & 480 & 576 & 720 & 1080 & 1556 & 3112\\
+{\bf Name (informative)} & HD720P-60& HD720P-50 & HD1080I-60& HD1080I-50&
+HD1080P-60 &HD1080P-50& DC2K &DC4K \\
 \hline
-%\VChromaFormat & 4:2:0 & 4:2:0 & 4:2:0 & 4:2:0 &4:4:4 & 4:4:4\\
+{\bf Frame Width:}&1280&1280&1920&1920&1920&1920&2048&4096\\
+{\bf Frame Height:}&720&720&1080&1080&1080&1080&1080&2160\\
 \hline
-\SLumaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
-\SChromaDepth & 8 & 8 & 8 & 8 & 16 & 16\\
+{\bf Sampling Format:}&4:2:2&4:2:2&4:2:2&4:2:2&4:2:2&4:2:2&4:4:4&4:4:4\\
 \hline
-
-\end{tabular}
-\caption{Default sequence parameters for video formats 7--12}
-\end{table}
-
-\begin{table}[!ht]
-\begin{tabular}{|l|c|c|c|c|c|c|c|}
+{\bf Interlaced:} & \false & \false & \true & \true & \false & \false & \false & \false \\
+{\bf Top Field First:} & \true & \true & \true & \true & \true & \true & \true & \true \\
 \hline
-& \multicolumn{7}{|c|}{{\bf Video Formats}} \\
+{\bf Frame Rate Index} &7 &6 &4&3 &7 &6 &2&2 \\
+{\bf Numerator} & 60000   & 50 & 30000 & 25 & 60000 & 50 & 24 & 24\\
+{\bf Denominator} & 1001 & 1   &  1001   & 1  &  1001 & 1  & 1     &  1\\
 \hline
- &0 -- Custom &1 -- QSIF & 2 -- QCIF & 3 -- SIF & 4 -- CIF &	5 -- 4SIF	& 6 -- 4CIF \\
+{\bf Aspect Ratio Index} &1 &1 &1 &1 &1 &1 &1 &1\\
+{\bf Numerator} & 1   & 1 & 1 & 1 & 1 & 1 & 1 & 1\\
+{\bf Denominator}& 1 & 1 &1 & 1 &  1 & 1 & 1 & 1\\
 \hline
-\SInterlaced & \false & \false & \false & \false & \false & \false & \false\\
-\STopFieldFirst & \true & \true & \true & \true & \true & \true & \true \\
-
+{\bf Clean Width}&1280&1280&1920&1920&1920&1920&2048&4096\\
+{\bf Clean Height}&720&720&1080&1080&1080&1080&1080&2160\\
+{\bf Clean Left Offset} & 0 & 0 &0 &0 &0 &0 &0 &0 \\
+{\bf Clean Top Offset} & 0 &0 &0 &0 &0 &0 &0 &0 \\
 \hline
-\SFrameRateNumerator&30&15000&25&15000&25&15000&25\\
-\SFrameRateDenominator&1&1001&2&1001&2&1001&2\\
+{\bf Signal Range Index} &3 &3 &3 &3 &3 &3 &4 &4 \\
+{\bf Luma Offset} &64 &64 &64 &64 &64 &64 &256 &256\\
+{\bf Luma Excursion} &876 &876 &876 &876 &876 &876 &3504 &3504\\
+{\bf Chroma Offset} &512 &512 &512 &512 &512 &512 &2048 &2048\\
+{\bf Chroma Excursion} &896 &896 &896 &896 &896 &896 &3584 & 3584\\
 \hline
-\SAspectRatioNumerator&1&10&12&10&12&10&12\\
-\SAspectRatioDenominator&1&11&11&11&11&11&11\\
+{\bf Colour Specification Index} &3 & 3 & 3& 3&	3&3 & 4& 4\\
+&HDTV&HDTV&HDTV&HDTV&HDTV&HDTV&Cinema&Cinema\\
 \hline
-\SCleanWidth&640&176&176&352&352&704&704\\
-\SCleanHeight&480&120&144&240&288&480&576\\
+{\bf Colour Primaries Index} &0&	0&0&0&0&0&3&3\\
+&HDTV&HDTV&HDTV&HDTV&HDTV&HDTV&Cinema&Cinema\\
 \hline
-\SLeftOffset&0&0&0&0&0&0&0\\
-\STopOffset&0&0&0&0&0&0&0\\
+{\bf Colour Matrix Index} &0&0&0&0&0&0&0&0\\
+&HDTV&HDTV&HDTV&HDTV&HDTV&HDTV&HDTV&HDTV\\
 \hline
-\SLumaOffset&128&128&128&128&128&128&128\\
-\SLumaExcursion&255&255&255&255&255&255&255\\
-\SChromaOffset&0&0&0&0&0&0&0\\
-\SChromaExcursion&254&254&254&254&254&254&254\\
-\hline
-\SColourSpecIndex&0&1&2&1&2&1&2\\
-\hline
-\SColourPrimariesIndex&ITU709&SMPTE C&EBU3213&SMPTE C&EBU3213&SMPTE C&EBU3213\\
-\hline
-$K_{R}$ & 0.2126 &0.299&0.299&0.299&0.299&0.299&0.299\\
-$K_{B}$ & 0.0722 &0.144&0.144&0.144&0.144&0.144&0.144\\
-\hline
-\STransferFunction&TV&TV&TV&TV&TV&TV&TV\\
-\hline
-
-\end{tabular}
-\caption{Default source parameters for video formats 0--6}
-\end{table}
-
-\begin{table}[!ht]
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-& \multicolumn{6}{|c|}{{\bf Video Formats}} \\
-\hline
-   &7 -- SD480 & 8 -- SD576 & 9 -- HD720 &10 -- HD1080 & 11 -- 2KCinema & 12 -- 4KCinema\\
-\hline
-\SInterlaced & \false & \false & \false & \false & \false & \false \\
-\STopFieldFirst & \true & \true & \true & \true & \true & \true\\
-
-\hline
-\SFrameRateNumerator & 24000 & 25 & 24 &24 &24 &24 \\
-\SFrameRateDenominator& 1001 & 1 & 1 & 1 & 1 & 1 \\
-\hline
-\SAspectRatioNumerator & 10 & 12 & 1 & 1 & 1 & 1 \\
-\SAspectRatioDenominator& 11 & 11 & 1 & 1 & 1 & 1 \\
-\hline
-\SCleanWidth & 720 & 720 & 1280 & 1920 & 2048 & 4096\\
-\SCleanHeight & 480 & 576 & 720 & 1080 & 1536 & 3072\\
-\hline
-\SLeftOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
-\STopOffset & 0 & 0 & 0 & 0 & 0 & 0 \\
-\hline
-\SLumaOffset & 128 & 128 & 128 & 128 & 32768 & 32768\\
-\SLumaExcursion & 235 & 235 & 235 & 235 & 65535 & 65535\\
-\SChromaOffset & 0 & 0 & 0 & 0 & 0 & 0\\
-\SChromaExcursion & 224 & 224 & 224 & 224 & 65534 & 65534\\
-\hline
-\SColourSpecIndex & 1 & 2 & 0 & 0 & 3 & 3\\
-\hline
-\SColourPrimariesIndex & SMPTE C & EBU3213 & ITU709 & ITU709 & Not defined & Not defined\\
-\hline
-$K_{R}$ & 0.299 & 0.299 & 0.2126 & 0.2126 & 0.25 & 0.25\\
-$K_{B}$ & 0.144 & 0.144 & 0.0722 & 0.0722 & 0.25 & 0.25\\
-\hline
-\STransferFunction&TV&TV&TV&TV&Linear&Linear \\
+{\bf Transfer Function Index} &0&0&0&0&0&0&0&0\\
+&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma&TV gamma\\
 \hline
 \end{tabular}
-\caption{Default source parameters for video formats 7--12}
-\end{table}
+\caption{Predefined video format parameters for video formats 9--16}
+\end{sidewaystable}
 
-\end{comment}
+
+

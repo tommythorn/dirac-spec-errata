@@ -171,13 +171,14 @@ $N+1$, where $N$ is the number to be decoded:
 N+1=1 b_{K-1} b_{K-2}\hdots b_0 \text{(base $2$)}
 \end{equation*}
 
-A table of encodings of the first 10 values is shown in Figure \ref{uegolcodings}.
+Table \ref{table:uegolcodings} shows encodings of the values 0--9 is shown.
 
-\begin{figure}[!ht]]
+\begin{table}[!ht]
 \centering
-\begin{tabular}{l|c}
-Bit sequence & Decoded value \\
-\hline\\
+\begin{tabular}{|l|c|}
+\hline
+\rowcolor[gray]{0.75}Bit sequence & Decoded value \\
+\hline
 1                 &  0\\
 0 0 1             &  1\\
 0 1 1             &  2\\
@@ -188,11 +189,12 @@ Bit sequence & Decoded value \\
 0 0 0 0 0 0 1     &  7\\
 0 0 0 0 0 1 1     &  8\\
 0 0 0 1 0 0 1     &  9\\
+\hline
 \end{tabular}
 
 \caption{Example conversions from unsigned interleaved exp-Golomb-coded 
-values to unsigned integers \label{uegolcodings}}
-\end{figure}
+values to unsigned integers \label{table:uegolcodings}}
+\end{table}
 
 Although apparently complex, the interleaving ensures that the code has a very simple decoding loop. 
 The $read\_uint()$ function returns an unsigned integer value and is defined by the recipe:
@@ -241,13 +243,14 @@ of the $read\_sint()$ and $read\_sintb()$ functions.
 
 The code for the signed interleaved exp-Golomb data format consists of the
 unsigned interleaved exp-Golomb code for the magnitude, followed by a sign bit
-for non-zero values (Figure \ref{segolcodings}).
+for non-zero values (Table \ref{table:segolcodings}).
 
-\begin{figure}[!ht]
+\begin{table}[!ht]
 \centering
-\begin{tabular}{l|c}
-Bit sequence & Decoded value \\
-\hline\\
+\begin{tabular}{|l|c|}
+\hline
+\rowcolor[gray]{0.75}Bit sequence & Decoded value \\
+\hline
 0 0 0 1 1 1         &  -4\\
 0 0 0 0 1 1         &  -3\\
 0 1 1 1            &  -2\\
@@ -257,11 +260,12 @@ Bit sequence & Decoded value \\
 0 1 1 0            &  2\\
 0 0 0 0 1 0         &  3\\
 0 0 0 1 1 0         &  4\\
+\hline
 \end{tabular}
 
 \caption{Example conversions from signed interleaved exp-Golomb-coded values 
-to signed integers \label{segolcodings}}
-\end{figure}
+to signed integers \label{table:segolcodings}}
+\end{table}
 
 The decoding operation is as follows.
 

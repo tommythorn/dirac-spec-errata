@@ -1,5 +1,8 @@
 \documentclass[a4paper,9pt]{extarticle}
+\usepackage{colortbl}
 \usepackage{array}
+\usepackage{chngcntr}
+\usepackage{rotating}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -15,9 +18,11 @@
 \setlength\voffset{-0.5in}
 \addtolength\textheight{1.5in}
 \setlength\oddsidemargin{0in}
-\setlength\marginparwidth{1.25in}
+%\setlength\marginparwidth{1.25in}
+\setlength\marginparwidth{1.0in}
 \setlength\textwidth{\paperwidth}
-\addtolength\textwidth{-1.25in}
+%\addtolength\textwidth{-1.25in}
+\addtolength\textwidth{-1.0in}
 \addtolength\textwidth{-\oddsidemargin}
 \addtolength\textwidth{-\marginparsep}
 \addtolength\textwidth{-\marginparwidth}
@@ -78,6 +83,9 @@
 \setcounter{tocdepth}{4}
 \definecolor{commentcolour}{rgb}{1,0,0}
 
+\counterwithin{table}{section}
+\counterwithin{figure}{section}
+
 \makeindex
 
 \begin{document}
@@ -125,11 +133,12 @@
      \newcommand{\bsCODE}[1]{\dfindent\text{$##1$} & &}
      \newcommand{\bsITEM}[3]{\dfindent\text{$##1 = read\_##2()$} & & ##3}
      \setcounter{indent}{1}
-     \hspace{0.5in}
-     \begin{tabular}{|m{4.2in}m{0.0in}|m{0.4in}|}
+     \hspace{0.2in}
+     \begin{tabular}{|m{5in}m{0.0in}|m{0.4in}|}
          % firstline is function definition
          \hline
-         \text{$#1(#2)$} : &  & %\textbf{Ref}
+         \text{\cellcolor[gray]{0.75}$#1(#2)$} : &\cellcolor[gray]{0.75}  &
+{\cellcolor[gray]{0.75}\textbf{Ref}}
     }
     {    % last line is end of function
          \\\hline
@@ -178,8 +187,8 @@
      \newcommand{\bsCODE}[1]{\dfindent\text{$##1$} & &}
      \newcommand{\bsITEM}[3]{\dfindent\text{$##1 = read\_##2()$} & & ##3}
      \setcounter{indent}{1}
-     \hspace{0.5in}
-     \begin{tabular}{|m{4.2in}m{0.0in}|m{0.4in}|}
+     \hspace{0.2in}
+     \begin{tabular}{|m{5in}m{0.0in}|m{0.4in}|}
 
       \hline
       $\hdots$  &  &

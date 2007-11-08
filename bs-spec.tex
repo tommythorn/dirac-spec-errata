@@ -199,7 +199,10 @@ The value of parse codes allowed within the Dirac sequence shall be as shown in 
 \centering
 \begin{tabular}{|c|c|l|c|}
 \hline
-\multicolumn{4}{|c|}{\bf Generic} \\
+\rowcolor[gray]{0.75}
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+\multicolumn{4}{|c|}{\cellcolor[gray]{0.85}\bf Generic}\\
 \hline
 0x00 & 0000 0000 & Sequence header &--\\
 \hline
@@ -209,9 +212,7 @@ The value of parse codes allowed within the Dirac sequence shall be as shown in 
 \hline
 0x30 & 0011 0000 & Padding data & -- \\
 \hline
-\multicolumn{4}{|c|}{\bf Core syntax} \\
-\hline
-\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\multicolumn{4}{|c|}{\cellcolor[gray]{0.85}\bf Core syntax}\\
 \hline
 0x0C & 0000 1100 & Intra Reference Picture (arithmetic coding) & 0\\
 \hline
@@ -237,9 +238,7 @@ The value of parse codes allowed within the Dirac sequence shall be as shown in 
 \hline
 0x4A & 0100 1010 & Inter Non Reference Picture (no arithmetic coding)& 2\\
 \hline
-\multicolumn{4}{|c|}{\bf Low-delay syntax} \\
-\hline
-\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\multicolumn{4}{|c|}{\cellcolor[gray]{0.85}\bf Low-delay syntax}\\
 \hline
 0xCC & 1100 1100 & Intra Reference Picture & 0\\
 \hline
@@ -328,7 +327,7 @@ for motion compensation purposes: if these are both 0, the picture is an Intra p
 
 \end{informative*}
 
-\section{Sequence parameters}
+\section{Sequence header}
 \label{sequenceheader}
 
 This section defines the structure of the sequence header syntax. 
@@ -439,7 +438,7 @@ Appendix \ref{videoformatdefaults}, indicating default video parameters correspo
 \centering
 \begin{tabular}{|c|c|}
 \hline
-Video format index	& Video format description \\
+\rowcolor[gray]{0.75}Video format index	& Video format description \\
 \hline
 0	& Custom Format\\
 \hline
@@ -561,7 +560,7 @@ The supported chroma sampling formats are specified in Table \ref{tab:chromaform
 \centering
 \begin{tabular}{|c|c|}
 \hline
-sampling\_format\_index & {\bf Chroma format} \\
+\rowcolor[gray]{0.75}sampling\_format\_index & {\bf Chroma format} \\
 \hline
 0 & 4:4:4 \\
 \hline
@@ -622,7 +621,7 @@ The process for decoding the frame rate parameters shall be as follows:
 \bsEND
 \end{pseudo}
 
-The decoded value of $index$ shall fall in the range 0 to 8.
+The decoded value of $index$ shall fall in the range 0 to 10.
 
 For $index>0$, $preset\_frame\_rate(\VideoParams,index)$ shall set frame rate
 elements of $\VideoParams$ 
@@ -632,7 +631,7 @@ as specified in Table \ref{table:frameratevalues}.
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & Numerator & Denominator \\
+\rowcolor[gray]{0.75}$index$ & Numerator & Denominator \\
 \hline
 1 & 24000 & 1001 \\
 \hline
@@ -649,6 +648,10 @@ $index$ & Numerator & Denominator \\
 7 & 60000 & 1001 \\
 \hline
 8 & 60 & 1 \\
+\hline
+9 & 15000 & 1001 \\
+\hline
+10 & 25 & 2 \\
 \hline
 \end{tabular}
 \caption{Available preset frame rate values}\label{table:frameratevalues}
@@ -683,7 +686,7 @@ For $index>0$, $preset\_aspect\_ratio(\VideoParams, index)$ shall set the pixel 
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & Numerator & Denominator \\
+\rowcolor[gray]{0.75}$index$ & Numerator & Denominator \\
 \hline
 1 (Square Pixels) & 1 & 1 \\
 \hline
@@ -767,7 +770,7 @@ If $index>0$ the $preset\_signal\_ranges(\VideoParams,index)$ shall set the sign
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-$index$ & Luma offset & Luma excursion & Chroma offset & Chroma excursion\\
+\rowcolor[gray]{0.75}$index$ & Luma offset & Luma excursion & Chroma offset & Chroma excursion\\
 \hline
 1 (8 Bit Full Range) & 0 & 255 & 128 & 255\\
 \hline
@@ -821,7 +824,7 @@ in Table \ref{table:colourspecvalues}. If the value of $index$ is 0, these value
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-$index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & {\bf Transfer function}\\
+\rowcolor[gray]{0.75}$index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & {\bf Transfer function}\\
 \hline
 0 & Custom & HDTV & HDTV & TV gamma \\ 
 \hline
@@ -860,7 +863,7 @@ in Table \ref{table:primariesvalues}.
 \centering
 \begin{tabular}{|c|c|c|c|}
 \hline
-$index$ &  {\bf Description} & {\bf Specification} & {\bf Comment}      \\
+\rowcolor[gray]{0.75}$index$ &  {\bf Description} & {\bf Specification} & {\bf Comment}      \\
 \hline
 0       &  HDTV & ITU-R BT.709 & Also Computer, Web, sRGB \\ 
 \hline
@@ -897,7 +900,7 @@ in Table \ref{table:matrixvalues}.
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-$index$ &  {\bf Description} & {\bf Specification} & {\bf Colour matrix} & {\bf Comment}\\
+\rowcolor[gray]{0.75}$index$ &  {\bf Description} & {\bf Specification} & {\bf Colour matrix} & {\bf Comment}\\
 \hline
 0 & HDTV & ITU-R BT.709 & $K_R=0.2126$, $K_B=0.0722$ & Also computer and web\\ 
 \hline
@@ -930,7 +933,7 @@ in Table \ref{table:transfervalues}.
 \centering
 \begin{tabular}{|c|c|c|}
 \hline
-$index$ & {\bf Description} & {\bf Specification}\\
+\rowcolor[gray]{0.75}$index$ & {\bf Description} & {\bf Specification}\\
 \hline
 0 & TV gamm & ITU-R BT.1361\\ 
 \hline
@@ -1027,7 +1030,7 @@ The $video\_depth()$ process, which determines the maximum number of bits requir
 Note that for YCoCg format the luma and chroma depths are different.
 
 \section{Picture syntax}
-
+\label{picturesyntax}
 This section specifies the structure of Dirac picture data units.
 
 \subsection{Picture parsing}
@@ -1149,9 +1152,7 @@ as defined in Section \ref{chromablockparams}).
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-             & \multicolumn{4}{|c|}{{\bf Block parameters}}\\
-\hline
-$index$  & \LumaXBlen & \LumaYBlen & \LumaXBsep & \LumaYBsep \\
+\rowcolor[gray]{0.75}$index$  & \LumaXBlen & \LumaYBlen & \LumaXBsep & \LumaYBsep \\
 \hline
 1 & 8 & 8 & 4 & 4 \\
 \hline
@@ -1419,7 +1420,7 @@ defined in Table \ref{wltfilterpresets}:
 \centering
 \begin{tabular}{|c|c|}
 \hline
-\WaveletIndex & {\bf Filter} \\
+\rowcolor[gray]{0.75}\WaveletIndex & {\bf Filter} \\
 \hline
 0 & Deslauriers-Debuc (9,7) \\
 \hline
@@ -1495,7 +1496,7 @@ The codeblock mode is encoded in $\CodeblockMode$, which shall have value 0 or 1
 \centering
 \begin{tabular}{|c|c|}
 \hline
- $\CodeblockMode$ & {\bf Description} \\
+ \rowcolor[gray]{0.75}$\CodeblockMode$ & {\bf Description} \\
 \hline
 0 & Single quantiser per subband, used for all codeblocks\\
 \hline

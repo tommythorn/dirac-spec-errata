@@ -133,7 +133,7 @@ The following functions and operators are defined on integer values:
 \[\sign(a)=
 \left\{\begin{array}{l} 
 1 \text{ if $a\geq0$} \\
-0 \text{ if $a==0$}
+0 \text{ if $a==0$}\\
 -1 \text{ if $a<0$} 
 \end{array}\right.\]
 
@@ -147,6 +147,9 @@ The following functions and operators are defined on integer values:
 $b>0$ where: $n=a//b$ is defined to be the largest integer $n$ such that
 \[n*b\leq a\] 
 
+i.e. numbers are rounded towards -infinity. N.B. this differs from C/C++ conventions
+of round towards 0.
+
 \item[Remainder] For integers $a,b$, with $b>0$, the remainder $a\%b$ is 
 equal to 
 
@@ -154,9 +157,6 @@ equal to
 
  $a\%b$ always lies between 0 and $b-1$.
 
-
-i.e. numbers are rounded towards -infinity. N.B. this differs from C/C++ conventions
-of round towards 0.
 \item[Exponentiation] For integers $a, b$, $b>0$ $a^b$ is defined as $a*a*\hdots *a$ ($b$ times). $a^0$ is 1.
 
 \item[Maximum] $\max(a,b)$ returns the largest of $a$ and $b$.

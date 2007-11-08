@@ -5,55 +5,36 @@
 
 \label{picturedec}
 
+This section defines the processes for decoding a picture from a Dirac stream. 
+Picture decoding depends upon correctly parsing the stream, and decoding operations
+ are dependent on decoding the sequence header and picture metadata 
+(Section \ref{sequenceheader} and \ref{picturesyntax}) and unpacking the coefficient 
+and motion data (Sections \ref{wltunpacking} and \ref{motiondec}).
+
 \subsection{Overall picture decoding process}
 \label{overallpicturedec}
 
-\subsubsection{Picture data initialisation}
-\label{picdataconventions}
-
 Picture data from the current picture being decoded is stored in the $\CurrentPicture$ state
-variable, which is a structure with indices $pic\_num$, $Y$, $C1$ and $C2$ representing
-luma and chroma data (typically Y, Cb and Cr, although other formats are supported too -- see
-Appendix \ref{vidsys}).
+variable, which is a map with labels $pic\_num$, and $Y$, $C1$ and $C2$ representing
+luma and chroma data.
 
+After decoding the decoded picture is returned to the decoding application.
 
-The $init\_picture\_data()$ initialises the current picture data so that:
-\begin{itemize}
-\item $\CurrentPicture[pic\_num]=\PictureNumber$
-\item $\CurrentPicture[Y]$ is a 2-dimensional array of width $\LumaWidth$ and height $\LumaHeight$, 
-all values $\CurrentPicture[Y][y][x]$ set to 0
-\item $\CurrentPicture[C1]$ and $\CurrentPicture[C2]$ are 2-dimensional arrays of width $\ChromaWidth$ and height $\ChromaHeight$, 
-all values $\CurrentPicture[C1][y][x]$ and $\CurrentPicture[C2][y][x]$ set to 0
-\end{itemize}
-
-\subsubsection{Decoding process}
-\label{picturedecprocess}
-
-The process for decoding a picture within a Dirac sequence can commence 
-when: 
-\begin{itemize}
-\item a sequence header has been located, and parsed, and the default parameters set, and
-\item a picture data unit has been located and parsed, overriding default parameters, and
-\item all reference pictures for the current picture have been decoded
-\end{itemize}
-
-Decoding a picture with picture number 
-$n=\PictureNumber$ in a Dirac sequence consists of:
+The $picture\_decode()$ process shall be invoked after parsing the $picture\_parse()$ process and shall be defined as follows:
 
 \begin{pseudo}{picture\_decode}{}
+\bsCODE{\CurrentPicture={}}
+\bsCODE{\CurrentPicture[pic\_num]=\PictureNumber}
 \bsIF{is\_ref(()}
     \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
 \bsEND
-\bsCODE{init\_picture\_data()}{\ref{picdataconventions}}
 \bsIF{\ZeroResidual==\false}
-    \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
-    \bsCODE{\CurrentPicture[C1]=idwt(\COneTransform)}{\ref{idwt}}
-    \bsCODE{\CurrentPicture[C2]=idwt(\CTwoTransform)}{\ref{idwt}}
+    \bsCODE{inverse\_wavelet\_transform}{\ref{}}
 \bsEND
 \bsIF{is\_inter()}
-    \bsCODE{ref1=get\_ref(\RefOneNum)}
+    \bsCODE{ref1=get\_ref(\RefOneNum)}{\ref{refbuffer}}
     \bsIF{num\_refs()==2}{\ref{parseinfo}}
-        \bsCODE{ref2=get\_ref(\RefTwoNum)}
+        \bsCODE{ref2=get\_ref(\RefTwoNum)}{\ref{refbuffer}}
     \bsEND
     \bsCODE{motion\_compensate(ref1[Y], ref2[Y],  \CurrentPicture[Y], c)}{\ref{motioncompensate}}
     \bsCODE{motion\_compensate(ref1[C1], ref2[C1],  \CurrentPicture[C1], c)}{\ref{motioncompensate}}
@@ -67,14 +48,17 @@ $n=\PictureNumber$ in a Dirac sequence consists of:
 \bsRET{\CurrentPicture}
 \end{pseudo}
 
+ 
 \begin{informative}
-When randomly accessing a sequence, a picture may not be decodeable because reference pictures
-may not be available in the buffer. In this case the current picture may be discarded, although some
-decoders may be designed to produce an output. 
+When randomly accessing a sequence, a picture may not be decodeable 
+because reference pictures may not be available in the buffer. In this case the 
+current picture may be discarded, although some decoders may be designed to 
+produce an output. 
 
-Picture numbers within the stream may not be in numerical order, and subsequent reordering may be
-required: the size of the decoded picture buffer required to perform any such reordering is specified
-as part of the application profile and level (Appendix \ref{profilelevel}).
+Picture numbers within the stream may not be in numerical order, and 
+subsequent reordering may be required: the size of the decoded picture buffer 
+required to perform any such reordering is specified as part of the application profile 
+and level (Appendix \ref{profilelevel}).
 \end{informative}
 
 \subsection{Reference picture buffer management}
@@ -114,9 +98,6 @@ first (i.e. oldest) element of the buffer, $\RefBuffer[0]$, set
 for $i=0$ to $\RefBufferSize-2$, and set the last element $\RefBuffer[\RefBufferSize-1]$ equal to
 a copy of $\CurrentPicture$.
 
-
-
-\subsection{Inverse discrete wavelet transform}
 \input{idwt}
 
 \subsection{Motion compensation}
