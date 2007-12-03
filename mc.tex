@@ -8,28 +8,8 @@ component arrays $ref1$ and $ref2$ of the same type.
 This process shall be invoked for each component in a picture, subsequent to the 
 decoding of coefficient data, specified in Section \ref{transformdec}, and the Inverse Wavelet Transform (IWT), specified in Section \ref{idwt}. 
 
-\subsubsection{Definitions and conventions}
-
-Motion compensation uses the motion block data $\BlockData$ and (optionally) the
+Motion compensation shall use the motion block data $\BlockData$ and optionally may use the
 global motion parameters $\GlobalParams$.
-
-
-\paragraph{Chroma subsampling}
-\label{chromamvscale}
-$\ $\newline
-When motion compensating chroma components, motion vectors shall be scaled by the
-$chroma\_mv\_scale()$ function. This produces chroma vectors in units of 
-$\MotionVectorPrecision$ with respect to the chroma samples, as follows:
-
-\begin{pseudo}{chroma\_mv\_scale}{v}
-\bsCODE{sv[0] = v[0]//chroma\_h\_ratio()}{\ref{picturedimensions}}
-\bsCODE{sv[1] = v[1]//chroma\_v\_ratio()}{\ref{picturedimensions}}
-\bsRET{sv}
-\end{pseudo}.
-
-\begin{informative}
-Recall that division in this specification rounds towards -infinity. This division can be achieved by a bit-shift in C/C++ as chroma dimension ratios are 1 or 2.
-\end{informative}
 
 \begin{informative*}
 \subsubsection{Overlapped Block Motion Compensation (OBMC) (Informative)}
@@ -99,7 +79,7 @@ The $motion\_compensate()$ shall be defined as follows:
 \bsEND
 \bsCODE{init\_dimensions(c)}{\ref{mcdimensions}}
 \bsCODE{mc\_tmp=init\_temp\_array()}{\ref{mctemparray}}
-\bsCODE{total\_wt\_bits=set\_mc\_wt()}{\ref{wtbits}}
+%\bsCODE{total\_wt\_bits=set\_mc\_wt()}{\ref{wtbits}}
 \bsFOR{j=0}{\BlocksY-1}
     \bsFOR{i=0}{\BlocksX-1}
         \bsCODE{block\_mc(mc\_tmp,i,j)}{\ref{blockmc}}
@@ -107,11 +87,17 @@ The $motion\_compensate()$ shall be defined as follows:
 \bsEND
 \bsFOR{y=0}{\LenY-1}
     \bsFOR{x=0}{\LenX-1}
-        \bsCODE{pic[y][x] += (mc\_tmp[y][x]+2^{total\_wt\_bits-1})\gg total\_wt\_bits}
+%        \bsCODE{pic[y][x] += (mc\_tmp[y][x]+2^{total\_wt\_bits-1})\gg total\_wt\_bits}
+       \bsCODE{pic[y][x] += (mc\_tmp[y][x]+32)\gg 6}
         \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
     \bsEND
 \bsEND
 \end{pseudo}
+
+\begin{informative}
+Six bits are used for the overlapped-block weighting matrix. This ensures that 10-bit
+data may normally be motion compensated using 16-bit words as per Section \ref{blockmc}.
+\end{informative}
 
 \subsubsection{Dimensions}
 \label{mcdimensions}
@@ -156,8 +142,12 @@ perform all operations prior to the output of pictures using padded data, i.e. t
 The $init\_temp\_array()$ function shall return a two-dimensional data array with
 horizontal size $\LenX$ and vertical size $\LenY$, such that each element of the two dimensional array shall be set to zero.
 
+\begin{comment}
 \subsubsection{Weighting bits}
 \label{wtbits}
+
+
+[Can omit this section if spatial weights are just set to 6 bits.]
 
 The function $set\_mc\_wts()$ shall set the total number of extra bits of resolution
 that shall be added to motion compensation data as a result of applying weighting
@@ -190,6 +180,7 @@ requires 8+3+3+1=15 unsigned bits. The additional bit within
 a 16 bit word could be used to provide additional reference 
 weighting.
 \end{informative}
+\end{comment}
 
 \subsubsection{Motion compensation of a block}
 \label{blockmc}
@@ -207,46 +198,67 @@ The $block\_mc()$ process shall be defined as follows:
 \bsCODE{ystart = j*\XBsep-\XOffset}
 \bsCODE{xstop = (i+1)*\XBsep+\XOffset}
 \bsCODE{ystop = (j+1)*\YBsep+\YOffset}
-\bsCODE{m=\BlockData[j][i][mode]}
-\bsCODE{W=spatial\_wt(i,j)}{\ref{}}
+\bsCODE{mode=\BlockData[j][i][mode]}
+\bsCODE{W=spatial\_wt(i,j)}{\ref{pixelprediction}}
 \bsFOR{y=\max(ystart,0)}{\min(ystop,\LenY)-1}
     \bsFOR{x=\max(xstart,0)}{\min(xstop,\LenX)-1}
         \bsCODE{p=x-xstart}
-        \bsCODE{q=y-xstart}
-        \bsIF{m==\Intra}
-            \bsCODE{wt=2^\RefsWeightPrecision * W[q][p]}
-            \bsCODE{mc\_tmp[y][x]+=\BlockData[j][i][dc][c]*wt}
-        \bsELSEIF{m==\RefOneOnly}
-            \bsCODE{wt=(\RefOneWeight+\RefTwoWeight) * W[q][p]}
-            \bsCODE{mc\_tmp[y][x]+=pixel\_pred(ref1, 1, i, j, x, y, c)*wt}{\ref{}}
-        \bsELSEIF{m==\RefTwoOnly}
-            \bsCODE{wt=(\RefOneWeight+\RefTwoWeight) * W[q][p]}
-            \bsCODE{mc\_tmp[y][x]+=pixel\_pred(ref2, 2, i, j, x, y, c)*wt}{\ref{}}
-        \bsELSE
-            \bsCODE{wt=\RefOneWeight * W[q][p]}
-            \bsCODE{mc\_tmp[y][x]+=pixel\_pred(ref1, 1, i, j, x, y, c)*wt}{\ref{}}
-            \bsCODE{wt=\RefTwoWeight * W[q][p]}
-            \bsCODE{mc\_tmp[y][x]+=pixel\_pred(ref2, 2, i, j, x, y, c)*wt}{\ref{}}
+        \bsCODE{q=y-ystart}
+        \bsIF{mode==\Intra}
+            \bsCODE{val=\BlockData[j][i][dc][c]}
+        \bsELSEIF{mode==\RefOneOnly}
+            \bsCODE{val=pixel\_pred(ref1, 1, i, j, x, y, c)}{\ref{pixelprediction}}
+            \bsCODE{val*=\RefOneWeight+\RefTwoWeight}
+            \bsCODE{val=(val+2^{\RefsWeightPrecision-1})\gg\RefsWeightPrecision}
+        \bsELSEIF{mode==\RefTwoOnly}
+            \bsCODE{val=pixel\_pred(ref2, 2, i, j, x, y, c)}{\ref{pixelprediction}}
+            \bsCODE{val*=\RefOneWeight+\RefTwoWeight}
+            \bsCODE{val=(val+2^{\RefsWeightPrecision-1})\gg\RefsWeightPrecision}          
+        \bsELSEIF{mode==\RefOneAndTwo}
+            \bsCODE{val1=pixel\_pred(ref1, 1, i, j, x, y, c)}{\ref{pixelprediction}}
+            \bsCODE{val1*=\RefOneWeight}
+            \bsCODE{val2=pixel\_pred(ref2, 2, i, j, x, y, c)}{\ref{pixelprediction}}
+            \bsCODE{val2*=\RefOneWeight}
+            \bsCODE{val=(val1+val2+2^{\RefsWeightPrecision-1})\gg\RefsWeightPrecision}
         \bsEND
+        \bsCODE{val *= W[q][p]}
+        \bsCODE{mc\_tmp[y][x]+=val}
     \bsEND
 \bsEND
 \end{pseudo}
 
 \begin{informative}
-The double multiplication by a spatial and by a reference weight can be 
-avoided by using a set of spatial weighting matrices
-pre-multiplied by the applicable reference weights according to 
-prediction mode. In the default case where the reference
-picture weights are one, as is the picture weight precision, 
-this means a double-size spatial matrix for all modes other than
-$\RefOneAndTwo$.
+Note that if the two reference weights are 1 and $\RefsWeightPrecision$ is 1, then
+reference weighting is transparent and
+\begin{pseudo*}
+\bsCODE{val=pixel\_pred(ref1, 1, i, j, x, y, c)}
+\bsCODE{val*=\RefOneWeight+\RefTwoWeight}
+\bsCODE{val=(val+2^{\RefsWeightPrecision-1})\gg\RefsWeightPrecision}
+\bsCODE{\ldots}
+\end{pseudo*}
+
+reduces to
+
+\begin{pseudo*}
+\bsCODE{val=pixel\_pred(ref1, 1, i, j, x, y, c)}
+\bsCODE{\ldots}
+\end{pseudo*}
+
+In this case, therefore, the normal reference weighting produces no additional dynamic
+range for internal processing and 10 bit video can be motion compensated with 16 bit
+unsigned internal values.
+
+In general, however, the worst case internal bit widths consist of the video bit depth plus the maximum of: 6 (the spatial matrix bit width) and the value of $\RefsWeightPrecision$. 6 bits
+should be sufficient for most fading compensation applications, and so 16 bit internals will
+suffice for all practical motion compensation scenarios for 8 and 10 bit video.
 \end{informative}
+
 
 \subsubsection{Spatial weighting matrix}
 
 \label{mcspatialweights}
 
-This section specifies the function $spatial\_wt(i,j)$ for deriving the spatial weighting 
+This section specifies the function $spatial\_wt(i,j)$ for deriving the 6-bit spatial weighting 
 matrix that shall be applied to the block with coordinates  $(i,j)$. 
 
 Note that other weights shall be applied to the prediction as a result of the 
@@ -258,7 +270,6 @@ be returned for blocks at the edges of the picture component data array.
 
 The function shall return a two-dimensional spatial weighting matrix. This
 shall apply a linear roll-off in both horizontal and vertical directions.
-\providecommand{\abs}[1]{\left\lvert#1\right\rvert}
 
 The spatial matrix returned shall be the product of a horizontal and a vertical
 weighting matrix. It shall be defined as follows:
@@ -266,7 +277,7 @@ weighting matrix. It shall be defined as follows:
 \begin{pseudo}{spatial\_wt}{i,j}
 \bsFOR{y==0}{\YBlen-1}
     \bsFOR{x==0}{\XBlen-1}
-        \bsCODE{W[y][x]=h\_wt(i,x)*v\_wt(j,y)}
+        \bsCODE{W=h\_wt(i)[x]*v\_wt(j)[y]}
     \bsEND
 \bsEND
 \bsRET{W}
@@ -274,30 +285,88 @@ weighting matrix. It shall be defined as follows:
 
 The horizontal weighting function shall be defined as follows:
 
-\begin{pseudo}{h\_wt}{i,x}
-\bsCODE{max\_x=4*\XOffset}
-\bsIF{i==0 \text{ and } x< \XBlen//2}
-    \bsRET{max\_x}
-\bsELSEIF{i==\BlocksX \text{ and } x\geq \XBlen//2}
-    \bsRET{max\_x}
-\bsELSE
-    \bsRET{\clip(\XBlen-2\abs{x-\dfrac{(\XBlen-1)}{2}}, max\_x ) }
+\begin{pseudo}{h\_wt}{i}
+\bsFOR{x=0}{2*\XOffset-1}
+    \bsCODE{hwt[x]=1+(6*x+\XOffset-1)//(2*\XOffset-1)}
+    \bsCODE{hwt[x+\XBsep]=8-hwt[x]}
 \bsEND
+\bsFOR{2*\XOffset}{\XBsep-1}
+    \bsCODE{hwt[x]=8}
+\bsEND
+\bsIF{i==0}
+    \bsFOR{x=0}{2*\XOffset-1}
+        \bsCODE{hwt[x]=8}
+    \bsEND
+\bsELSEIF{i==\BlocksX-1}
+    \bsFOR{x=0}{2*\XOffset-1}
+        \bsCODE{hwt[x+\XBsep]=8}
+    \bsEND
+\bsEND
+\bsRET{hwt}
 \end{pseudo}
 
-The horizontal weighting function  shall be defined as follows:
+The vertical weighting function  shall be defined as follows:
 
-\begin{pseudo}{v\_wt}{j,y}
-\bsCODE{max\_y=4*\YOffset}
-\bsIF{j==0 \text{ and } y< \YBlen//2}
-    \bsRET{max\_y}
-\bsELSEIF{j==\BlocksY \text{ and } y\geq \YBlen//2}
-    \bsRET{max\_y}
-\bsELSE
-    \bsRET{\clip(\YBlen - 2\abs{y-\dfrac{(\YBlen-1)}{2}},0, max\_y) }
+\begin{pseudo}{v\_wt}{j}
+\bsFOR{y=0}{2*\YOffset-1}
+    \bsCODE{vwt[y]=1+(6*y+\XOffset-1)//(2*\YOffset-1)}
+    \bsCODE{vwt[y+\XBsep]=8-hwt[y]}
 \bsEND
+\bsFOR{2*\YOffset}{\YBsep-1}
+    \bsCODE{xwt[y]=8}
+\bsEND
+\bsIF{j==0}
+    \bsFOR{y=0}{2*\YOffset-1}
+        \bsCODE{vwt[y]=8}
+    \bsEND
+\bsELSEIF{j==\BlocksY-1}
+    \bsFOR{y=0}{2*\YOffset-1}
+        \bsCODE{vwt[x+\YBsep]=8}
+    \bsEND
+\bsEND
+\bsRET{vwt}
 \end{pseudo}
 
+\begin{informative}
+The horizontal and vertical weighting arrays satisfy the perfect reconstruction property across block overlaps by construction:
+\begin{eqnarray*}
+hwt[x+\XBsep] & = & 8 - hwt[x] \\ 
+vwt[y+\YBsep] & = & 8 - vwt[y]  
+\end{eqnarray*}
+
+In addition, it can be shown they are always symmetric (except at picture edges), or
+equivalently the leading edges have skew-symmetry about the half-way point:
+\begin{eqnarray*}
+hwt[\XBlen-1-x] & =  & hwt[x] \\
+vwt[\YBlen-1-y] & = & vwt[y] 
+\end{eqnarray*}
+
+The horizontal and vertical weighting matrix components for various block
+ overlaps are shown in Table \ref{table:leadingedges}. 
+These encompass all the default values listed 
+in Table \ref{} for both luma and chroma.
+\end{informative}
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\rowcolor[gray]{0.75}\bf{Overlap}  & \bf{Offset} & \bf{Leading edge} \\
+\rowcolor[gray]{0.75}\bf{(length-separation)} & & \\
+\hline
+2 & 1 & 1,7\\
+\hline
+4 & 2 & 1,3,5,7\\
+\hline
+8 & 4 & 1,2,3,4,4,5,6,7\\
+\hline
+16 & 8 & 1,1,2,2,3,3,3,4,4,5,5,5,6,6,7,7 \\
+\hline
+\end{tabular}
+\caption{Leading and trailing edge values for different block overlaps}
+\label{table:leadingedges}
+\end{table}
+
+\begin{comment}
 The profile of the matrix 
 for interior blocks is illustrated in Figure \ref{fig:weightprofile}.
 
@@ -357,20 +426,21 @@ would be equivalent in the interpolative case, as it gives a
 better approximation when the
 weights do not sum to $2^\RefsWeightPrecision$.
 \end{informative*}
+\end{comment}
 
 \subsubsection{Pixel prediction}
 \label{pixelprediction}
-[GOT HERE!!]
-This section specifies the operation of the $pixel\_pred(ref, ref\_num, i, j, x, y, c)$ 
-process for forming a prediction for a pixel 
+
+This section defines the operation of the $pixel\_pred(ref, ref\_num, i, j, x, y, c)$ 
+process which shall be used for forming the prediction for a pixel 
 with coordinates $(x,y)$ in component $c$, belonging to the block with coordinates $(i,j)$.
 
-Firstly, a motion vector to be applied to pixel $(x,y)$ is derived. For block motion, this is
-the block motion vector, whereas for global motion it is computed from the global motion 
-parameters.
+The pixel prediction process shall consist of two stages. In the first stage, a motion vector
+ to be applied to pixel $(x,y)$ shall be derived. For block motion, this shall be a block
+ motionvector that shall apply to all pixels in a block. For global motion the motion
+vector shall be computed from the global motion parameters and may vary pixel-by-pixel.
 
-Then the motion vector is used to derive reference picture coordinates.
-The value returned is that of the upconverted reference pixel at the derived coordinates.
+In the second stage, the motion vector shall be used to derive coordinates in an reference picture.
 
 \begin{pseudo}{pixel\_pred}{ref,ref\_num,i,j,x,y,c}
 \bsIF{\BlockData[j][i][global]==\false}
@@ -381,14 +451,13 @@ The value returned is that of the upconverted reference pixel at the derived coo
 \bsIF{c!=Y}
   \bsCODE{mv = chroma\_mv\_scale(mv)}{\ref{chromamvscale}}
 \bsEND
+\bsCODE{px = (x\ll \MotionVectorPrecision)+mv[0]}
+\bsCODE{py = (y\ll \MotionVectorPrecision)+mv[1]}
 \bsIF{\MotionVectorPrecision>0}
-  \bsCODE{px = (x\ll \MotionVectorPrecision)+mv[0]}
-  \bsCODE{py = (y\ll \MotionVectorPrecision)+mv[1]}
+  \bsRET{subpel\_predict(ref, c, px, py))}{\ref{upconvert}}
 \bsELSE
-  \bsCODE{px = (x+mv[0])\ll 1}
-  \bsCODE{py = (y+mv[1])\ll 1}
+  \bsRET{ref[\clip(py,0,\height(ref)-1)][\clip(px,0,\width(ref)-1)]}
 \bsEND
-\bsRET{upconvert(ref, px, py))}{\ref{upconvert}}
 \end{pseudo}
 
 \subsubsection{Global motion vector field generation}
@@ -398,188 +467,204 @@ This section specifies the operation of the $global\_mv(ref, ref\_num, x,y, c)$ 
 for deriving a global motion vector for a pixel at location $(x,y)$, in a component of 
 type $c$ from a reference $ref$.
 
-For convenience, set
-\begin{eqnarray*} 
-\alpha & = & \GlobalParams[ref\_num][ZRS\_exp] \\
-\beta & = & \GlobalParams[ref\_num][perspective\_exp]
-\end{eqnarray*}
+The function shall be defined as follows:
 
-Writing ${\bf x}=\left( \begin{array}{c} x\\y \end{array}\right)$, set ${\bf y}$ to be
-the integer vector defined by:
-\begin{equation*}
-{\bf y}=\left(2^{\alpha+\beta}-2^\alpha * {\bf c}^T {\bf x}\right)\left(2^\beta*{\bf Ax}+2^{\alpha+\beta}*{\bf b}\right)
-\end{equation*}
-
-Set
-\begin{eqnarray*}
-mv[0] & = & y_0\gg (\alpha+\beta) \\
-mv[1] & = & y_1\gg (\alpha+\beta)
-\end{eqnarray*}
-
-$mv$ is then returned.
-
-\subsubsection{Upconversion}
-\label{upconvert}
-
-This section specifies the operation of the $upconvert(ref, u, v)$ function
-for producing a value from an upconverted picture reference. This
-allows for sub-pixel precision in motion compensation. 
-
-Upconversion is defined by means of a half-pixel interpolated reference array
-$upref$ of dimensions double that of the original reference picture component
-array, as per Section \ref{halfpel}. The values returned by $upconvert(ref,u,v)$
-are as specified in the succeeding subsections of this section.
-
-
-Motion vectors are allowed to extend beyond the edges of $upref$, with values lying outside the range determined by edge extension,
-and access to the array is via the function $up2by2(ref,u,v)$:
-
-\begin{pseudo}{up2by2}{ref,u,v}
-\bsCODE{upref=interp2by2(ref)}{\ref{halfpel}}
-\bsCODE{xpos=\clip(u,0,\width(upref)-1)}
-\bsCODE{ypos=\clip(v,0,\height(upref)-1)}
-\bsRET{upref[ypos][xpos]}
+\begin{pseudo}{global\_mv}{ref, ref\_num, x,y, c}
+\bsCODE{ez  =  \GlobalParams[ref\_num][ZRS\_exp]}
+\bsCODE{ep  =  \GlobalParams[ref\_num][perspective\_exp]}
+\bsCODE{b=\GlobalParams[ref\_num][pan\_tilt]}
+\bsCODE{A=\GlobalParams[ref\_num][ZRS]}
+\bsCODE{m=2^{ep}-(c[0]*x+c[1]*y)}
+\bsCODE{v[0]=m*((A[0][0]*x+A[0][1]*y)+2^{ez}*b[0])}
+\bsCODE{v[1]=m*((A[1][0]*x+A[1][1]*y)+2^{ez}*b[0])}
+\bsCODE{v[0] = (v[0]+(1\ll(ez+ep)) )\gg (ez+ep)}
+\bsCODE{v[1] = (v[1]+(1\ll(ez+ep)) )\gg (ez+ep)}
+\bsRET{v}
 \end{pseudo}
 
-\paragraph{Pixel- and half-pixel accurate motion vectors}
-$\ $\newline
-If $\MotionVectorPrecision==0$ or $\MotionVectorPrecision==1$ then $up2by2(ref,u,v)$
-is returned.
+\begin{informative}
+Write ${\bf x}=\left( \begin{array}{c} x\\y \end{array}\right)$. 
+Mathematically, we wish the global motion vector ${\bf v}$ to be defined by:
+\[{\bf v}=\dfrac{{\bf Ax}+{\bf b}}{1+{\bf c}^T{\bf x}}\]
+where: ${\bf A}$ is a matrix describing the degree of zoom, rotation or shear; ${\bf b}$
+is a translation vector; and ${\bf c}$ is a perspective vector which expresses the
+degree to which the global motion is not orthogonal to the axis of view.
 
-\paragraph{Quarter- and eighth-pixel accurate motion vectors}
-$\ $\newline
-If $\MotionVectorPrecision==2$ or $\MotionVectorPrecision==3$, upconverted values are derived by linear
-interpolation from the half-pixel interpolated array $upref$, which is calculated as 
-per Section \ref{halfpel}. Given coordinates $(u,v)$, their half-pixel part
-is extracted by:
-\begin{eqnarray*}
-hu & = & u \gg (\MotionVectorPrecision-1) \\
-hv & = & v \gg (\MotionVectorPrecision-1) 
-\end{eqnarray*}
+In Dirac, this formula is adjusted in two ways in order to get an implementable result.
+Firstly, the perspective element is adjusted to remove a division, changing the 
+formula to:
+\[{\bf v}=(1-{\bf c}^T{\bf x})({\bf Ax}+{\bf b})\]
+which is valid for small ${\bf c}$. Secondly, the formula is re-cast in terms of integer
+arithmetic by giving the matrix element an accuracy factor $\alpha$ and the perspective
+element an accuracy factor $\beta$:
+\[{\bf v}=(1-2^{-\beta}{\bf c}^T{\bf x})(2^{-\alpha}{\bf Ax}+{\bf b})\]
+where the parameters ${\bf A}, {\bf b},{\bf c}$ are now integral. (No accuracy bits are required for the translation, since it must be an integral number of sub-pixels.) 
 
-and their remainder (giving the residual subpixel accuracy) by
-\begin{eqnarray*}
-ru & = & u-(hu\ll (\MotionVectorPrecision-1)) \\
-rv & = & v-(hv\ll (\MotionVectorPrecision-1)) 
-\end{eqnarray*}
+This reduces to
+\[2^{\alpha+\beta}{\bf v}=(2^\beta-{\bf c}^T{\bf x})({\bf Ax}+2^\alpha{\bf b})\]
+and this formula is used for the computation of values.
+\end{informative}
 
-$ru$ and $rv$ satisfy $0\leq ru,rv <2^{\MotionVectorPrecision-1}$. Then define four weighting
-values by:
-\begin{eqnarray*}
-w00 & = & (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)\\
-w01 & = & (2^{\MotionVectorPrecision-1}-rv)*ru\\
-w10 & = & rv*(2^{\MotionVectorPrecision-1}-ru)\\
-w11 & = & rv*ru
-\end{eqnarray*}
+\subsubsection{Chroma subsampling}
+\label{chromamvscale}
 
-These weights sum to $2^{\MotionVectorPrecision}$ and the value returned is:
-\[
-\left(
-\begin{array}{l}
-w00*up2by2(ref,hu,hv)+\\
-w01*up2by2(ref,hu+1,hv)+\\
-w10*up2by2(ref,hu,hv+1)+\\
-w11*up2by2(ref,hu+1,hv+1)+2^{\MotionVectorPrecision-1}
-\end{array}
-\right)\gg(\MotionVectorPrecision)\]
+When motion compensating chroma components, motion vectors shall be scaled by the
+$chroma\_mv\_scale()$ function. This produces chroma vectors in units of 
+$\MotionVectorPrecision$ with respect to the chroma samples, as follows:
+
+\begin{pseudo}{chroma\_mv\_scale}{v}
+\bsCODE{sv[0] = v[0]//chroma\_h\_ratio()}{\ref{picturedimensions}}
+\bsCODE{sv[1] = v[1]//chroma\_v\_ratio()}{\ref{picturedimensions}}
+\bsRET{sv}
+\end{pseudo}.
 
 \begin{informative}
-Note that the remainder values $ru$ and $rv$, although apparently depending
-on the values of $u$ and $v$, only depend on the motion vectors. This is because
-$u$ and $v$ have been computed by scaling the picture coordinates by
-$2^{\MotionVectorPrecision}$ and adding the motion vector.
-In particular
-constant linear interpolation weights are applied throughout a block when
-block motion is used.
+Recall that division in this specification rounds towards -infinity. This division can be achieved by a bit-shift in C/C++ as chroma dimension ratios are 1 or 2.
 \end{informative}
 
 
-\paragraph{Half-pixel interpolation}
-\label{halfpel}
-$\ $\newline
-This section specifies the operation of the $interp2by2(ref)$ process for generating
-an upconverted reference array $upref$ with double the dimensions of the reference
-array $ref$. 
+\subsubsection{Sub-pixel prediction}
+\label{upconvert}
 
-$upref$ is created in two stages, first upconverting vertically by
-a factor of 2, then horizontally. Define the interpolation filter $h$
-to be the 10-tap symmetric filter with taps as defined in figure \ref{upfilter}.
+This section defines the operation of the $subpel\_predict(ref, c, u, v)$ function
+for producing a sub-pixel accurate value at location $(u,v)$ from an upconverted picture reference component of type $c$ (Y, C1 or C2). 
+
+Upconversion shall be defined by means of a half-pixel interpolated reference array
+$upref$.  $upref$ shall have dimensions $(2W-1)$x$(2H-1)$ where the original reference 
+picture component array has dimensions $W$x$H$, as per Section \ref{halfpel}. 
+
+Motion vectors shall be permitted to extend beyond the edges of reference picture data,
+ where values lying outside shall be determined by edge extension. 
+
+If $\MotionVectorPrecision==2$, upconverted values shall be derived directly from the
+the half-pixel interpolated array $upref$, which shall be calculated as per Section \ref{halfpel}.
+
+If $\MotionVectorPrecision==2$ or $\MotionVectorPrecision==3$, upconverted values shall be
+derived by linear interpolation from the half-pixel interpolated array.
+
+The sub-pixel prediction process shall be defined as follows:
+
+\begin{pseudo}{subpel\_predict}{ref,c,u,v}
+\bsCODE{upref=interp2by2(ref,c)}{\ref{halfpel}}
+\bsIF{\MotionVectorPrecision==1}
+    \bsCODE{xpos=\clip(u,0,\width(upref)-1)}
+    \bsCODE{ypos=\clip(v,0,\height(upref)-1)}
+    \bsRET{upref[ypos][xpos]}
+\bsELSE
+    \bsCODE{hu = u \gg (\MotionVectorPrecision-1)}
+    \bsCODE{hv = v \gg (\MotionVectorPrecision-1)} 
+    \bsCODE{ru = u-(hu\ll (\MotionVectorPrecision-1))}
+    \bsCODE{rv = v-(hv\ll (\MotionVectorPrecision-1))}
+    \bsCODE{w00 = (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)}
+    \bsCODE{w01 = (2^{\MotionVectorPrecision-1}-rv)*ru}
+    \bsCODE{w10 = rv*(2^{\MotionVectorPrecision-1}-ru)}
+    \bsCODE{w11 = rv*ru}
+    \bsCODE{xpos = \clip(hu, 0, \width(upref)-1)}
+    \bsCODE{xpos1 = \clip(hu+1, 0,\width(upref)-1)}
+    \bsCODE{ypos = \clip(hv, 0, \height(upref)-1)}
+    \bsCODE{ypos1 = \clip(hv+1, 0, \height(upref)-1)}
+    \bsCODE{\begin{array}{ll} val = & w00*upref[ypos][xpos]+w01*upref[ypos][xpos1]+ \\
+                                & w10*upref[ypos1][xpos]+w11*upref[ypos1][xpos1]
+            \end{array}}
+    \bsRET{(val+2^{\MotionVectorPrecision-1})\gg\MotionVectorPrecision}
+\bsEND
+\end{pseudo} 
+
+\begin{informative}
+$hu$ and $hv$ represent the half-pixel part of the sub-pixel position $(u,v)$.
+
+$ru$ and $rv$ represent the remaining sub-pixel component of the position.
+$ru$ and $rv$ satisfy \[0\leq ru,rv <2^{\MotionVectorPrecision-1}\] 
+
+The four weights $w00,w01,w10$ and $w11$ sum to $2^{\MotionVectorPrecision}$, and
+hence the upconverted value is returned to pixel ranges in the pseudocode above.
+
+Note that the remainder values $ru$ and $rv$, and hence the four weight values, 
+only depend on the motion vectors. This is because
+$u$ and $v$ have been computed by scaling the picture coordinates by
+$2^{\MotionVectorPrecision}$ and adding the motion vector.
+
+In particular constant linear interpolation weights are applied throughout a 
+block when block motion is used. Likewise, the necessity of clipping the ranges of
+$xpos$, $ypos$ etc can be determined in advance for each block by checking whether any 
+corner of the reference block will fall outside of the reference picture area. In most
+cases it will not and clipping will not be required for motion compensating most blocks. 
+\end{informative}
+
+
+\subsubsection{Half-pixel interpolation}
+\label{halfpel}
+
+This section defines the $interp2by2(ref,c)$ process for generating
+an upconverted reference array $upref$ representing a half-pixel interpolation of 
+the reference array $ref$ for component $c$ (Y, C1, or C2). 
+
+$upref$ shall be created in two stages. The first stage shall upconvert vertically. The second stage shall upconvert horizontally. 
+
+$upref$ shall have width $2*\width(ref)-1$ and height $2*\height(ref)-1$, so that all
+edge values shall be copied from the original array and not interpolated.
+
+The interpolation filter shall be the 8-tap symmetric filter with taps as defined in Figure \ref{upfilter}.
 
 \begin{figure}[h!]
 \begin{centering}
 \begin{tabular}{l|ccccc}
-Tap & $t_0$ & $t_1$ & $t_2$ & $t_3$ & $t_4$\\
+Tap & $t[0]$ & $t[1]$ & $t[2]$ & $t[3]$\\
 \hline
-Value & 167 & -56 & 25 & -11 & 3
+Value & 21 & -7 & 3 & -1
 \end{tabular}
 \caption{Interpolation filter coefficients \label{upfilter}}
 \end{centering}
 \end{figure}
 
-Define an array $ref2$ of height $2*\height(ref)$ and width $\width(ref)$.
-The values of $ref2$ are derived by a Nyquist vertical filter, preserving
-the original values in even positions and interpolating odd values. The general 
-interpolation formula, when $q$ is odd is:
-\[
-ref2[q][p]=  \left(\sum_{i=0}^{4} t_i *
-\left(
- ref[(q-1)//2-i][p]
-+ref[(q+1)//2+i][p]
-\right)+128 \right)\gg 8
-\]
+Where coefficients used in the filtering process fall outside the bounds of the 
+reference array, values shall be supplied by edge extension. 
 
-Where coefficients fall outside the bounds of the reference array, values
-are supplied by edge extension. The overall process is thus defined by
+The overall process shall be defined as follows:
 
-\begin{pseudo*}
-\bsIF{q\%2==0}
-  \bsCODE{ref2[q][p]=ref[q//2][p]}
+\begin{pseudo}{interp2by2}{ref,c}
+\bsIF{c==Y}
+    \bsCODE{bit\_depth=\LumaDepth}
 \bsELSE
-\bsCODE{ref2[q][p]=0}
-\bsFOR{i=0}{4}
-  \bsCODE{ypos=(q-1)//2-i}
-  \bsCODE{ref2[q][p]+=t_i*ref[\clip(ypos,0,\height(ref)-1)][p]}
-  \bsCODE{ypos=(q+1)//2+i}
-  \bsCODE{ref2[q][p]+=t_i*ref[\clip(ypos,0,\height(ref)-1)][p]}
+    \bsCODE{bit\_depth=\ChromaDepth}
 \bsEND
-\bsCODE{ref2[q][p] += 128}
-\bsCODE{ref2[q][p] \gg=8}
-\bsCODE{ref2[q][p] = \clip(ref2[q][p], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
-\end{pseudo*}
-
-for each $(p,q)$ such that $0\leq p<\width(ref)$ and $0\leq q<2*\height(ref)$.
-
-The full upconverted array is constructed from $ref2$ in the same way.
-Even values of $upref$ horizontally are copied directly from $ref2$, whereas
-odd values are interpolated by the formula
-\[
-upref[q][p]=  \left(\sum_{i=0}^{4} t_i *
-\left(
- ref2[q][(p-1)//2-i]
-+ref2[q][(p+1)//2+i]
-\right)+128 \right)\gg8
-\]
-
-Where coefficients fall outside the bounds of $ref2$, values
-are supplied by edge extension.
-For $0\leq p<2*\width(ref)$ and $0\leq q<2*\height(ref)$ we have:
-
-\begin{pseudo*}
-\bsIF{p\%2==0}
-  \bsCODE{upref[q][p]=ref2[q][p//2]}
-\bsELSE
-  \bsCODE{upref[q][p]=0}
-  \bsFOR{i=0}{4}
-    \bsCODE{xpos=(p-1)//2-i}
-    \bsCODE{upref[q][p]+=t_i*ref2[q][\clip(xpos,0,\height(ref)-1)]}
-    \bsCODE{xpos=(p+1)//2+i}
-    \bsCODE{upref[q][p]+=t_i*ref2[q][\clip(xpos,0,\height(ref)-1)]}
-  \bsEND
-  \bsCODE{upref[q][p] += 128}
-  \bsCODE{upref[q][p] \gg=8}
-  \bsCODE{upref[q][p] = \clip(upref[q][p], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
+\bsFOR{q=0}{2*\height(ref)-2}
+    \bsIF{q\%2==0}
+        \bsFOR{p=0}{\width(ref)-1}
+            \bsCODE{ref2[q][p]=ref[q//2][p]}
+        \bsEND
+    \bsELSE
+        \bsFOR{p=0}{\width(ref)-1}
+            \bsCODE{ref2[q][p]=16}
+            \bsFOR{i=0}{3}
+                \bsCODE{ypos=(q-1)//2-i}
+                \bsCODE{ref2[q][p]+=t[i]*ref[\clip(ypos,0,\height(ref)-1)][p]}
+                \bsCODE{ypos=(q+1)//2+i}
+                \bsCODE{ref2[q][p]+=t[i]*ref[\clip(ypos,0,\height(ref)-1)][p]}
+            \bsEND
+            \bsCODE{ref2[q][p] \gg=5}
+            \bsCODE{ref2[q][p] = \clip(ref2[q][p], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
+        \bsEND    
+    \bsEND
 \bsEND
-\end{pseudo*}
+\bsFOR{q=0}{2*\height(ref)-2}
+    \bsFOR{p=0}{2*\width(ref)-2}
+        \bsIF{p\%2==0}
+            \bsCODE{upref[q][p]=ref2[q][p//2]}
+        \bsELSE
+            \bsCODE{upref[q][p]=16}
+            \bsFOR{i=0}{3}
+                \bsCODE{xpos=(p-1)//2-i}
+                \bsCODE{upref[q][p]+=t[i]*ref2[q][\clip(xpos,0,\height(ref)-1)]}
+                \bsCODE{xpos=(p+1)//2+i}
+                \bsCODE{upref[q][p]+=t[i]*ref2[q][\clip(xpos,0,\height(ref)-1)]}
+            \bsEND
+            \bsCODE{upref[q][p] \gg=5}
+            \bsCODE{upref[q][p] = \clip(upref[q][p], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
+        \bsEND
+    \bsEND
+\bsEND
+\end{pseudo}
 
 \begin{informative}
 While this filter may appear to be variable separable, the integer rounding and 

@@ -23,13 +23,13 @@ After decoding the decoded picture is returned to the decoding application.
 The $picture\_decode()$ process shall be invoked after parsing the $picture\_parse()$ process and shall be defined as follows:
 
 \begin{pseudo}{picture\_decode}{}
-\bsCODE{\CurrentPicture={}}
+\bsCODE{\CurrentPicture=\{\}}
 \bsCODE{\CurrentPicture[pic\_num]=\PictureNumber}
 \bsIF{is\_ref(()}
     \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
 \bsEND
 \bsIF{\ZeroResidual==\false}
-    \bsCODE{inverse\_wavelet\_transform}{\ref{}}
+    \bsCODE{inverse\_wavelet\_transform()}{\ref{idwt}}
 \bsEND
 \bsIF{is\_inter()}
     \bsCODE{ref1=get\_ref(\RefOneNum)}{\ref{refbuffer}}
@@ -134,44 +134,11 @@ Note that clipping is incorporated into motion compensation, so that strictly sp
 clipping is only required for intra pictures.
 \end{informative}
 
-
-\subsection{Clipping}
-\label{pictureclip}
-
-Picture data must be clipped prior to being output or being
-used as a reference:
-
-\begin{pseudo}{clip\_picture}{}
-\bsFOREACH{c}{Y,C1,C2}
-    \bsCODE{clip\_component(\CurrentPicture[c])}
-\bsEND
-\end{pseudo}
-
-
-\begin{pseudo}{clip\_component}{comp\_data,c}
-\bsIF{c==Y}
-    \bsCODE{bit\_depth=\LumaDepth}
-\bsELSE
-    \bsCODE{bit\_depth=\ChromaDepth}
-\bsEND
-\bsFOR{y=0}{\height(comp\_data)-1}
-    \bsFOR{x=0}{\width(comp\_data)-1}
-        \bsCODE{data = \clip(comp\_data[y][x], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
-     \bsEND
-\bsEND
-\end{pseudo}
-
-\begin{informative}
-Note that clipping is incorporated into motion compensation, so that strictly speaking additional
-clipping is only required for intra pictures.
-\end{informative}
-
 \subsection{Video output ranges}
 \label{videooutput}
 
-Video output data ranges are deemed to be non-negative, so that the offset and excursion values 
-may be applied by subsequent processing. Since decoded video data is bipolar, it must be 
-suitably offset before output:
+Video output data ranges are deemed to be non-negative, so that the offset and excursion
+ values may be applied by subsequent processing. Since decoded video data is bipolar, it must be suitably offset before output:
 
 \begin{pseudo}{offset\_output\_data}{picture\_data}
 \bsFOREACH{c}{Y, C1, C2}

@@ -223,20 +223,20 @@ The value of parse codes allowed within the Dirac sequence shall be as shown in 
 0x48 & 0100 1000 & Intra Non Reference Picture (no arithmetic coding) & 0\\
 \hline
 0x0D & 0000 1101 & Inter Reference Picture (arithmetic coding) & 1\\
-\hline
-0x4D & 0100 1101 & Inter Reference Picture (no arithmetic coding) & 1\\
+%\hline
+%0x4D & 0100 1101 & Inter Reference Picture (no arithmetic coding) & 1\\
 \hline
 0x0E & 0000 1110 & Inter Reference Picture (arithmetic coding) & 2\\
-\hline
-0x4E & 0100 1110 & Inter Reference Picture (no arithmetic coding) & 2\\
+%\hline
+%0x4E & 0100 1110 & Inter Reference Picture (no arithmetic coding) & 2\\
 \hline
 0x09 & 0000 1001 & Inter Non Reference Picture (arithmetic coding)& 1\\
-\hline
-0x49 & 0100 1001 & Inter Non Reference Picture (no arithmetic coding) & 1\\
+%\hline
+%0x49 & 0100 1001 & Inter Non Reference Picture (no arithmetic coding) & 1\\
 \hline
 0x0A & 0000 1010 & Inter Non Reference Picture (arithmetic coding) & 2\\
-\hline
-0x4A & 0100 1010 & Inter Non Reference Picture (no arithmetic coding)& 2\\
+%\hline
+%0x4A & 0100 1010 & Inter Non Reference Picture (no arithmetic coding)& 2\\
 \hline
 \multicolumn{4}{|c|}{\cellcolor[gray]{0.85}\bf Low-delay syntax}\\
 \hline
@@ -318,7 +318,8 @@ The rationale for the parse code values in Table \ref{parsecodes} is as follows:
 \begin{itemize}
 \item The MS bit (bit 7) is used to indicate the picture syntax (core or low delay syntax) 
 and only applies to pictures. Core syntax codes whole frames rather than slices. Low delay syntax codes slices not frames. 
-\item The second MS bit (bit 6) is used to indicate whether arithmetic coding is used and only applies to pictures. Core syntax may optionally use arithmetic coding. Low delay syntax does not use arithmetic coding. The permutation of the two MSBs which might indicate low delay syntax with arithmetic coding is reserved.
+\item The second MS bit (bit 6) is used to indicate whether arithmetic coding is used and only applies to pictures. Core syntax may optionally use arithmetic coding. Low delay syntax does not use arithmetic coding. The permutation of the two bits which might indicate low delay syntax with arithmetic coding is reserved. Arithmetic coding is not supported on
+Inter pictures.
 \item The next three MS bits (bits 5, 4 and 3) indicate the type of data unit following the parse info unit. Bit 3 indicates whether it is a picture or non-picture data unit. Bits 5 and 4 indicate the 4 other parse codes.
 \item The three LS bits (bits 2, 1 and 0) indicate picture types. Bit 2 indicates whether a picture
 is a reference picture or not. Bits 0 and 1 indicate the number of references a picture has
@@ -334,7 +335,7 @@ This section defines the structure of the sequence header syntax.
 The sequence header shall be byte aligned. 
 Parsing this header consists of reading the sequence parameters 
 (parse parameters, base video format, source parameters and 
-interlaced coding) and initializing the decoder parameters. The decoder 
+picture coding mode) and initializing the decoder parameters. The decoder 
 parameters are initialized in the $coding_parameters()$ process (below).
 Sequence parameters shall remain constant throughout a sequence, 
 so the sequence header need only be read once per sequence, and 
@@ -346,8 +347,8 @@ The process for parsing the sequence header shall be as follows:
 \bsCODE{parse\_parameters()}{\ref{parseparameters}}
 \bsITEM{base\_video\_format}{uint}{\ref{videoformat}}
 \bsCODE{\VideoParams=source\_parameters(base\_video\_format)}{\ref{sourceparameters}}
-\bsITEM{interlaced\_coding}{bool}{\ref{interlacedcoding}}
-\bsCODE{coding\_parameters(\VideoParams,interlaced\_coding)}{\ref{interlacecoding}}
+\bsITEM{picture\_coding\_mode}{uint}{\ref{interlacedcoding}}
+\bsCODE{set\_coding\_parameters(\VideoParams,picture\_coding\_mode)}{\ref{interlacecoding}}
 \bsRET{\VideoParams}
 \end{pseudo}
 
@@ -365,9 +366,9 @@ Source parameters are parameters that describe the source video, not all of
 which are required to decode the stream. The source parameters are needed by 
 applications that use the decoded video and so should be made available to them.
 
-Interlaced coding indicates whether the video has been coded as a sequence of frames or fields.
+Field coding indicates whether the video has been coded as a sequence of frames or fields.
 
-Once the base video format, source parameters and interlaced coding have 
+Once the base video format, source parameters and frame/field coding mode have 
 been read from the stream the information they contain may be decoded to 
 provide the parameters used for decoding pictures. It is the purpose of the 
 $coding\_parameters()$ process to initialize these parameters.
@@ -947,19 +948,21 @@ in Table \ref{table:transfervalues}.
 \caption{Transfer function presets}\label{table:transfervalues}
 \end{table}
 
-\subsection{Interlaced coding}
+\subsection{Picture coding mode}
 \label{interlacecoding}
 
-The interlaced coding part of the sequence header shall determine whether source video is coded as frames or fields. 
+The picture coding mode value in the sequence header shall determine 
+whether source video is coded as frames or fields. 
 
-If the interlaced coding flag is $\true$ then pictures shall correspond to fields; otherwise 
-pictures shall correspond to frames. 
+If the picture coding mode value is $1$ then pictures shall correspond to fields. If it is $0$ 
+then pictures shall correspond to frames. Other picture coding mode values shall be
+reserved for future extensions.
 
 If video is coded as fields then the earliest field in each frame shall have an even picture number (Section \ref{pictureheader}). That is the LSB of the frame number, expressed as a binary number, indicates field parity.
 
-With interlaced coding each frame shall be split into two fields as indicated by the scan format (Section \ref{scanformat}).
+With field coding each frame shall be split into two fields as indicated by the scan format (Section \ref{scanformat}).
 
-An effect of interlace coding shall be to determine the vertical dimensions of coded pictures. Hence, once the interlace coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{}).
+An effect of field coding shall be to halve the vertical dimensions of coded pictures. Hence, once the frame/field coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{picturedimensions}).
 
 \begin{informative}
 It is possible to code progressive video as fields. In this case, the assignment of 
@@ -977,8 +980,8 @@ Picture dimensions and video depth shall remain constant throughout a Dirac sequ
 
 Initialization of the coding parameters shall be as defined in the table below:
 
-\begin{pseudo}{coding\_parameters}{\VideoParams, interlaced\_coding}
-\bsCODE{picture\_dimensions(\VideoParams, interlaced\_coding)}{\ref{picturedimensions}}
+\begin{pseudo}{set\_coding\_parameters}{\VideoParams, picture\_coding\_mode}
+\bsCODE{picture\_dimensions(\VideoParams, picture\_coding\_mode)}{\ref{picturedimensions}}
 \bsCODE{video\_depth(\VideoParams)}{\ref{videodepth}}
 \end{pseudo}
 
@@ -986,7 +989,7 @@ Initialization of the coding parameters shall be as defined in the table below:
 \label{picturedimensions}
 The picture dimensions process, which determines the size of coded pictures, shall be defined as follows:
 
-\begin{pseudo}{picture\_dimensions}{\VideoParams, interlaced\_coding}
+\begin{pseudo}{picture\_dimensions}{\VideoParams, picture\_coding\_mode}
 \bsCODE{\LumaWidth = \SFrameWidth}
 \bsCODE{\LumaHeight = \SFrameHeight}
 \bsCODE{\ChromaWidth = \LumaWidth}
@@ -998,7 +1001,7 @@ The picture dimensions process, which determines the size of coded pictures, sha
   \bsCODE{\ChromaWidth //= 2}
   \bsCODE{\ChromaHeight //= 2}
 \bsEND
-\bsIF{interlaced\_coding==\true}
+\bsIF{picture\_coding\_mode==1}
   \bsCODE{\LumaHeight //=2}
   \bsCODE{\ChromaHeight //=2}
 \bsEND
@@ -1173,8 +1176,6 @@ Block parameters shall satisfy the following constraints:
 multiples of 4
 \item $\LumaXBlen\geq\LumaXBsep$ and $\LumaYBlen\geq\LumaYBsep$
 \item $\LumaXBlen\leq 2*\LumaXBsep$ and $\LumaYBlen\leq 2*\LumaYBsep$
-\item $\LumaXBlen-\LumaXBsep$ and $\LumaYBlen-\LumaYBsep$ shall be
-powers of 2 (i.e. 0 or $2^k$, $k\geq 2$ by 1.)
 \end{enumerate}
 
 \begin{informative}
@@ -1226,35 +1227,16 @@ The global motion process shall be as follows:
 \bsEND
 \end{pseudo}
 
-Global motion parameters $\GlobalParams$ shall consist of three elements: 
+Each of the global motion parameters shall consist of three elements: 
 
 \begin{itemize}
-\item an integer pan/tilt vector 
-\begin{equation*}
-{\bf b}=\left(
-\begin{array}{c} b_0 \\ 
-b_1
-\end{array}\right)
-\end{equation*}
-\item an integer matrix element 
-\begin{equation*}
-{\bf A}=\left( 
-\begin{array}{cc}
- A_{0,0} & A_{0,1} \\
- A_{1,0} & A_{1,1} 
-\end{array}\right)
-\end{equation*}
-capturing zoom, rotation and shear, together with a scaling exponent
-\item an integer perspective element 
-\begin{equation*}
-{\bf c}=\left(
-\begin{array}{c} c_0 \\ 
-c_1
-\end{array}
-\right)
-\end{equation*}
- capturing the effect of non-orthogonal projection onto the image plane, together 
-with a scaling exponent
+\item an integer pan/tilt vector $\GlobalParams[n][pan\_tilt]$
+\item an integer 2x2 matrix element $\GlobalParams[n][ZRS]$
+capturing zoom, rotation and shear, together with a scaling exponent 
+$\GlobalParams[n][ZRS\_exp]$
+\item an integer perspective vector $\GlobalParams[n][pespective]$
+capturing the effect of non-orthogonal projection onto the image plane, together 
+with a scaling exponent $\GlobalParams[n][pespective\_exp]$
 \end{itemize}
 
 Their interpretation and the process for generating a global motion vector field 
@@ -1268,47 +1250,50 @@ The global motion parameters process shall be defined as follows:
 \bsCODE{perspective(gparams)}
 \end{pseudo}
 
-The $pan\_tilt()$ process  extracts horizontal and vertical translation elements
+The $pan\_tilt()$ process shall extracts horizontal and vertical translation elements
 and shall be defined as follows:
 
 \begin{pseudo}{pan\_tilt}{gparams}
-\bsCODE{gparams.{\bf b}={\mathbf{0}} }
+\bsCODE{gparams[pan\_tilt]={\mathbf{0}} }
 \bsITEM{nonzero\_pan\_tilt\_flag}{bool}{}
 \bsIF{nonzero\_pan\_tilt\_flag==\true}
-    \bsITEM{gparams.{\bf b}_0}{sint}{}
-    \bsITEM{gparams.{\bf b}_1}{sint}{}
+    \bsITEM{gparams[pan\_tilt][0]}{sint}{}
+    \bsITEM{gparams[pan\_tilt][1]}{sint}{}
 \bsEND
 \end{pseudo}
 
-The $zoom\_rotate\_shear()$ process extracts a linear matrix element and shall be
+The $zoom\_rotate\_shear()$ process shall extract a linear matrix element and shall be
 as defined as follows:
 
 \begin{pseudo}{zoom\_rotation\_shear}{gparams}
 \bsITEM{nontrivial\_zrs\_flag}{bool}{}
 \bsIF{nontrivial\_zrs\_flag==\true}
     \bsITEM{gparams[ZRS\_exp]}{uint}{}
-    \bsITEM{gparams.{\bf A}_{0,0}}{sint}{}
-    \bsITEM{gparams.{\bf A}_{0,1}}{sint}{}
-    \bsITEM{gparams.{\bf A}_{1,0}}{sint}{}
-    \bsITEM{gparams.{\bf A}_{1,1}}{sint}{}
+    \bsITEM{gparams[ZRS][0][0]}{sint}{}
+    \bsITEM{gparams[ZRS][0][1]}{sint}{}
+    \bsITEM{gparams[ZRS][1][0]}{sint}{}
+    \bsITEM{gparams[ZRS][1][1]}{sint}{}
 \bsELSE
     \bsCODE{gparams[ZRS\_exp]=0}
-    \bsCODE{gparams.{\bf A}=\left(\begin{array}{cc} 1 & 0 \\ 0 & 1 \end{array}\right)}
+    \bsCODE{gparams[ZRS][0][0]=1}
+    \bsCODE{gparams[ZRS][0][1]=0}
+    \bsCODE{gparams[ZRS][1][0]=0}
+    \bsCODE{gparams[ZRS][1][1]=1}
 \bsEND
 \end{pseudo}
 
-The $perspective()$ process extracts horizontal and vertical perspective
+The $perspective()$ process shall extract horizontal and vertical perspective
 elements and shall be defined as follows:
 
 \begin{pseudo}{perspective}{gparams}
 \bsITEM{nonzero\_perspective\_flag}{bool}{}
 \bsIF{nonzero\_perspective\_flag==\true}
     \bsITEM{gparams[perspective\_exp]}{uint}{}
-    \bsITEM{gparams.{\bf c}_0}{sint}{}
-    \bsITEM{gparams.{\bf c}_1}{sint}{}
+    \bsITEM{gparams[perspective][0]}{sint}{}
+    \bsITEM{gparams[perspective][1]}{sint}{}
 \bsELSE
     \bsCODE{gparams[perspective\_exp]=0}
-    \bsCODE{gparams.{\bf c}={\mathbf{0}} }
+    \bsCODE{gparams[perspective]={\mathbf{0}} }
 \bsEND
 \end{pseudo}
 

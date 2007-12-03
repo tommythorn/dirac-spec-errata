@@ -182,7 +182,7 @@ superblock, and propagated to the other blocks within the prediction unit.
             \bsFOR{p=0}{block\_count-1}
                 \bsCODE{block\_mode(4*y+q*step, 4*x+p*step)}{\ref{blockmode}}
                 \bsCODE{propagate\_data(4*y+q*step, 4*x+p*step, step,mode)}{\ref{propagatedata}}
-                \bsCODE{block\_global(4*y+q*step, 4*x+p*step)}{\ref{blockmode}}
+                \bsCODE{block\_global(4*y+q*step, 4*x+p*step)}{\ref{blockglobal}}
                 \bsCODE{propagate\_data(4*y+q*step, 4*x+p*step, step,global)}{\ref{propagatedata}}
            \bsEND
         \bsEND
