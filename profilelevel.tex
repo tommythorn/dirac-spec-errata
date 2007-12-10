@@ -36,10 +36,10 @@ storage may be employed.
 Pictures are deemed to be output from the decoder and placed in the DPB instantaneously at multiples
 of the (real number) picture sample interval $\PictureInterval$. This interval is defined as follows:
 \begin{itemize}
-\item if $\SInterlaced$ is $\true$ (i.e. pictures are fields [WRONG!!])
-\begin{equation*}
-\PictureInterval=\dfrac{\SFrameRateDenom}{2*\SFrameRateNumer}
-\end{equation*}
+%\item if $\SInterlaced$ is $\true$ (i.e. pictures are fields [WRONG!!])
+%\begin{equation*}
+%\PictureInterval=\dfrac{\SFrameRateDenom}{2*\SFrameRateNumer}
+%\end{equation*}
 \item otherwise (i.e. pictures are frames) then 
 \begin{equation*}
 \PictureInterval=\dfrac{\SFrameRateDenom}{\SFrameRateNumer}

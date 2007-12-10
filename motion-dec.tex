@@ -135,8 +135,8 @@ within each superblock.
 \bsITEM{length}{uint}{}
 \bsCODE{byte\_align()}
 \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-\bsFOR{ypos=0}{\SuperblocksY}
-    \bsFOR{xpos=0}{\SuperblocksX}
+\bsFOR{ypos=0}{\SuperblocksY-1}
+    \bsFOR{xpos=0}{\SuperblocksX-1}
         \bsCODE{sb\_split\_residual=read\_uinta(sb\_split\_contexts() ) }
         \bsCODE{\SBSplit[ypos][xpos] = sp\_split\_residual}
         \bsCODE{\SBSplit[ypos][xpos]+=split\_prediction(ypos, xpos)}{\ref{splitprediction}}
@@ -174,8 +174,8 @@ superblock, and propagated to the other blocks within the prediction unit.
 \bsITEM{length}{uint}{}
 \bsCODE{byte\_align()}
 \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-\bsFOR{y=0}{\SuperblocksY}
-    \bsFOR{x=0}{\SuperblocksX}
+\bsFOR{y=0}{\SuperblocksY-1}
+    \bsFOR{x=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}
@@ -235,8 +235,8 @@ reference $ref$.
 \bsITEM{length}{uint}{}
 \bsCODE{byte\_align()}
 \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-\bsFOR{y=0}{\SuperblocksY}
-    \bsFOR{x=0}{\SuperblocksX}
+\bsFOR{y=0}{\SuperblocksY-1}
+    \bsFOR{x=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}
@@ -272,8 +272,8 @@ The $dc\_values(c)$ parses the DC values for component $c$.
 \bsITEM{length}{uint}{}
 \bsCODE{byte\_align()}
 \bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
-\bsFOR{y=0}{\SuperblocksY}
-    \bsFOR{x=0}{\SuperblocksX}
+\bsFOR{y=0}{\SuperblocksY-1}
+    \bsFOR{x=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}

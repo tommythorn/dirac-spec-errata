@@ -579,20 +579,27 @@ chroma components of the coded video as described in Section \ref{picturedimensi
 \subsubsection{Scan format}
 \label{scanformat}
 
-Scan format parameters are concerned with interlace. If $\SInterlaced=\true$, then the
-video should be displayed as interlaced video. The process for parsing the scan format parameters shall be as follows:
+Scan format parameters are concerned with interlace. 
+
+If $\SSourceSampling=0$, then the video should be displayed as progressive video. 
+
+If $\SSourceSampling=1$, then the video should be displayed as interlaced video. 
+
+Values of $\SSourceSampling$ greater than 1 shall be reserved.
+
+The process for parsing the scan format parameters shall be as follows:
 
 \begin{pseudo}{scan\_format}{\VideoParams}
 \bsITEM{custom\_scan\_format\_flag}{bool}{}
 \bsIF{custom\_scan\_format\_flag==\true}
-    \bsITEM{\SInterlaced}{bool}{}
-    \bsIF{\SInterlaced==\true}
+    \bsITEM{\SSourceSampling}{uint}{}
+    \bsIF{\SSourceSampling==1}
          \bsITEM{\STopFieldFirst}{bool}{}
     \bsEND
 \bsEND
 \end{pseudo}
 
-If the scan format flag is set to $\true$, the scan format parameters defined by 
+If the custom scan format flag is set to $\true$, the scan format parameters defined by 
 the base video format values shall be overridden by the new values.
 
 If the source video is interlaced then $\STopFieldFirst$ shall be $\true$ 
