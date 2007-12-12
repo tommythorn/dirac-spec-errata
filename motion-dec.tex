@@ -550,23 +550,19 @@ DC values are predicted using the unbiased mean available values in the aperture
 process $dc\_prediction(ypos, xpos, comp)$ returns values according to
 the following rules:
 
-Define $mid\_val$ to be $2^{\LumaDepth-1}$ if $comp==Y$ or 
-$2^{\ChromaDepth-1}$
-
 {\bf Case 1.}  If $xpos==0$ and $ypos==0$, there are no blocks in the prediction aperture and
-the default prediction $2^{\LumaDepth-1}$ for luma (Y) or 
-$2^{\ChromaDepth-1}$ for chroma (C1 or C2) is returned.
+the default prediction 0 is returned.
 
 {\bf Case 2.} If $xpos>0$ and $ypos==0$ then:
 \begin{enumerate}
    \item If $\BlockData[ypos][xpos-1][mode]==\Intra$, $\BlockData[ypos][xpos-1][dc][comp]$ is returned
-   \item Otherwise, $mid\_val$ is returned
+   \item Otherwise, 0 is returned
 \end{enumerate}
 
 {\bf Case 3.} If $xpos==0$ and $ypos>0$ then:
 \begin{enumerate}
    \item If $\BlockData[ypos-1][xpos][mode]==\Intra$, $\BlockData[ypos-1][xpos][dc][comp$ is returned
-   \item Otherwise, $mid\_val$ is returned
+   \item Otherwise, 0 is returned
 \end{enumerate}
 
 {\bf Case 4.} If both $xpos>0$ and $ypos>0$ then all 3 blocks in the prediction aperture may potentially
@@ -575,7 +571,6 @@ unbiased mean of available values:
 
 \begin{pseudo*}
 \bsIF{ xpos>0 \text{ and } ypos>0 }
-    \bsCODE{pred=(0, 0)}
     \bsIF{\BlockData[ypos][xpos-1][mode]==\Intra}
         \bsCODE{values = values\cup\{\BlockData[ypos][xpos-1][dc][comp] \} }
     \bsEND
@@ -589,7 +584,7 @@ unbiased mean of available values:
     \bsIF{values!=\emptyset}
         \bsRET{pred =\mean(values)}
     \bsELSE
-        \bsRET{mid\_val}
+        \bsRET{0}
     \bsEND
 \bsEND
 \end{pseudo*}
