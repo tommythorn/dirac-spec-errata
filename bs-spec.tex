@@ -88,7 +88,7 @@ the parse info headers that is needed to decode the sequence.
 
 \subsection{Data units}
 
-Data Units may be one of:
+Data units may be one of:
 \begin{itemize}
 \item a sequence header, 
 \item a picture, 
@@ -96,28 +96,31 @@ Data Units may be one of:
 \item padding data. 
 \end{itemize}
 
-Auxiliary data and padding data do not contribute to the decoding 
-process and so may be discarded. 
-
-A picture data unit shall contain sufficient data to decode a single picture 
-(frame or field of video), subject to having parsed a sequence header within 
-the sequence. 
-
-Each picture, whether a frame or field, may be coded with a dependency 
-on prior pictures in the stream.
-
 A sequence header shall contain metadata describing the coded sequence 
-and metadata needed to decode the stream. It shall be the first data unit in a sequence.
+and metadata needed to decode the stream. The sequence header is defined 
+in Section \ref{sequenceheader}. The first data unit in a sequence shall be a 
+sequence header. To support reverse-parsing applications, the last data unit in 
+a sequence should also be a sequence header.
+
+Each sequence shall contain at least one picture and at least one sequence header.
+The first picture after each sequence header (if there is one) shall be an intra picture.
 
 If a sequence contains more than one sequence header, the data 
 in each sequence header shall be the same (byte-for-byte identical) within the sequence.
 
-Each sequence shall contain at least one picture and at least one sequence header.
-The first picture after each sequence header shall be an intra picture.
- 
-The sequence decoding and parsing processes start by extracting and decoding the 
-information contained in a sequence header. Picture data units contain the additional 
-information needed to decode a single output picture.
+Each picture, whether a frame or field, may be coded with a dependency 
+on prior pictures in the stream (reference pictures).
+
+A picture data unit shall contain sufficient data to decode a single picture 
+(frame or field of video), subject to having parsed a sequence header within 
+the sequence and decoded any reference pictures.
+
+Pictures within a sequence shall either all be fields or all be frames. Where pictures 
+are fields, a sequence shall contain an even number of pictures, comprising a whole number of frames.
+
+Auxiliary data and padding data do not contribute to the decoding 
+process and so may be discarded. 
+
 
 Auxiliary and padding data units comprise undefined data for the purposes
  of this standard. These data units (together with the correct preceding 
@@ -491,7 +494,7 @@ The Source Parameters are intended to indicate the format of the video that was
 originally encoded. They provide metadata that indicates how the decoded video should be displayed. 
 
 The source parameters shall comprise frame size, sampling format, scan format, frame rate,
- aspect ratio, clean area, signal range and color specification. The frame size, sampling
+ pixel aspect ratio, clean area, signal range and color specification. The frame size, sampling
  format, scanning format and the signal range are required to decode the video. Display and 
 downstream processing falls outside the scope of this specification, hence the interpretation of the other parameters (not required to decode the video) is not normatively defined, with the exception of frame rate (Section \ref{framerate}). The frame rate imposes requirements on
  compliant decoders for a given level and profile (Appendix \ref{profilelevel}).
@@ -508,7 +511,7 @@ The $source\_parameters()$ process shall return a structure defining the video s
 \bsCODE{sampling\_format(\VideoParams)}{\ref{chromaformat}}
 \bsCODE{scan\_format(\VideoParams)}{\ref{scanformat}}
 \bsCODE{frame\_rate(\VideoParams)}{\ref{framerate}}
-\bsCODE{aspect\_ratio(\VideoParams)}{\ref{aspectratio}}
+\bsCODE{pixel\_aspect\_ratio(\VideoParams)}{\ref{aspectratio}}
 \bsCODE{clean\_area(\VideoParams)}{\ref{cleanarea}}
 \bsCODE{signal\_range(\VideoParams)}{\ref{signalrange}}
 \bsCODE{colour\_spec(\VideoParams)}{\ref{colourspec}}
@@ -525,7 +528,7 @@ shall take the video format index as an argument. That is, the signature of this
 
 The source video parameters shall be set, based on the video format index, as defined in 
 Appendix \ref{videoformatdefaults}. The parameters set by this function shall be: Frame Size, 
-Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), Frame Rate, Aspect Ratio, Clean Area, Signal Range, Color Specification. The tokens used to access the map returned by the function shall be as defined in the subsequent sections that specify how to override the default video source parameters.
+Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), Frame Rate, Pixel Aspect Ratio, Clean Area, Signal Range, Color Specification. The tokens used to access the map returned by the function shall be as defined in the subsequent sections that specify how to override the default video source parameters.
 
 Note: as an example, if $video\_format\_index  == 4$, CIF defaults are set, with picture size equal to 252x288, 4:2:0 chroma format, amongst other parameters. A frame width of 360 pixels may be encoded by overriding the CIF format default value of 352. 
 
@@ -668,27 +671,27 @@ as specified in Table \ref{table:frameratevalues}.
 Note that what is encoded is frame rate, not picture rate. If the video is coded
 as fields, then picture rate is twice the encoded frame rate.
 
-\subsubsection{Aspect ratio}
+\subsubsection{Pixel aspect ratio}
 \label{aspectratio}
 
-The process for decoding the aspect ratio parameters shall be defined as follows:
+The process for decoding the pixel aspect ratio parameters shall be defined as follows:
 
-\begin{pseudo}{aspect\_ratio}{\VideoParams}
-\bsITEM{custom\_aspect\_ratio\_flag}{bool}{}
-\bsIF{custom\_apect\_ratio\_flag==\true}
+\begin{pseudo}{pixel\_aspect\_ratio}{\VideoParams}
+\bsITEM{custom\_pixel\_aspect\_ratio\_flag}{bool}{}
+\bsIF{custom\_pixel\_aspect\_ratio\_flag==\true}
     \bsITEM{index}{uint}{}
     \bsIF{index == 0}
         \bsITEM{\SAspectRatioNumer}{uint}{}
         \bsITEM{\SAspectRatioDenom}{uint}{}
     \bsELSE
-        \bsCODE{preset\_aspect\_ratio(\VideoParams,index)}
+        \bsCODE{preset\_pixel\_aspect\_ratio(\VideoParams,index)}
     \bsEND
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
-For $index>0$, $preset\_aspect\_ratio(\VideoParams, index)$ shall set the pixel aspect ratio value elements of $\VideoParams$ as specified in Table \ref{table:aspectratiovalues}.
+For $index>0$, $preset\_pixel\_aspect\_ratio(\VideoParams, index)$ shall set the pixel aspect ratio value elements of $\VideoParams$ as specified in Table \ref{table:aspectratiovalues}.
 
 \begin{table}[!ht]
 \centering
@@ -709,13 +712,13 @@ For $index>0$, $preset\_aspect\_ratio(\VideoParams, index)$ shall set the pixel 
 6 (reduced horizontal resolution) & 4 & 3 \\
 \hline
 \end{tabular}
-\caption{Available preset aspect ratio values}\label{table:aspectratiovalues}
+\caption{Available preset pixel aspect ratio values}\label{table:aspectratiovalues}
 \end{table}
 
 \begin{informative}
-The aspect ratio is defined as the ratio of the aspect ratio parameters:
+The pixel aspect ratio is defined as the ratio of the aspect ratio parameters:
 		\[\SAspectRatioNumer : \SAspectRatioDenom\]
-The aspect ratio value defines the intended pixel aspect ratio of the pixels such that the viewed picture has no geometric distortion. The pixel aspect ratio of an image is the ratio of the spacing of horizontal samples (pixels) to the spacing of vertical samples (picture lines) on the display device. Pixel aspect ratios (PARs) are fundamental properties of sampled images because they determine the displayed shape of objects in the image. Failure to use the right PAR will result in distorted images, for example circles will be displayed as ellipses etc. 
+The pixel aspect ratio (PAR) value defines the intended pixel aspect ratio of the pixels such that the viewed picture has no geometric distortion. The pixel aspect ratio of an image is the PARs are fundamental properties of sampled images because they determine the displayed shape of objects in the image. Failure to use the right PAR will result in distorted images, for example circles will be displayed as ellipses etc. 
 Some video processing tools require an image aspect ratio. This may be derived from the pixel aspect ratio by multiplying the ratio of horizontal to vertical pixels by the pixel aspect ratio. So, for example, for a 704 x 480 line picture, with a pixel aspect ratio of 10:11 the image aspect ratio is (704 x 10)/(480 x 11) which is exactly 4:3.
 \end{informative}
 
