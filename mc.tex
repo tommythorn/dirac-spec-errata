@@ -218,7 +218,7 @@ The $block\_mc()$ process shall be defined as follows:
             \bsCODE{val1=pixel\_pred(ref1, 1, i, j, x, y, c)}{\ref{pixelprediction}}
             \bsCODE{val1*=\RefOneWeight}
             \bsCODE{val2=pixel\_pred(ref2, 2, i, j, x, y, c)}{\ref{pixelprediction}}
-            \bsCODE{val2*=\RefOneWeight}
+            \bsCODE{val2*=\RefTwoWeight}
             \bsCODE{val=(val1+val2+2^{\RefsWeightPrecision-1})\gg\RefsWeightPrecision}
         \bsEND
         \bsCODE{val *= W[q][p]}
