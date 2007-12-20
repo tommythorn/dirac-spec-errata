@@ -340,9 +340,9 @@ Parsing this header consists of reading the sequence parameters
 (parse parameters, base video format, source parameters and 
 picture coding mode) and initializing the decoder parameters. The decoder 
 parameters are initialized in the $coding_parameters()$ process (below).
-Sequence parameters shall remain constant throughout a sequence, 
-so the sequence header need only be read once per sequence, and 
-other sequence headers in the same sequence may be ignored .
+
+The sequence header shall remain byte identical throughout a sequence.
+
 The process for parsing the sequence header shall be as follows:
 
 \begin{pseudo}{sequence\_header}{}
@@ -362,8 +362,8 @@ The base video format is a numerical index denoting a default set of parameters
 that describe the video source. For many common video formats the predefined 
 values indicated by the base video format and defined in Appendix \ref{videoformatdefaults}, will be sufficient 
 without the need for further metadata to be present in the stream. However, to provide 
-flexibility, source parameters may override some or all of the parameters indicated 
-by the base video format.
+flexibility, source parameters may override the parameters indicated 
+by the base video format (with the exception of the top field first flag).
 
 Source parameters are parameters that describe the source video, not all of 
 which are required to decode the stream. The source parameters are needed by 
@@ -436,7 +436,10 @@ Applicable values of profile and level and the variables they set are specified 
 
 The value of $base\_video\_format$ decoded in parsing the sequence header shall be 
 an index into Table \ref{table:videoformats}. For each entry in the table parameters are defined, in 
-Appendix \ref{videoformatdefaults}, indicating default video parameters corresponding to the video source. These predefined parameters may be overridden by subsequent metadata present in the stream as defined in subsequent sections below.
+Appendix \ref{videoformatdefaults}, indicating parameters corresponding to one of a set of 
+predefined formats. These base parameters may be modified by subsequent metadata present
+ in the stream as defined in subsequent sections below, with the exception of the top field first
+ parameter which shall only be set by the base video format (see Section \ref{scanformat}).
 
 \begin{table}[!ht]
 \centering
@@ -490,11 +493,11 @@ Custom format is intended for use when no other suitable base video format is av
 \subsection{Source parameters}
 \label{sourceparameters}
 
-The Source Parameters are intended to indicate the format of the video that was 
+The source parameters are intended to indicate the format of the video that was 
 originally encoded. They provide metadata that indicates how the decoded video should be displayed. 
 
 The source parameters shall comprise frame size, sampling format, scan format, frame rate,
- pixel aspect ratio, clean area, signal range and color specification. The frame size, sampling
+ pixel aspect ratio, clean area, signal range and color specification. The frame size, chroma sampling
  format, scanning format and the signal range are required to decode the video. Display and 
 downstream processing falls outside the scope of this specification, hence the interpretation of the other parameters (not required to decode the video) is not normatively defined, with the exception of frame rate (Section \ref{framerate}). The frame rate imposes requirements on
  compliant decoders for a given level and profile (Appendix \ref{profilelevel}).
@@ -508,7 +511,7 @@ The $source\_parameters()$ process shall return a structure defining the video s
 \begin{pseudo}{source\_parameters}{base\_video\_format}
 \bsCODE{\VideoParams = set\_source\_defaults(base\_video\_format)}{\ref{setsourcedefaults}}
 \bsCODE{frame\_size(\VideoParams)}{\ref{framedimensions}}
-\bsCODE{sampling\_format(\VideoParams)}{\ref{chromaformat}}
+\bsCODE{chroma\_sampling\_format(\VideoParams)}{\ref{chromaformat}}
 \bsCODE{scan\_format(\VideoParams)}{\ref{scanformat}}
 \bsCODE{frame\_rate(\VideoParams)}{\ref{framerate}}
 \bsCODE{pixel\_aspect\_ratio(\VideoParams)}{\ref{aspectratio}}
@@ -551,10 +554,10 @@ be overridden:
 
 If a flag is set, the chroma format specified by the video format defaults is overridden.
 
-\begin{pseudo}{sampling\_format}{\VideoParams}
-\bsITEM{custom\_sampling\_format\_flag}{bool}{}
-\bsIF{custom\_sampling\_format\_flag==\true}
-     \bsITEM{\SSamplingFormatIndex}{uint}{}
+\begin{pseudo}{chroma\_sampling\_format}{\VideoParams}
+\bsITEM{custom\_chroma\_format\_flag}{bool}{}
+\bsIF{custom\_chroma\_format\_flag==\true}
+     \bsITEM{\SChromaFormatIndex}{uint}{}
 \bsEND
 \end{pseudo}
 
@@ -564,7 +567,7 @@ The supported chroma sampling formats are specified in Table \ref{tab:chromaform
 \centering
 \begin{tabular}{|c|c|}
 \hline
-\rowcolor[gray]{0.75}sampling\_format\_index & {\bf Chroma format} \\
+\rowcolor[gray]{0.75}\SChromaFormatIndex & {\bf Chroma format} \\
 \hline
 0 & 4:4:4 \\
 \hline
@@ -582,13 +585,8 @@ chroma components of the coded video as described in Section \ref{picturedimensi
 \subsubsection{Scan format}
 \label{scanformat}
 
-Scan format parameters are concerned with interlace. 
-
-If $\SSourceSampling=0$, then the video should be displayed as progressive video. 
-
-If $\SSourceSampling=1$, then the video should be displayed as interlaced video. 
-
-Values of $\SSourceSampling$ greater than 1 shall be reserved.
+The scan format parameter shall indicate whether the source video represents progressive 
+frames or interlaced fields.
 
 The process for parsing the scan format parameters shall be as follows:
 
@@ -596,18 +594,19 @@ The process for parsing the scan format parameters shall be as follows:
 \bsITEM{custom\_scan\_format\_flag}{bool}{}
 \bsIF{custom\_scan\_format\_flag==\true}
     \bsITEM{\SSourceSampling}{uint}{}
-    \bsIF{\SSourceSampling==1}
-         \bsITEM{\STopFieldFirst}{bool}{}
-    \bsEND
 \bsEND
 \end{pseudo}
 
-If the custom scan format flag is set to $\true$, the scan format parameters defined by 
-the base video format values shall be overridden by the new values.
+If the custom scan format flag is set to $\true$, the source sampling parameter defined by 
+the base video format values shall be overridden by the new value.
+
+If $\SSourceSampling$ is set to 0, then the source video shall be progressively sampled. 
+If it is 1, then the source video shall be interlaced. Values greater than 1 shall be reserved.
 
 If the source video is interlaced then $\STopFieldFirst$ shall be $\true$ 
 if the top line of the frame is in the earlier field, else $\STopFieldFirst$
- shall be $\false$.
+ shall be $\false$. This shall be set only by the base video format and cannot be overridden 
+in the source parameters.
 
 Both interlaced and progressive video may be coded as fields or frames.
 
