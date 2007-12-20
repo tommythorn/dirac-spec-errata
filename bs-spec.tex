@@ -496,7 +496,7 @@ Custom format is intended for use when no other suitable base video format is av
 The source parameters are intended to indicate the format of the video that was 
 originally encoded. They provide metadata that indicates how the decoded video should be displayed. 
 
-The source parameters shall comprise frame size, sampling format, scan format, frame rate,
+The source parameters shall comprise frame size, chroma sampling format, scan format, frame rate,
  pixel aspect ratio, clean area, signal range and color specification. The frame size, chroma sampling
  format, scanning format and the signal range are required to decode the video. Display and 
 downstream processing falls outside the scope of this specification, hence the interpretation of the other parameters (not required to decode the video) is not normatively defined, with the exception of frame rate (Section \ref{framerate}). The frame rate imposes requirements on
@@ -1003,8 +1003,8 @@ The picture dimensions process, which determines the size of coded pictures, sha
 \bsCODE{\LumaHeight = \SFrameHeight}
 \bsCODE{\ChromaWidth = \LumaWidth}
 \bsCODE{\ChromaHeight = \LumaHeight}
-\bsCODE{sampling\_format\_index = \SSamplingFormatIndex]}
-\bsIF{sampling\_format\_index == 1}
+\bsCODE{chroma\_format\_index = \SChromaFormatIndex]}
+\bsIF{chroma\_format\_index == 1}
   \bsCODE{\ChromaWidth //= 2}
 \bsELSEIF{chroma\_format\_index == 2}
   \bsCODE{\ChromaWidth //= 2}
