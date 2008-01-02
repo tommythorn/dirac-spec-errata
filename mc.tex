@@ -310,7 +310,7 @@ The vertical weighting function  shall be defined as follows:
 \begin{pseudo}{v\_wt}{j}
 \bsFOR{y=0}{2*\YOffset-1}
     \bsCODE{vwt[y]=1+(6*y+\XOffset-1)//(2*\YOffset-1)}
-    \bsCODE{vwt[y+\XBsep]=8-hwt[y]}
+    \bsCODE{vwt[y+\XBsep]=8-vwt[y]}
 \bsEND
 \bsFOR{2*\YOffset}{\YBsep-1}
     \bsCODE{xwt[y]=8}
