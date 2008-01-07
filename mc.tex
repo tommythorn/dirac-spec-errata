@@ -69,7 +69,7 @@ The $motion\_compensate()$ process is defined by means of a temporary data
 array $mc\_tmp$ for storing the motion-compensated prediction for the 
 current picture. 
 
-The $motion\_compensate()$ shall be defined as follows:
+The $motion\_compensate()$ process shall be defined as follows:
 
 \begin{pseudo}{motion\_compensate}{ref1, ref2,  pic, c}
 \bsIF{c==Y}
@@ -79,7 +79,6 @@ The $motion\_compensate()$ shall be defined as follows:
 \bsEND
 \bsCODE{init\_dimensions(c)}{\ref{mcdimensions}}
 \bsCODE{mc\_tmp=init\_temp\_array()}{\ref{mctemparray}}
-%\bsCODE{total\_wt\_bits=set\_mc\_wt()}{\ref{wtbits}}
 \bsFOR{j=0}{\BlocksY-1}
     \bsFOR{i=0}{\BlocksX-1}
         \bsCODE{block\_mc(mc\_tmp,i,j)}{\ref{blockmc}}
@@ -87,7 +86,6 @@ The $motion\_compensate()$ shall be defined as follows:
 \bsEND
 \bsFOR{y=0}{\LenY-1}
     \bsFOR{x=0}{\LenX-1}
-%        \bsCODE{pic[y][x] += (mc\_tmp[y][x]+2^{total\_wt\_bits-1})\gg total\_wt\_bits}
        \bsCODE{pic[y][x] += (mc\_tmp[y][x]+32)\gg 6}
         \bsCODE{pic[y][x] = \clip(pic[y][x], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
     \bsEND
@@ -142,45 +140,6 @@ perform all operations prior to the output of pictures using padded data, i.e. t
 The $init\_temp\_array()$ function shall return a two-dimensional data array with
 horizontal size $\LenX$ and vertical size $\LenY$, such that each element of the two dimensional array shall be set to zero.
 
-\begin{comment}
-\subsubsection{Weighting bits}
-\label{wtbits}
-
-
-[Can omit this section if spatial weights are just set to 6 bits.]
-
-The function $set\_mc\_wts()$ shall set the total number of extra bits of resolution
-that shall be added to motion compensation data as a result of applying weighting
-matrices and picture weights. It shall be defined as follows:
-
-\begin{pseudo}{set\_mc\_wts}{}
-\bsCODE{hbits  = \intlog2(\XOffset)+2}
-\bsCODE{vbits  = \intlog2(\YOffset)+2}
-\bsRET{hbits+vbits+\RefsWeightPrecision}
-\end{pseudo}
-
-\begin{informative}
-This is the number of bits added to pixel values in order to perform OBMC 
-reversibly with integer arithmetic using the spatial matrix specified in Sections 
-\ref{mcspatialweights} and the reference weights extracted in
-parsing the picture prediction header data (Section \ref{refpicweights}).
-
-Note that  the number of motion compensation bits depends upon the 
-block sizes -- specifically
-the block overlaps - selected. A Dirac decoder level (Section \ref{profilelevel}) 
-specifies the maximum block overlaps allowable, and hence 
-the word widths necessary for processing OBMC. If we assume that 
-the picture weights are complementary (i.e. the weights
-for reference 1 and reference 2 sum to $2^\RefsWeightPrecision$, 
-then the number of bits required for performing motion compensation 
-calculations is \[bit\_depth+total\_wt\_bits+\RefsWeightPrecision\]
-unsigned bits. 8 bit video data encoded with block overlaps of 4 
-luminance pixels and the standard picture weights therefore
-requires 8+3+3+1=15 unsigned bits. The additional bit within 
-a 16 bit word could be used to provide additional reference 
-weighting.
-\end{informative}
-\end{comment}
 
 \subsubsection{Motion compensation of a block}
 \label{blockmc}
@@ -546,27 +505,25 @@ The sub-pixel prediction process shall be defined as follows:
 
 \begin{pseudo}{subpel\_predict}{ref,c,u,v}
 \bsCODE{upref=interp2by2(ref,c)}{\ref{halfpel}}
-\bsIF{\MotionVectorPrecision==1}
-    \bsCODE{xpos=\clip(u,0,\width(upref)-1)}
-    \bsCODE{ypos=\clip(v,0,\height(upref)-1)}
-    \bsRET{upref[ypos][xpos]}
+\bsCODE{hu = u \gg (\MotionVectorPrecision-1)}
+\bsCODE{hv = v \gg (\MotionVectorPrecision-1)} 
+\bsCODE{ru = u-(hu\ll (\MotionVectorPrecision-1))}
+\bsCODE{rv = v-(hv\ll (\MotionVectorPrecision-1))}
+\bsCODE{w00 = (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)}
+\bsCODE{w01 = (2^{\MotionVectorPrecision-1}-rv)*ru}
+\bsCODE{w10 = rv*(2^{\MotionVectorPrecision-1}-ru)}
+\bsCODE{w11 = rv*ru}
+\bsCODE{xpos = \clip(hu, 0, \width(upref)-1)}
+\bsCODE{xpos1 = \clip(hu+1, 0,\width(upref)-1)}
+\bsCODE{ypos = \clip(hv, 0, \height(upref)-1)}
+\bsCODE{ypos1 = \clip(hv+1, 0, \height(upref)-1)}
+\bsCODE{\begin{array}{ll} val = & w00*upref[ypos][xpos]+w01*upref[ypos][xpos1]+ \\
+                            & w10*upref[ypos1][xpos]+w11*upref[ypos1][xpos1]
+        \end{array}}
+\bsIF{\MotionVectorPrecision>1}
+    \bsRET{(val+2^{2*\MotionVectorPrecision-3})\gg(2*\MotionVectorPrecision-2)}
 \bsELSE
-    \bsCODE{hu = u \gg (\MotionVectorPrecision-1)}
-    \bsCODE{hv = v \gg (\MotionVectorPrecision-1)} 
-    \bsCODE{ru = u-(hu\ll (\MotionVectorPrecision-1))}
-    \bsCODE{rv = v-(hv\ll (\MotionVectorPrecision-1))}
-    \bsCODE{w00 = (2^{\MotionVectorPrecision-1}-rv)*(2^{\MotionVectorPrecision-1}-ru)}
-    \bsCODE{w01 = (2^{\MotionVectorPrecision-1}-rv)*ru}
-    \bsCODE{w10 = rv*(2^{\MotionVectorPrecision-1}-ru)}
-    \bsCODE{w11 = rv*ru}
-    \bsCODE{xpos = \clip(hu, 0, \width(upref)-1)}
-    \bsCODE{xpos1 = \clip(hu+1, 0,\width(upref)-1)}
-    \bsCODE{ypos = \clip(hv, 0, \height(upref)-1)}
-    \bsCODE{ypos1 = \clip(hv+1, 0, \height(upref)-1)}
-    \bsCODE{\begin{array}{ll} val = & w00*upref[ypos][xpos]+w01*upref[ypos][xpos1]+ \\
-                                & w10*upref[ypos1][xpos]+w11*upref[ypos1][xpos1]
-            \end{array}}
-    \bsRET{(val+2^{\MotionVectorPrecision-1})\gg\MotionVectorPrecision}
+    \bsRET{val}
 \bsEND
 \end{pseudo} 
 
@@ -576,8 +533,9 @@ $hu$ and $hv$ represent the half-pixel part of the sub-pixel position $(u,v)$.
 $ru$ and $rv$ represent the remaining sub-pixel component of the position.
 $ru$ and $rv$ satisfy \[0\leq ru,rv <2^{\MotionVectorPrecision-1}\] 
 
-The four weights $w00,w01,w10$ and $w11$ sum to $2^{\MotionVectorPrecision}$, and
-hence the upconverted value is returned to pixel ranges in the pseudocode above.
+The four weights $w00,w01,w10$ and $w11$ sum to $2^{2*\MotionVectorPrecision-2}$, and
+hence the upconverted value is returned to the initial pixel ranges in the pseudocode 
+above.
 
 Note that the remainder values $ru$ and $rv$, and hence the four weight values, 
 only depend on the motion vectors. This is because
@@ -589,8 +547,12 @@ block when block motion is used. Likewise, the necessity of clipping the ranges 
 $xpos$, $ypos$ etc can be determined in advance for each block by checking whether any 
 corner of the reference block will fall outside of the reference picture area. In most
 cases it will not and clipping will not be required for motion compensating most blocks. 
-\end{informative}
 
+For half-pixel motion vectors ($\MotionVectorPrecision$ is 1), the majority of the 
+pseudocode is redundant, and the return value $val$ will merely be the value at 
+position $(u,v)$, clipped to the ranges of the upconverted reference. 
+
+\end{informative}
 
 \subsubsection{Half-pixel interpolation}
 \label{halfpel}
