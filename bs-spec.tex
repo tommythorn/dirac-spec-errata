@@ -21,7 +21,7 @@ from the Dirac stream. The state of the decoder is stored in the global variable
  This is a map (Section \ref{datatypes}) and individual elements are accessed by 
 means of named labels, e.g. $\StateName[\text{VAR\_NAME}]$. 
 The state variables comprise the parameters that shall be used in parsing and decoding a picture. 
-The variable state is a global variables and shall be accessible to all decoder functions and processes. 
+The variable $\StateName$ is a global variable and shall be accessible to all decoder functions and processes. 
 All other variables shall be local to the function or process in which they are defined.
 
 Decoder state variables (that is elements of state) may not directly correspond 
@@ -273,7 +273,7 @@ boolean, except for $num\_refs()$ which shall returns an integer:
 \end{pseudo}
 
 \begin{pseudo}{is\_padding}{}
-\bsRET{(\ParseCode \& \text{0xF8})==\text{0x30}}
+\bsRET{\ParseCode==\text{0x30}}
 \end{pseudo}
 
 \begin{pseudo}{is\_picture}{}
@@ -311,8 +311,6 @@ boolean, except for $num\_refs()$ which shall returns an integer:
 \begin{pseudo}{is\_inter}{}
 \bsRET{is\_picture() \text{ and }(num\_refs()>0)}
 \end{pseudo}
-
-
 
 \begin{informative*}
 \subsubsection{Parse code value rationale (Informative)}
