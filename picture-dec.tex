@@ -30,6 +30,10 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 \bsEND
 \bsIF{\ZeroResidual==\false}
     \bsCODE{inverse\_wavelet\_transform()}{\ref{idwt}}
+\bsELSE
+    \bsCODE{\CurrentPicture[Y]=\bf{0}}
+    \bsCODE{\CurrentPicture[C1]=\bf{0}}
+    \bsCODE{\CurrentPicture[C2]=\bf{0}}
 \bsEND
 \bsIF{is\_inter()}
     \bsCODE{ref1=get\_ref(\RefOneNum)}{\ref{refbuffer}}

@@ -4,7 +4,8 @@ This section specifies the $transform\_data()$ process for
 unpacking (parsing, entropy decoding and inverse
 quantising) of wavelet coefficient data
 from the Dirac stream. . Wavelet coefficients shall be signed integer 
-values and shall be extracted using the integer VLC and (optionally) arithmetic decoding functions  defined in Appendix \ref{dataenc}. 
+values and shall be extracted using the integer VLC and (optionally) arithmetic 
+decoding functions  defined in Appendix \ref{dataenc}. 
 
 The result of this process shall be a set
 of fully-populated wavelet subband data arrays, as defined in
@@ -778,7 +779,7 @@ his section defines the syntax and parsing operations only; picture decoding ope
 
 In low delay operation, the Dirac syntax shall partition the wavelet coefficients into a
  number of slices, from all subbands, corresponding to localized areas of the picture 
-(see Figure \ref{}).
+\begin{comment}(see Figure \ref{})\end{comment}.
 
 A slice shall meet the following requirements:
 \begin{enumerate}
@@ -929,7 +930,7 @@ where $c=Y$ for luma coefficients, and $C1$ or $C2$ for chroma coefficients.
 \begin{informative}
 \begin{itemize}
 \item The slice subband area formulae correspond to the codeblock area 
-formulae for the core syntax (Section \ref{}).
+formulae for the core syntax (Section \ref{codeblockdimensions}).
 \item Slice subbands may change dimension by 1 from one slice to another 
 if $\SlicesX$ or $\SlicesY$ do not divide the horizontal or vertical dimensions 
 exactly.

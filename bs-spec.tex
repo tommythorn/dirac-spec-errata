@@ -348,8 +348,8 @@ The process for parsing the sequence header shall be as follows:
 \bsCODE{parse\_parameters()}{\ref{parseparameters}}
 \bsITEM{base\_video\_format}{uint}{\ref{videoformat}}
 \bsCODE{\VideoParams=source\_parameters(base\_video\_format)}{\ref{sourceparameters}}
-\bsITEM{picture\_coding\_mode}{uint}{\ref{interlacedcoding}}
-\bsCODE{set\_coding\_parameters(\VideoParams,picture\_coding\_mode)}{\ref{interlacecoding}}
+\bsITEM{picture\_coding\_mode}{uint}{\ref{picturecodingmode}}
+\bsCODE{set\_coding\_parameters(\VideoParams,picture\_coding\_mode)}{\ref{codingparameters}}
 \bsRET{\VideoParams}
 \end{pseudo}
 
@@ -956,7 +956,7 @@ in Table \ref{table:transfervalues}.
 \end{table}
 
 \subsection{Picture coding mode}
-\label{interlacecoding}
+\label{picturecodingmode}
 
 The picture coding mode value in the sequence header shall determine 
 whether source video is coded as frames or fields. 
@@ -1090,9 +1090,9 @@ picture number.
 The pictures corresponding to the reference picture numbers of a given picture
 shall occur before the given picture in the sequence.
 
-The retired picture shall be a pictures which shall be removed from 
+The retired picture shall be a picture which shall be removed from 
 the reference picture buffer before the current picture is decoded
-(Sections \ref{picturedecprocess}and \ref{refbuffer}). The rules for the 
+(Section \ref{overallpicturedec}). The rules for the 
 use of the reference picture buffer shall be as defined in Section \ref{refbuffer}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1346,7 +1346,7 @@ and reference 2 data by
 
 $\dfrac{\RefTwoWeight}{2^\RefsWeightPrecision}$ 
 
-(see Section \ref{pixelpredict}).
+(see Section \ref{blockmc}).
 
 The picture weights are signed integers and may be negative. In
 addition, they may not sum to $2^\RefsWeightPrecision$, to accomodate fade
@@ -1380,7 +1380,7 @@ Decoding the transformed wavelet transform data to produce decoded pictures shal
  as defined in Section \ref{picturedec}.
 
 If $\ZeroResidual=\true$ then all component pixels shall be 
-set to zero (Section \ref{picturedecprocess}).
+set to zero (Section \ref{overallpicturedec}).
 
 \subsubsection{Transform parameters}
 \label{transformparameters}
@@ -1457,6 +1457,7 @@ subbands and the the dimensions of the subband data array (Section \ref{wltinit}
 
 \subsubsection{Codeblock parameters (core syntax only)}
 \label{spatialpartition}
+\label{codeblockparams}
 
 In the core syntax only, each subband may be partitioned into a number of code blocks. 
 
