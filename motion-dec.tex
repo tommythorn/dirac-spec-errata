@@ -103,27 +103,15 @@ end of an arithmetically-coded chunk by inserting 1s, hence allowing virtual val
 
 \label{motioninit}
 
-This section specifies the operation of the $initialise\_motion\_data()$ process. It sets the dimension variables determining the
-number of blocks and superblocks and hence the dimension of the $\BlockData$ array encapsulating block motion
-data.
+This section specifies the operation of the $initialise\_motion\_data()$ process.
+ It shall set the dimensions of the motion data arrays according to the numbers
+of blocks and superblocks defined in Section {motiondatadimensions}.
 
-The number of superblocks horizontally and vertically is set by:
+The array $\BlockData$ shall be set to have horizontal dimension $\BlocksX$ and 
+vertical dimension $\BlocksY$.
 
-\begin{eqnarray*}
-\SuperblocksX & = & \left\lceil \frac{\LumaWidth}{4*\LumaXBsep} \right\rceil  \\
-\SuperblocksY & = & \left\lceil \frac{\LumaHeight}{4*\LumaYBsep} \right\rceil 
-\end{eqnarray*}
-
-The number of blocks horizontally and vertically is set by:
-
-\begin{eqnarray*}
-\BlocksX = 4*\SuperblocksX \\
-\BlocksY = 4*\SuperblocksY
-\end{eqnarray*}
-
-The array $\BlockData$ is set to have horizontal dimension $\BlocksX$ and vertical dimension $\BlocksY$.
-
-The array $\SBSplit$ is set to have horizontal dimension $\SuperblocksX$ and vertical dimension $\SuperblocksY$.
+The array $\SBSplit$ shall be set to have horizontal dimension $\SuperblocksX$ 
+and vertical dimension $\SuperblocksY$.
 
 \subsubsection{Superblock splitting modes}
 \label{superblocksplit}

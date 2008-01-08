@@ -318,18 +318,37 @@ is purged by calling $flush\_inputb()$ (Section \ref{blockreadbit}).
 
 
 
-\subsubsection{Contexts}
-\label{arithcontexts}
+\subsubsection{Context probabilities}
+\label{contextprobs}
 
-Values are extracted by using binary {\em contexts}, which are estimates of the 
-probability of the binary values extracted being 0 ($\false$) or 1 ($\true$).
-Contexts are determined prior to values being extracted, based on previously
-decoded data, and are updated by the arithmetic decoding engine to track 
-statistics. The structure of contexts and how they are initialised and updated 
-is specified in Section \ref{arithcontexts}.
+Values shall be extracted by using binary context probabilities. A context is a 
+decoding state, representing the set of all data decoded so far.
 
-The set of contexts is $\AContexts$, and an individual context is accessed via
-an index $\AContexts[i]$. 
+A context probability shall be a 16 bit unsigned integer value representing the 
+probability of a bit being 0 in a given context, where zero probability is 
+represented by 0x0, and equal likelihood by 0x8000. The process for initializing
+ and updating context probabilities shall be as defined in Appendix 
+\ref{initarith} and \ref{contextupdate}.
+
+Different context probabilities shall be employed for extracting binary values, 
+based on the values of previously decoded data. Each context probability shall 
+be updated by the arithmetic decoding engine to track statistics after it
+has been used to extract a value.
+
+The set of contexts probabilities shall be defined by $\AContexts$, and an 
+individual context shall be accessed via a keyword label i.e. 
+$\AContexts$ is a map and the context value shall be $\AContexts[l]$ for a 
+label $l$.
+
+The array of context probability labels to be used in arithmetic decoding shall 
+be passed to the arithmetic decoding engine at initialization (Appendix 
+\ref{initarith}).
+
+\begin{informative}
+Probability 1, or certainty, would be represented by the 17-bit number 0x10000. 
+This value, and probability 0 (0x0), can never be attained due to the operation 
+of the probability update process (Appendix \ref{contextupdate}).
+\end{informative}
 
 \paragraph{Context indices}
 \label{contextindices}

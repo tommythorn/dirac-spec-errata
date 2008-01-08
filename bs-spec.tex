@@ -1148,6 +1148,7 @@ and $\ChromaYBsep$ defining chroma blocks.
        \bsCODE{preset\_block\_params(index)}
 \bsEND
 \bsCODE{chroma\_block\_params()}{\ref{chromablockparams}}
+\bsCODE{motion\_data\_dimensions()}{\ref{motiondatadimensions}}
 \end{pseudo}
 
 $index$ shall lie in the range 0 to 4. 
@@ -1157,6 +1158,9 @@ in Table \ref{blockparamsvalues}.
 
 Chroma block parameter values shall be determined from luma values
 as defined in Section \ref{chromablockparams}).
+
+The dimensions of motion data arrays (numbers of blocks and superblocks) shall
+be as defined in Section \ref{motiondatadimensions}.
 
 \begin{table}[!ht]
 \centering
@@ -1203,6 +1207,30 @@ Chroma block parameters shall be equal to the corresponding luma block parameter
 \bsCODE{\ChromaXBsep=\LumaXBsep//chroma\_h\_ratio()}{\ref{picturedimensions}}
 \bsCODE{\ChromaYBsep=\LumaYBsep//chroma\_v\_ratio()}{\ref{picturedimensions}}
 \end{pseudo}
+
+\subsubsection{Numbers of blocks and superblocks}
+\label{motiondatadimensions}
+
+The number of blocks and superblocks horizontally and vertically shall be set
+as follows:
+
+\begin{pseudo}{motion\_data\_dimensions}{}
+\bsCODE{\SuperblocksX = \LumaWidth+4*\LumaXBsep-1}
+\bsCODE{\SuperblocksX//= 4*\LumaXBsep}
+\bsCODE{\SuperblocksY = \LumaHeight+4*\LumaYBsep-1}
+\bsCODE{\SuperblocksY//= 4*\LumaYBsep} 
+\bsCODE{\BlocksX = 4*\SuperblocksX}
+\bsCODE{\BlocksY = 4*\SuperblocksY}
+\end{pseudo} 
+
+These values shall determine the size of motion data arrays as per Section
+\ref{motioninit}. 
+
+\begin{informative}
+The number of superblocks is set so that the dimensions of the picture are
+entirely covered by superblocks at a separation of $4*\LumaXBsep$ horizontally
+and $4*\LumaYBsep$ vertically.
+\end{informative}
 
 \subsubsection{Motion vector precision}
 \label{mvprecision}

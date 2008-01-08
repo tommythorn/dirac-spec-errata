@@ -2,7 +2,7 @@
 % - This chapter defines specification         - %
 % - conventions                                - % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+\label{spec-conventions}
 \subsection{State representation}
 
 This standard uses a state model to express parsing and decoding operations. 
@@ -19,12 +19,14 @@ state as a whole. For example, a state variable value may be differentially
 encoded with respect to another value, with the difference, not the variable 
 itself, encoded in the stream. 
 
+\begin{comment}
 The Dirac stream syntax structure is illustrated with informative parse diagrams,
 contained in Appendix \ref{parsediagrams},
- that complement the normative stream syntax definitions. The parsing process 
+ that complement the normative stream syntax definitions.
+\end{comment}
+ The parsing process 
 is defined by means of pseudocode and/or mathematical formulae. The 
 conventions for these elements are described in the following sections.
-
 
 \subsection{Number formats}
 \label{mathnotation}
@@ -86,7 +88,7 @@ Elements may be added to a map or array by assignment using the appropriate
  index (label or integer). For example, $a[7]=2$, adds element 7 to the array $a$,
  if a does not already contain element 7, then this element is assigned the value 2.
 
-\subsection{Numerical functions and operators}
+\subsection{Functions and operators}
 \label{functionoperators}
 
 This section defines the functions and operators used 
@@ -122,7 +124,7 @@ Boolean operations are to be distinguished from bitwise operations which operate
 integer values, and are defined in Section \ref{integerops}.
 
 \subsubsection{Integer functions and operators}
-
+\label{integerops}
 The following functions and operators are defined on integer values:
 
 \begin{description}
@@ -231,7 +233,7 @@ arguments:
 Operators $+, -, *, //, \%, \gg, \ll, \&, |, \wedge$, may be combined with the assignment operator (as for the Boolean operators $\&$, $|$, and $\wedge$
  above). For example $a += b$ is equivalent to $a = (a + b)$.
 
-\subsubsection{Map and array functions and operators}
+\subsubsection{Array and map functions and operators}
 
 The following functions and operators are defined for sets, maps and arrays. 
 \begin{description}

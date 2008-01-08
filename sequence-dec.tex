@@ -16,7 +16,7 @@ below is illustrative code for a sample decoder. It emphasizes which parts of th
          \bsCODE{\VideoParams = sequence\_header()}{\ref{sequenceheader}}
       \bsELSEIF{is\_picture()==\true}
          \bsCODE{picture\_parse()}{\ref{pictureparse}}
-         \bsCODE{decoded\_pictures[\PictureNumber] = picture\_decode()}{\ref{picturedecprocess}}
+         \bsCODE{decoded\_pictures[\PictureNumber] = picture\_decode()}{\ref{picturedec}}
       \bsEND
       \bsCODE{parse\_info()}{\ref{parseinfo}}
    \bsEND
@@ -55,7 +55,7 @@ beginning of an sequence header, located at some point not at the beginning
  upon the point at which the sequence has been accessed.
 
 Sequence headers and prediction structures must be so arranged so that all pictures
-are decodeable after reading no more than three sequence headers and parsing and decoding (where possible) all pictures in between (Section \ref{picture-dec}).
+are decodeable after reading no more than three sequence headers and parsing and decoding (where possible) all pictures in between (Section \ref{picturedec}).
 
 \subsection{Non-sequential picture decoding}
 
