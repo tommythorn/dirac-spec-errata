@@ -1,6 +1,6 @@
 \label{quantmatrices}
 
-This section specifies the default quantisation matrices to be used
+This annex specifies the default quantisation matrices to be used
 in the low delay syntax and provides an informative description of quantisation
 matrix design principles and of quantiser selection in both the core
 and low-delay syntax.
@@ -16,7 +16,7 @@ in this section shall require a custom matrix to be encoded,
 as per Section \ref{sliceparams}. Informative advice for 
 constructing quantisation matrices based on noise power 
 conservation and perceptual weighting is given in 
-Appendix \ref{custommatrices}.
+Annex \ref{custommatrices}.
 
 \begin{table}[!ht]
 \centering
@@ -256,13 +256,13 @@ by $\alpha^2$. This yields the weights shown in Figure \ref{fig:twolevelweight}.
 In this specification, wavelet synthesis filters have been defined in terms of lifting stages,
 which are filters operating on subsampled data. Wavelet filters are more traditionally
 represented in terms of an iterated binary polyphase filter bank: the relationship between
-these representation is described in Appendix \ref{lifting}. The factors $\alpha$ and $\beta$
+these representation is described in Annex \ref{lifting}. The factors $\alpha$ and $\beta$
 are most easily computed from the filter bank representation. In this case $\alpha$ is either
 the RMS power gain of the low-pass synthesis filter, or the {\em reciprocal} of the RMS power
 gain of the low-pass analysis filter; and $\beta$ is the RMS power gain of the high-pass
 synthesis filter of the reciprocal of the RMS power gain of the high-pass analysis filter. 
 
-Thus, in the terminology of Appendix \ref{lifting}, 
+Thus, in the terminology of Annex \ref{lifting}, 
 $\alpha=\dfrac{1}{(\sum_n h(n)^2)^{\frac{1}{2}}}$ or
 $\alpha=(\sum_n \tilde{h}(n)^2)^{\frac{1}{2}}$
 

@@ -5,7 +5,7 @@ unpacking (parsing, entropy decoding and inverse
 quantising) of wavelet coefficient data
 from the Dirac stream. . Wavelet coefficients shall be signed integer 
 values and shall be extracted using the integer VLC and (optionally) arithmetic 
-decoding functions  defined in Appendix \ref{dataenc}. 
+decoding functions  defined in Annex \ref{dataenc}. 
 
 The result of this process shall be a set
 of fully-populated wavelet subband data arrays, as defined in
@@ -549,7 +549,7 @@ and, in the case of DC (level 0) bands of Intra pictures, neighbourhood predicti
 
 Arithmetic coding uses a highly compact set of contexts, 
 with magnitudes contextualised on whether parent values
-and neighbouring values are zero or non-zero. See Appendix \ref{arithdecoding}
+and neighbouring values are zero or non-zero. See Annex \ref{arithdecoding}
 for a definition of the Dirac arithmetic decoder. 
 
 The process for coefficient unpacking shall comprise up to four stages:
@@ -657,7 +657,7 @@ The sign prediction value shall be determined as follows:
 $\ $\newline
 This section defines the coefficient context selection function which shall return a map
  of context probability labels for decoding a coefficient value. Context probabilities 
-shall be as defined in Appendix \ref{contextprobs}.
+shall be as defined in Annex \ref{contextprobs}.
 
 The map m shall comprise three elements, accessed by the labels: FOLLOW, DATA, and SIGN, where:
 \begin{itemize}

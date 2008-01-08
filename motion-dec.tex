@@ -5,12 +5,13 @@
 
 \label{motiondec}
 
-This section specifies the operation of the $block\_data()$ process for extracting
+This section defines the operation of the $block\_data()$ process for extracting
 block motion data from the Dirac stream. 
 
-Block data is aggregated into {\em superblocks}, consisting of a 4x4 array of blocks. The number 
-of superblocks horizontally and vertically is determined so that there are sufficient superblocks
-to cover the picture area. Superblocks may overlap the right and bottom edge of the picture.
+Block data is aggregated into {\em superblocks}, consisting of a 4x4 array of 
+blocks. The number of superblocks horizontally and vertically is determined so 
+that there are sufficient superblocks to cover the picture area. Superblocks 
+may overlap the right and bottom edge of the picture.
 
 \begin{informative}
 Since superblocks may overlap the right and bottom edge of the picture, blocks in such superblocks
@@ -121,8 +122,10 @@ within each superblock.
 
 \begin{pseudo}{superblock\_split\_modes}{}
 \bsITEM{length}{uint}{}
+\bsCODE{\ABitsLeft= 8*length}
 \bsCODE{byte\_align()}
-\bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
+\bsCODE{ctx\_labels=[\SBSplitFollowOne,\SBSplitFollowTwo,\SBSplitData]}
+\bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
 \bsFOR{ypos=0}{\SuperblocksY-1}
     \bsFOR{xpos=0}{\SuperblocksX-1}
         \bsCODE{sb\_split\_residual=read\_uinta(sb\_split\_contexts() ) }
@@ -160,8 +163,10 @@ superblock, and propagated to the other blocks within the prediction unit.
 
 \begin{pseudo}{prediction\_modes}{}
 \bsITEM{length}{uint}{}
+\bsCODE{\ABitsLeft= 8*length}
 \bsCODE{byte\_align()}
-\bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
+\bsCODE{ctx\_labels=[\PredModeOne,\PredModeTwo,\BlockGlobal]}
+\bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
 \bsFOR{y=0}{\SuperblocksY-1}
     \bsFOR{x=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
@@ -221,8 +226,13 @@ reference $ref$.
 
 \begin{pseudo}{vector\_elements}{ref,dirn}
 \bsITEM{length}{uint}{}
+\bsCODE{\ABitsLeft= 8*length}
 \bsCODE{byte\_align()}
-\bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
+\bsCODE{ctx\_labels=\begin{array}{l}[\VectorFollowOne,\VectorFollowTwo,\VectorFollowThree,
+\VectorFollowFour,\VectorFollowFivePlus,\\
+\VectorData,\VectorSign]
+\end{array}}
+\bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
 \bsFOR{y=0}{\SuperblocksY-1}
     \bsFOR{x=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
@@ -258,8 +268,10 @@ The $dc\_values(c)$ parses the DC values for component $c$.
 
 \begin{pseudo}{dc\_values}{c}
 \bsITEM{length}{uint}{}
+\bsCODE{\ABitsLeft= 8*length}
 \bsCODE{byte\_align()}
-\bsCODE{initialise\_arithmetic\_decoding(length)}{\ref{initarith}}
+\bsCODE{ctx\_labels=[\DCFollowOne,\DCFollowTwoPlus,\DCData,\DCSign]}
+\bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
 \bsFOR{y=0}{\SuperblocksY-1}
     \bsFOR{x=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}

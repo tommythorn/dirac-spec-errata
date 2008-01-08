@@ -358,7 +358,7 @@ it is able to parse or decode the stream. Parse parameters are not used to decod
 
 The base video format is a numerical index denoting a default set of parameters 
 that describe the video source. For many common video formats the predefined 
-values indicated by the base video format and defined in Appendix \ref{videoformatdefaults}, will be sufficient 
+values indicated by the base video format and defined in Annex \ref{videoformatdefaults}, will be sufficient 
 without the need for further metadata to be present in the stream. However, to provide 
 flexibility, source parameters may override the parameters indicated 
 by the base video format (with the exception of the top field first flag).
@@ -385,7 +385,7 @@ video transmission.
 The video parameters are not used by the Dirac decoder. Video parameter values should
 be made available using appropriate interfaces and standards to any downstream video
 processing device or display, but their use and interpretation by other devices is not specified in this standard. 
-Neverthless, Appendix \ref{vidsys} specifies the video systems model that should be used for the interpretation
+Neverthless, Annex \ref{vidsys} specifies the video systems model that should be used for the interpretation
 of video parameters.
 \end{informative}
 
@@ -426,7 +426,7 @@ A level shall determine decoder resources (picture and data buffers; computation
 to decode a sequence, including the sizes $\RefBufferSize$ and $\DPBSize$ of 
 the reference picture and decoded picture buffers. 
 
-Applicable values of profile and level and the variables they set are specified in Appendix
+Applicable values of profile and level and the variables they set are specified in Annex
 \ref{profilelevel}.
 
 \subsection{Base video format}
@@ -434,7 +434,7 @@ Applicable values of profile and level and the variables they set are specified 
 
 The value of $base\_video\_format$ decoded in parsing the sequence header shall be 
 an index into Table \ref{table:videoformats}. For each entry in the table parameters are defined, in 
-Appendix \ref{videoformatdefaults}, indicating parameters corresponding to one of a set of 
+Annex \ref{videoformatdefaults}, indicating parameters corresponding to one of a set of 
 predefined formats. These base parameters may be modified by subsequent metadata present
  in the stream as defined in subsequent sections below, with the exception of the top field first
  parameter which shall only be set by the base video format (see Section \ref{scanformat}).
@@ -485,7 +485,7 @@ predefined formats. These base parameters may be modified by subsequent metadata
 \end{table}
 
 Custom format is intended for use when no other suitable base video format is available from
- the table. Video format defaults will still be set as per Appendix \ref{videoformatdefaults},
+ the table. Video format defaults will still be set as per Annex \ref{videoformatdefaults},
  but these are token values which are expected to be almost wholly overridden by the subsequent source parameters. 
 
 \subsection{Source parameters}
@@ -498,7 +498,7 @@ The source parameters shall comprise frame size, chroma sampling format, scan fo
  pixel aspect ratio, clean area, signal range and color specification. The frame size, chroma sampling
  format, scanning format and the signal range are required to decode the video. Display and 
 downstream processing falls outside the scope of this specification, hence the interpretation of the other parameters (not required to decode the video) is not normatively defined, with the exception of frame rate (Section \ref{framerate}). The frame rate imposes requirements on
- compliant decoders for a given level and profile (Appendix \ref{profilelevel}).
+ compliant decoders for a given level and profile (Annex \ref{profilelevel}).
 
 Source parameter data shall remain constant throughout a VC-2 sequence. 
 
@@ -528,7 +528,7 @@ The function that sets the default values of the source video parameters
 shall take the video format index as an argument. That is, the signature of this function is: $set\_source\_defaults(video\_format\_index)$ where $video\_format\_index$ is an unsigned integer. The function returns a map of source video parameters.
 
 The source video parameters shall be set, based on the video format index, as defined in 
-Appendix \ref{videoformatdefaults}. The parameters set by this function shall be: Frame Size, 
+Annex \ref{videoformatdefaults}. The parameters set by this function shall be: Frame Size, 
 Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), Frame Rate, Pixel Aspect Ratio, Clean Area, Signal Range, Color Specification. The tokens used to access the map returned by the function shall be as defined in the subsequent sections that specify how to override the default video source parameters.
 
 Note: as an example, if $video\_format\_index  == 4$, CIF defaults are set, with picture size equal to 252x288, 4:2:0 chroma format, amongst other parameters. A frame width of 360 pixels may be encoded by overriding the CIF format default value of 352. 
@@ -746,7 +746,7 @@ The following restrictions shall apply:
 \subsubsection{Signal range}
 \label{signalrange}
 
-The signal range parameters indicate how the signal range of the picture component data, decoded by the Dirac decoder, should be adjusted prior to the color matrixing operations (described in informative Appendix \ref{signalranges}). 
+The signal range parameters indicate how the signal range of the picture component data, decoded by the Dirac decoder, should be adjusted prior to the color matrixing operations (described in informative Annex \ref{signalranges}). 
 
 The signal range parameters shall also be used to determine the luma depth and chroma depth parameters (Section \ref{videodepth}) and the resulting clipping levels applied to the decoded video (Section \ref{pictureclip}).
 
@@ -974,7 +974,7 @@ An effect of field coding shall be to halve the vertical dimensions of coded pic
 \begin{informative}
 It is possible to code progressive video as fields. In this case, the assignment of 
 frame lines to fields will be determined by the value of the top field first parameter in the base 
-video format (Appendix \ref{videoformatdefaults}). Note that, according to Section \ref{scanformat},
+video format (Annex \ref{videoformatdefaults}). Note that, according to Section \ref{scanformat},
  this base format default cannot be overridden for progressive video, as to do so would be artificial.
 \end{informative}
 
@@ -1566,6 +1566,6 @@ The $quant\_matrix()$ process shall be defined as follows:
 If $\TransformDepth> 4$ then $custom\_quant\_matrix$  shall be $\true$. 
 
 If $\TransformDepth \leq 4$, then custom quantization matrices may still be transmitted, 
-for example to apply a different degree of perceptual weighting (see Appendix \ref{qmatrixdesign}). 
+for example to apply a different degree of perceptual weighting (see Annex \ref{qmatrixdesign}). 
 
-The function $set\_quant\_matrix()$ shall set the quantization matrix based on the wavelet ?lter as per Appendix \ref{defaultquantmatrices}. These are “unweighted” matrices, whose values merely compensate for the differential power gain of the different subband ?lters. For perceptual weighting a custom quantisation matrix must be used.
+The function $set\_quant\_matrix()$ shall set the quantization matrix based on the wavelet ?lter as per Annex \ref{defaultquantmatrices}. These are “unweighted” matrices, whose values merely compensate for the differential power gain of the different subband ?lters. For perceptual weighting a custom quantisation matrix must be used.

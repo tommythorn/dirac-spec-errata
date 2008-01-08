@@ -1,22 +1,20 @@
 \label{arithcoding}
 
-This appendix provides three things:
-\begin{itemize}
+This annex has three parts:
+\begin{enumerate}
 \item a description of the principles of arithmetic
-coding
+coding,
 \item a specification of the arithmetic decoding
-engine used in Dirac
-\item a description of a compatible arithmetic encoder
-\end{itemize}
+engine used in Dirac, and
+\item a description of a compatible arithmetic encoder.
+\end{enumerate}
 
 \begin{informative*}
 \subsection{Arithmetic coding principles (Informative)}
 
 This section provides an introduction to the principles underlying arithmetic
-coding. Since arithmetic coding is very extensively described in published literature,
-this section is necessarily brief: for more information, Alasdair Moffat's
-article ''Arithmetic coding revisited'' (ACM Transactions on Information Systems,
-Vol. 16 \#3, July 1998) is recommended. 
+coding. It briefly describes binary arithmetic coding, that is the coding of binary symbols, 
+which is used in Dirac.
 
 Arithmetic coding is an extremely powerful form of entropy coding, which closely
 approximates the Shannon information limit for given data. Arithmetic 
@@ -329,13 +327,13 @@ A context $context$ is an integer array with a single value which encapsulates
 the probability of zero in that context represented as a 16 bit number, such that
 \[0<context[prob0]<\text{0xFFFF}\]
 
-Contexts are accessed by decoding functions via the indices defined in Section \ref{contextindices}. 
+Contexts shall be accessed by decoding functions via a context label passed to the function.
 
 \subsubsection{Initialisation}
 \label{initarith}
 
 At the beginning of the decoding of any data unit, the arithmetic
-decoding state is initialised as follows:
+decoding state shall be initialised as follows:
 
 \begin{pseudo}{initialise\_arithmetic\_decoding}{ctx\_labels}
 \bsCODE{\ALow = \text{0x0}}
@@ -348,7 +346,7 @@ decoding state is initialised as follows:
 \bsCODE{init\_contexts()}
 \end{pseudo}
 
-Contexts are initialised by the $init\_contexts()$ function as follows:
+Contexts shall be initialised by the $init\_contexts()$ function as follows:
 
 \begin{pseudo}{init\_contexts}{ctx\_labels}
 \bsFOREACH{l}{ctx\_labels}
