@@ -367,9 +367,10 @@ Source parameters are parameters that describe the source video, not all of
 which are required to decode the stream. The source parameters are needed by 
 applications that use the decoded video and so should be made available to them.
 
-Field coding indicates whether the video has been coded as a sequence of frames or fields.
+The picture coding mode indicates whether the video has been coded as a sequence 
+of frames or fields.
 
-Once the base video format, source parameters and frame/field coding mode have 
+Once the base video format, source parameters and picture coding mode have 
 been read from the stream the information they contain may be decoded to 
 provide the parameters used for decoding pictures. It is the purpose of the 
 $coding\_parameters()$ process to initialize these parameters.
@@ -402,8 +403,8 @@ This section specifes the structure of the parse parameters, which is as follows
 \bsITEM{\Level}{uint}{}
 \end{pseudo}
 
-Parse parameter data shall be constant
-(byte-for-byte identical) for all instances of the sequence header within a Dirac sequence.
+Parse parameter data shall be constant (byte-for-byte identical) for all instances 
+of the sequence header within a Dirac sequence.
 
 \subsubsection{Version number}
 
@@ -519,19 +520,32 @@ The $source\_parameters()$ process shall return a structure defining the video s
 \bsRET{\VideoParams}
 \end{pseudo}
 
-Note: Although some source parameters are not used by the Dirac decoder all source parameters should, nevertheless, be made available any downstream video processing device or display to allow the proper interpretation of the decoded video. Their use and interpretation by other devices is not specified in this standard. 
+Note: Although some source parameters are not used by the Dirac decoder all source
+ parameters should, nevertheless, be made available any downstream video processing
+ device or display to allow the proper interpretation of the decoded video. Their use and
+ interpretation by other devices is not specified in this standard. 
 
 \subsubsection{Setting source defaults}
 \label{setsourcedefaults}
 
 The function that sets the default values of the source video parameters 
-shall take the video format index as an argument. That is, the signature of this function is: $set\_source\_defaults(video\_format\_index)$ where $video\_format\_index$ is an unsigned integer. The function returns a map of source video parameters.
+shall take the video format index as an argument. That is, the signature of this 
+function is: $set\_source\_defaults(video\_format\_index)$ where 
+$video\_format\_index$ is an unsigned integer. The function returns a map 
+of source video parameters.
 
 The source video parameters shall be set, based on the video format index, as defined in 
 Annex \ref{videoformatdefaults}. The parameters set by this function shall be: Frame Size, 
-Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), Frame Rate, Pixel Aspect Ratio, Clean Area, Signal Range, Color Specification. The tokens used to access the map returned by the function shall be as defined in the subsequent sections that specify how to override the default video source parameters.
+Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), 
+Frame Rate, Pixel Aspect Ratio, Clean Area, Signal Range, Color Specification. 
+The tokens used to access the map returned by the function shall be as defined in the
+ subsequent sections that specify how to override the default video source parameters.
 
-Note: as an example, if $video\_format\_index  == 4$, CIF defaults are set, with picture size equal to 252x288, 4:2:0 chroma format, amongst other parameters. A frame width of 360 pixels may be encoded by overriding the CIF format default value of 352. 
+\begin{informative} As an example, if $video\_format\_index  == 4$, CIF defaults are set,
+ with picture size equal to 352x288, 4:2:0 chroma format, amongst other parameters. A
+ frame width  of 360 pixels may be encoded by overriding the CIF format default value of
+ 352. 
+\end{informative}
 
 \subsubsection{Frame dimensions}
 \label{framedimensions}
@@ -671,6 +685,9 @@ as fields, then picture rate is twice the encoded frame rate.
 \subsubsection{Pixel aspect ratio}
 \label{aspectratio}
 
+The pixel aspect ratio is defined as the ratio of the aspect ratio parameters:
+		\[\SAspectRatioNumer : \SAspectRatioDenom\]
+
 The process for decoding the pixel aspect ratio parameters shall be defined as follows:
 
 \begin{pseudo}{pixel\_aspect\_ratio}{\VideoParams}
@@ -686,9 +703,18 @@ The process for decoding the pixel aspect ratio parameters shall be defined as f
 \bsEND
 \end{pseudo}
 
-The decoded value of $index$ shall fall in the range 0 to 3.
+If $custom\_pixel\_aspect\_ratio\_flag$ is set to $\true$, the pixel aspect ratio 
+defined by the default values shall be overridden by the new values defined by the 
+index value. 
 
-For $index>0$, $preset\_pixel\_aspect\_ratio(\VideoParams, index)$ shall set the pixel aspect ratio value elements of $\VideoParams$ as specified in Table \ref{table:aspectratiovalues}.
+The decoded value of $index$ shall fall in the range 0 to 6.
+
+If the value of $index$ is 0, then the pixel aspect ratio numerator and denominator 
+shall be individually defined by unsigned integer values.
+
+If $index>0$, $preset\_pixel\_aspect\_ratio(\VideoParams, index)$ shall set the pixel
+ aspect ratio value elements of $\VideoParams$ as specified in Table
+ \ref{table:aspectratiovalues}.
 
 \begin{table}[!ht]
 \centering
@@ -713,10 +739,22 @@ For $index>0$, $preset\_pixel\_aspect\_ratio(\VideoParams, index)$ shall set the
 \end{table}
 
 \begin{informative}
-The pixel aspect ratio is defined as the ratio of the aspect ratio parameters:
-		\[\SAspectRatioNumer : \SAspectRatioDenom\]
-The pixel aspect ratio (PAR) value defines the intended pixel aspect ratio of the pixels such that the viewed picture has no geometric distortion. The pixel aspect ratio of an image is the PARs are fundamental properties of sampled images because they determine the displayed shape of objects in the image. Failure to use the right PAR will result in distorted images, for example circles will be displayed as ellipses etc. 
-Some video processing tools require an image aspect ratio. This may be derived from the pixel aspect ratio by multiplying the ratio of horizontal to vertical pixels by the pixel aspect ratio. So, for example, for a 704 x 480 line picture, with a pixel aspect ratio of 10:11 the image aspect ratio is (704 x 10)/(480 x 11) which is exactly 4:3.
+ \\
+\begin{enumerate}
+\item The pixel aspect ratio value defines the intended ratio of the pixel 
+sampling such that the viewed picture has no geometric distortion. The pixel aspect
+ ratio of an image is the ratio of the spacing of horizontal samples 
+(pixels) to the spacing of vertical samples (picture lines) on the display device. 
+Pixel aspect ratios (PARs) are fundamental properties of sampled images because
+ they determine the displayed shape of objects in the image. Failure to use the right
+ PAR will result in distorted images, for example circles will be displayed as 
+ellipses etc.   
+\item Some video processing tools require an image aspect ratio. This can be 
+derived from the pixel aspect ratio by multiplying the ratio of horizontal to vertical 
+pixels by the pixel aspect ratio. So, for example, for a 704 x 480 line picture, with 
+a pixel aspect ratio of 10:11 the image aspect ratio is (704 x 10)/(480 x 11) which is
+ exactly 4:3.
+\end{enumerate}
 \end{informative}
 
 \subsubsection{Clean area}
@@ -969,7 +1007,7 @@ If video is coded as fields then the earliest field in each frame shall have an 
 
 With field coding each frame shall be split into two fields as indicated by the scan format (Section \ref{scanformat}).
 
-An effect of field coding shall be to halve the vertical dimensions of coded pictures. Hence, once the frame/field coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{picturedimensions}).
+An effect of field coding shall be to halve the vertical dimensions of coded pictures. Hence, once the picture coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{picturedimensions}).
 
 \begin{informative}
 It is possible to code progressive video as fields. In this case, the assignment of 
@@ -1050,7 +1088,8 @@ This section specifies the structure of Dirac picture data units.
 This section specifies the operation of the $picture\_parse()$ process. The process for
 decoding and outputting pictures is specified in Section \ref{picturedec}.
 
-Picture data may be successfully parsed after parsing a sequence header within the same VC-2 sequence. The picture parsing process shall be defined as follows:
+Picture data may be successfully parsed after parsing a sequence header within the 
+same  Dirac sequence. The picture parsing process shall be defined as follows:
 
 \begin{pseudo}{picture\_parse}{}
 \bsCODE{byte\_align()}
