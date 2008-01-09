@@ -39,23 +39,24 @@ from its neighbours, where these values are less than the corresponding block di
 \end{figure}
 
 \begin{informative*}
-The overlap between blocks horizontally is $xblen - xbsep$ and vertically is
-$yblen - ybsep$. As a result pixels in the overlapping areas lie in more than
+The overlap between blocks horizontally is $xoffset=(xblen - xbsep)/2$ both on the left
+and on the right, and vertically is $yoffset=(yblen - ybsep)/2$ both on the top and the
+bottom. As a result pixels in the overlapping areas lie in more than
 one block, and so more than one motion vector set (and set of associated predictions)
 applies to them. Indeed, a pixel may have up to eight predictions, as it may belong to
 up to four blocks, each of which may have up to two motion vectors. These are combined
-into a single prediction by using weights, which are so constructed so as to sum to 1. In the
- Dirac integer implementation, fractional weights are achieved by insisting that weights sum 
-to a power of 2, which is then shifted out once all contributions have been summed.
+into a single prediction by using weights, which are so constructed so as to sum to 1. In
+ the  Dirac integer implementation, fractional weights are achieved by insisting that weights
+ sum to a power of 2, which is then shifted out once all contributions have been summed.
 
 In Dirac blocks are positioned so that blocks will overspill the left and top edges by 
-($xoffset$) and ($yoffset$) pixels (half the respective overlaps).  The number of blocks has been
-determined (Section \ref{motiondatadimensions}) so that the picture area is wholly covered, and the overspill
+($xoffset$) and ($yoffset$) pixels.  The number of blocks has been
+determined (Section \ref{motiondatadimensions}) so that the picture area is wholly
+ covered, and the overspill
  on the right hand and bottom edges will be at least the amount on the left and top edges. 
 Indeed, the number of blocks has been set so that the blocks divide into whole superblocks
 (sets of 4x4 blocks), which mean that some blocks may fall entirely out of the picture area. 
  Any predictions for pixels outside the actual picture area are discarded.
-
 \end{informative*}
 
 \subsubsection{Overall motion compensation process}
