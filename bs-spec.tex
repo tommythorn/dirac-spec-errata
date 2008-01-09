@@ -414,7 +414,7 @@ Depending on the profile and level defined, a decoder compliant with a given maj
 
 All minor versions of the specification shall be functionally compatible with earlier minor versions with the same major version number. Later minor versions may contain corrections, clarifications, and removal of ambiguities. Later minor version numbers shall not contain new features or new normative provisions.
 
-The major version number of a stream compliant with this version of the Dirac standard shall be 1.
+The major version number of a stream compliant with this version of the Dirac standard shall be 2.
 
 The minor version number of a stream compliant with this version of the Dirac standard shall be 0.
 
@@ -1146,7 +1146,7 @@ The picture prediction process shall be defined as follows:
 \begin{pseudo}{picture\_prediction}{}
 \bsCODE{picture\_prediction\_parameters()}{\ref{picpredparams}}
 \bsCODE{byte\_align()}
-\bsCODE{block\_data()}{\ref{motiondec}}
+\bsCODE{block\_motion\_data()}{\ref{motiondec}}
 \end{pseudo}
 
 The decoding and generation of block motion vector fields shall be as defined in Section \ref{motiondec}. 
@@ -1304,10 +1304,10 @@ The global motion process shall be as follows:
 Each of the global motion parameters shall consist of three elements: 
 
 \begin{itemize}
-\item an integer pan/tilt vector $\GlobalParams[n][pan\_tilt]$
-\item an integer 2x2 matrix element $\GlobalParams[n][ZRS]$
+\item an integer pan/tilt vector $\GlobalParams[n][\PanTilt]$
+\item an integer 2x2 matrix element $\GlobalParams[n][\ZRS]$
 capturing zoom, rotation and shear, together with a scaling exponent 
-$\GlobalParams[n][ZRS\_exp]$
+$\GlobalParams[n][\ZRSexponent]$
 \item an integer perspective vector $\GlobalParams[n][pespective]$
 capturing the effect of non-orthogonal projection onto the image plane, together 
 with a scaling exponent $\GlobalParams[n][pespective\_exp]$
@@ -1328,11 +1328,11 @@ The $pan\_tilt()$ process shall extracts horizontal and vertical translation ele
 and shall be defined as follows:
 
 \begin{pseudo}{pan\_tilt}{gparams}
-\bsCODE{gparams[pan\_tilt]={\mathbf{0}} }
+\bsCODE{gparams[\PanTilt]={\mathbf{0}} }
 \bsITEM{nonzero\_pan\_tilt\_flag}{bool}{}
 \bsIF{nonzero\_pan\_tilt\_flag==\true}
-    \bsITEM{gparams[pan\_tilt][0]}{sint}{}
-    \bsITEM{gparams[pan\_tilt][1]}{sint}{}
+    \bsITEM{gparams[\PanTilt][0]}{sint}{}
+    \bsITEM{gparams[\PanTilt][1]}{sint}{}
 \bsEND
 \end{pseudo}
 
@@ -1342,17 +1342,17 @@ as defined as follows:
 \begin{pseudo}{zoom\_rotation\_shear}{gparams}
 \bsITEM{nontrivial\_zrs\_flag}{bool}{}
 \bsIF{nontrivial\_zrs\_flag==\true}
-    \bsITEM{gparams[ZRS\_exp]}{uint}{}
-    \bsITEM{gparams[ZRS][0][0]}{sint}{}
-    \bsITEM{gparams[ZRS][0][1]}{sint}{}
-    \bsITEM{gparams[ZRS][1][0]}{sint}{}
-    \bsITEM{gparams[ZRS][1][1]}{sint}{}
+    \bsITEM{gparams[\ZRSexponent]}{uint}{}
+    \bsITEM{gparams[\ZRS][0][0]}{sint}{}
+    \bsITEM{gparams[\ZRS][0][1]}{sint}{}
+    \bsITEM{gparams[\ZRS][1][0]}{sint}{}
+    \bsITEM{gparams[\ZRS][1][1]}{sint}{}
 \bsELSE
-    \bsCODE{gparams[ZRS\_exp]=0}
-    \bsCODE{gparams[ZRS][0][0]=1}
-    \bsCODE{gparams[ZRS][0][1]=0}
-    \bsCODE{gparams[ZRS][1][0]=0}
-    \bsCODE{gparams[ZRS][1][1]=1}
+    \bsCODE{gparams[\ZRSexponent]=0}
+    \bsCODE{gparams[\ZRS][0][0]=1}
+    \bsCODE{gparams[\ZRS][0][1]=0}
+    \bsCODE{gparams[\ZRS][1][0]=0}
+    \bsCODE{gparams[\ZRS][1][1]=1}
 \bsEND
 \end{pseudo}
 
@@ -1362,12 +1362,12 @@ elements and shall be defined as follows:
 \begin{pseudo}{perspective}{gparams}
 \bsITEM{nonzero\_perspective\_flag}{bool}{}
 \bsIF{nonzero\_perspective\_flag==\true}
-    \bsITEM{gparams[perspective\_exp]}{uint}{}
-    \bsITEM{gparams[perspective][0]}{sint}{}
-    \bsITEM{gparams[perspective][1]}{sint}{}
+    \bsITEM{gparams[\PerspectiveExponent]}{uint}{}
+    \bsITEM{gparams[\Perspective][0]}{sint}{}
+    \bsITEM{gparams[\Perspective][1]}{sint}{}
 \bsELSE
-    \bsCODE{gparams[perspective\_exp]=0}
-    \bsCODE{gparams[perspective]={\mathbf{0}} }
+    \bsCODE{gparams[\PerspectiveExponent]=0}
+    \bsCODE{gparams[\Perspective]={\mathbf{0}} }
 \bsEND
 \end{pseudo}
 

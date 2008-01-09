@@ -158,7 +158,7 @@ The $block\_mc()$ process shall be defined as follows:
 \bsCODE{ystart = j*\XBsep-\XOffset}
 \bsCODE{xstop = (i+1)*\XBsep+\XOffset}
 \bsCODE{ystop = (j+1)*\YBsep+\YOffset}
-\bsCODE{mode=\BlockData[j][i][mode]}
+\bsCODE{mode=\BlockData[j][i][\RMode]}
 \bsCODE{W=spatial\_wt(i,j)}{\ref{pixelprediction}}
 \bsFOR{y=\max(ystart,0)}{\min(ystop,\LenY)-1}
     \bsFOR{x=\max(xstart,0)}{\min(xstop,\LenX)-1}
@@ -190,6 +190,7 @@ The $block\_mc()$ process shall be defined as follows:
 \begin{informative}
 Note that if the two reference weights are 1 and $\RefsWeightPrecision$ is 1, then
 reference weighting is transparent and
+
 \begin{pseudo*}
 \bsCODE{val=pixel\_pred(ref1, 1, i, j, x, y, c)}
 \bsCODE{val*=\RefOneWeight+\RefTwoWeight}
@@ -403,8 +404,8 @@ vector shall be computed from the global motion parameters and may vary pixel-by
 In the second stage, the motion vector shall be used to derive coordinates in an reference picture.
 
 \begin{pseudo}{pixel\_pred}{ref,ref\_num,i,j,x,y,c}
-\bsIF{\BlockData[j][i][global]==\false}
-  \bsCODE{mv= \BlockData[j][i][ref]}
+\bsIF{\BlockData[j][i][\GMode]==\false}
+  \bsCODE{mv= \BlockData[j][i][\Vect][ref\_num]}
 \bsELSE
   \bsCODE{mv=global\_mv(ref, ref\_num, x, y, c)}{\ref{globalmv}}
 \bsEND
@@ -430,10 +431,10 @@ type $c$ from a reference $ref$.
 The function shall be defined as follows:
 
 \begin{pseudo}{global\_mv}{ref, ref\_num, x,y, c}
-\bsCODE{ez  =  \GlobalParams[ref\_num][ZRS\_exp]}
-\bsCODE{ep  =  \GlobalParams[ref\_num][perspective\_exp]}
-\bsCODE{b=\GlobalParams[ref\_num][pan\_tilt]}
-\bsCODE{A=\GlobalParams[ref\_num][ZRS]}
+\bsCODE{ez  =  \GlobalParams[ref\_num][\ZRSexponent]}
+\bsCODE{ep  =  \GlobalParams[ref\_num][\PerspectiveExponent]}
+\bsCODE{b=\GlobalParams[ref\_num][\PanTilt]}
+\bsCODE{A=\GlobalParams[ref\_num][\ZRS]}
 \bsCODE{m=2^{ep}-(c[0]*x+c[1]*y)}
 \bsCODE{v[0]=m*((A[0][0]*x+A[0][1]*y)+2^{ez}*b[0])}
 \bsCODE{v[1]=m*((A[1][0]*x+A[1][1]*y)+2^{ez}*b[0])}
