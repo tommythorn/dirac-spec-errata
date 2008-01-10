@@ -27,7 +27,9 @@ and for this reason a different nomenclature has been adopted.
 \end{enumerate}
 \end{informative}
 
-\subsection{Prediction modes}
+\subsection{Prediction modes and splitting modes}
+
+\subsubsection{Prediction modes}
 
 Two types of prediction mode shall be defined: a reference prediction mode, indicating
 which references are to be used for motion compensation,  and a global motion
@@ -55,9 +57,26 @@ compensation shall be used for this block, and no block motion vectors or DC val
 shall be encoded. If $\false$, block motion compensation shall be employed and
 one or more motion vectors shall be encoded.
 
-\subsection{Splitting modes}
+\subsubsection{Splitting modes}
 
-TBC
+Block motion data shall be aggregated into superblocks, consisting of a 4x4 array
+of blocks, for each block motion data element. 
+
+Three superblock splitting levels shall be defined, numbered 0, 1, and 2. 
+
+When level 0 splitting is used, if a block motion data element is
+present for that superblock, only one value shall be coded. This value shall be 
+applied to all blocks within the superblock.
+
+When level 1 splitting is used, at most 4 values shall be coded for each
+block motion data element. Where present, each of these values
+shall be applied to the blocks in within the corresponding 2x2 sub-array of blocks
+within the superblock.
+
+When level 2 splitting is used, if a block motion data element is
+present for that superblock, only four values shall be coded. Each of these values
+shall be applied to all the four blocks in one of the four 2x2 sub-arrays of blocks
+within the superblock.
 
 \subsection{Structure of block motion data arrays}
 
@@ -80,8 +99,9 @@ integral horizontal and vertical elements $\BlockData[j][i][\Vect][2][0]$ and
 $\BlockData[j][i][\Vect][2][1]$.
 \item A set of integral DC values for each component, $\BlockData[j][i][\DC][Y]$,
  $\BlockData[j][i][\DC][C1]$, and $\BlockData[j][i][\DC][C2]$.
-\item A reference prediction mode, $\BlockData[j][i][\RMode]$, taking values 0, 1, 2, 
-or 3 and indicating which references (if any) are to be used for predicting block $(i,j)$
+\item A reference prediction mode, $\BlockData[j][i][\RMode]$, taking values \Intra, 
+\RefOneOnly, \RefTwoOnly, or \RefOneAndTwo and indicating which references 
+(if any) are to be used for predicting block $(i,j)$
 \item A global motion mode flag, $\BlockData[j][i][\GMode]$
 \end{enumerate}
 
@@ -100,23 +120,33 @@ The array $\SBSplit$ shall be set to have horizontal dimension $\SuperblocksX$
 and vertical dimension $\SuperblocksY$.
 
 \subsection{Motion data decoding process}
-
-This section specifies the overall operation of the $block\_data()$ process for extracting
-block motion data elements: motion vectors and block prediction modes. This 
-process is called by the $picture\_prediction()$ process (Section \ref{pictureprediction}) and
-depends upon the parameters that have been extracted and set in the
-$picture\_prediction\_parameters()$ process (Section \ref{picpredparams}).
-
-Block motion data elements are all coded differentially with respect to a spatial prediction. The
-spatial prediction processes for the block motion elements are specified in Section \ref{spatialprediction}
-
-\subsubsection{Overall decoding process}
-
 \label{decodingprocess}
 
-The decoding process for the block motion data consists of decoding each of the motion
- data elements in turn. Each motion data element shall consist of an entropy coded block
- preceded by a length code.
+This section defines the $block\_motion\_data()$ process for extracting
+block motion data elements.
+
+This process depends upon the picture prediction parameters (Section
+ \ref{picpredparams}).
+
+Block motion data elements shall be coded differentially with respect to a spatial
+prediction.  The spatial prediction processes for the block motion elements are 
+defined in Section \ref{spatialprediction}
+
+The decoding process for the block motion data shall consist of: 
+\begin{enumerate}
+\item decoding the superblock split modes,
+\item decoding the prediction modes in each superblock according to the split mode, and
+\item decoding the motion vectors and DC values according to the split mode and the
+ decoded mode for each block.
+\end{enumerate}
+
+The motion vector elements are further decomposed into horizontal and vertical 
+components which are encoded as separate parts. The DC values are further
+decomposed into the the components which are encoded as separate parts. 
+
+The coded data for each part (splitting mode, prediction mode, vector component,
+or DC component values) shall consist of an entropy coded block
+ preceded by a length code. 
 
 \begin{pseudo}{block\_motion\_parameters}{}
 \bsCODE{initialise\_motion\_data()}{\ref{motioninit}}
@@ -136,26 +166,30 @@ The decoding process for the block motion data consists of decoding each of the 
 \begin{informative}
 The superblock splitting modes determine the number, and location, of 
 prediction mode values to be decoded -- there
-must be one for each prediction unit within a superblock. Together, the split 
+must be one for each `prediction unit' (block, 2x2 array or blocks, or 4x4 array or
+blocks) within a superblock. Together, the split 
 mode and the prediction mode determine the number and location of all other 
-motion data elements, which can each be decoded in parallel. Indeed,
+motion data parts, which can each then be decoded in parallel. Indeed,
 by attempting to decode the maximum possible number of prediction residue 
 values for all motion data elements, the first 
 two motion data elements may also be decoded in parallel with the others. 
 Once all residue values are decoded, excess
 values can be discarded, the location of values determined and actual 
 values reconstructed by prediction. This approach
-may be particularly valuable in hardware.
-
-Decoding may proceed in this way, as the arithmetic decoding engine 
-allows bits to be read beyond the nominal end of an arithmetically-coded chunk by inserting 1s, hence allowing virtual values to be read.
+may be particularly valuable in hardware. Decoding may proceed in this way, 
+as the arithmetic decoding engine allows bits to be read beyond the nominal end of an
+ arithmetically-coded chunk by inserting 1s, hence allowing virtual values to be read.
 \end{informative}
 
 \subsubsection{Superblock splitting modes}
 \label{superblocksplit}
 
-This section specifies the $superblock\_split\_modes()$ process. It determines the number of prediction units
-within each superblock.
+This section defines the decoding of the superblock splitting mode values. 
+
+The superblock splitting mode shall determine the number of prediction modes
+coded for each superblock.
+
+$superblock\_split\_modes()$ process shall be defined as follows:
 
 \begin{pseudo}{superblock\_split\_modes}{}
 \bsITEM{length}{uint}{}
@@ -163,12 +197,12 @@ within each superblock.
 \bsCODE{byte\_align()}
 \bsCODE{ctx\_labels=[\SBSplitFollowOne,\SBSplitFollowTwo,\SBSplitData]}
 \bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
-\bsFOR{ypos=0}{\SuperblocksY-1}
-    \bsFOR{xpos=0}{\SuperblocksX-1}
-        \bsCODE{sb\_split\_residual=read\_uinta(sb\_split\_contexts() ) }
-        \bsCODE{\SBSplit[ypos][xpos] = sb\_split\_residual}
-        \bsCODE{\SBSplit[ypos][xpos]+=split\_prediction(ypos, xpos)}{\ref{splitprediction}}
-        \bsCODE{\SBSplit[ypos][xpos] \%= 3}
+\bsFOR{ysb=0}{\SuperblocksY-1}
+    \bsFOR{xsb=0}{\SuperblocksX-1}
+        \bsCODE{sb\_split\_residual=read\_uinta(sb\_split\_contexts() ) }{\ref{sbcontexts}}
+        \bsCODE{\SBSplit[ysb][xsb] = sb\_split\_residual}
+        \bsCODE{\SBSplit[ysb][xsb]+=split\_prediction(xsb, ysb)}{\ref{splitprediction}}
+        \bsCODE{\SBSplit[ysb][xsb] \%= 3}
     \bsEND
 \bsEND
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
@@ -177,14 +211,22 @@ within each superblock.
 \subsubsection{Propagating data between blocks}
 \label{propagatedata}
 
-The $propagate\_data(s, r, k,idx)$ copies decoded block data from the top-left-most block
-of a set of $k\times k$ blocks. It is used where the splitting mode of a superblock is not 2
- and not all blocks within the superblock will have individually-decoded motion data elements.
+The superblock splitting mode determines the maximum number of values to be
+decoded for each block motion data element: 0, 4, or 16. If the splitting mode
+is 0 or 1 and a value is decoded it applies to all 16 blocks or to one of the 4 2x2 
+sub-arrays of blocks within the superblock. So that prediction of values shall
+operate correctly, once decoded a value shall be propagated to all blocks to
+which it applies.
 
-\begin{pseudo}{propagate\_data}{s, r, k,label}
-\bsFOR{j=s}{s+k-1}
-    \bsFOR{i=r}{r+k-1}
-        \bsCODE{\BlockData[j][i][label]=\BlockData[s][r][label]}
+The $propagate\_data(xtl, ytl, k,idx)$ shall copy decoded block data from the 
+top-left-most block $(xtl, ytl)$ of an array of $k\times k$ blocks, where $k$ shall be 4 if the
+splitting mode is 0 and $k$ shall be 2 if the splitting mode is 1. It shall be defined
+as follows:
+
+\begin{pseudo}{propagate\_data}{xtl, ytl, k,label}
+\bsFOR{y=ytl}{ytl+k-1}
+    \bsFOR{x=xtl}{xtl+k-1}
+        \bsCODE{\BlockData[y][x][label]=\BlockData[ytl][xtl][label]}
     \bsEND
 \bsEND
 \end{pseudo}
@@ -192,13 +234,16 @@ of a set of $k\times k$ blocks. It is used where the splitting mode of a superbl
 \subsubsection{Block prediction modes}
 \label{blockpredmodes}
 
-The $prediction\_modes()$ process decodes all modes (global motion and block
- prediction) required for each superblock based on
-the superblock splitting modes: 16 for split mode 2, 4 for split mode 1, and 1 for 
-split mode 0. For split
-modes 0 and 1, these are placed in the top-left corner block in each allowed 
-prediction unit within the
-superblock, and propagated to the other blocks within the prediction unit.
+The prediction mode process shall decode global motion and reference
+ prediction modes required for each superblock according to the
+the superblock splitting mode.: 16 values shall be decoded for split mode 2, 
+4 values shall be decoded for split mode 1, and 1 value for split mode 0. 
+
+For split modes 0 and 1, decoded values shall placed in the top-left corner block 
+of the array (4x4 or 2x2) of blocks to which they apply, and then propagated to the 
+other blocks.
+
+The $prediction\_modes()$ process shall be defined as follows:
 
 \begin{pseudo}{prediction\_modes}{}
 \bsITEM{length}{uint}{}
@@ -206,16 +251,16 @@ superblock, and propagated to the other blocks within the prediction unit.
 \bsCODE{byte\_align()}
 \bsCODE{ctx\_labels=[\PredModeOne,\PredModeTwo,\BlockGlobal]}
 \bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
-\bsFOR{y=0}{\SuperblocksY-1}
-    \bsFOR{x=0}{\SuperblocksX-1}
+\bsFOR{ysb=0}{\SuperblocksY-1}
+    \bsFOR{xsb=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}
             \bsFOR{p=0}{block\_count-1}
-                \bsCODE{block\_ref\_mode(4*y+q*step, 4*x+p*step)}{\ref{blockmode}}
-                \bsCODE{propagate\_data(4*y+q*step, 4*x+p*step, step,mode)}{\ref{propagatedata}}
-                \bsCODE{block\_global\_mode(4*y+q*step, 4*x+p*step)}{\ref{blockglobal}}
-                \bsCODE{propagate\_data(4*y+q*step, 4*x+p*step, step,global)}{\ref{propagatedata}}
+                \bsCODE{block\_ref\_mode(4*xsb+p*step, 4*ysb+q*step)}{\ref{blockmode}}
+                \bsCODE{propagate\_data(4*xsb+p*step, 4*ysb+q*step, step,\RMode)}{\ref{propagatedata}}
+                \bsCODE{block\_global\_mode(4*xsb+p*step, 4*ysb+q*step)}{\ref{blockglobal}}
+                \bsCODE{propagate\_data(4*xsb+p*step, 4*ysb+q*step, step,\GMode)}{\ref{propagatedata}}
            \bsEND
         \bsEND
     \bsEND
@@ -226,36 +271,34 @@ superblock, and propagated to the other blocks within the prediction unit.
 \paragraph{Block prediction mode}
 \label{blockmode}
 
-The $block\_ref\_mode(ypos,xpos)$ process parses the block prediction mode for the block at position $(xpos, ypos)$. Each
-bit of the block prediction mode is decoded separately.
+The $block\_ref\_mode()$ process shall be defined as follows:
 
-\begin{pseudo}{block\_ref\_mode}{ypos, xpos}
-\bsCODE{\BlockData[ypos][xpos][\RMode] = 0}
+\begin{pseudo}{block\_ref\_mode}{x, y}
+\bsCODE{\BlockData[y][x][\RMode] = 0}
 \bsIF{read\_boola(\PredModeOne)==\true}
-    \bsCODE{\BlockData[ypos][xpos][\RMode] = 1}
+    \bsCODE{\BlockData[y][x][\RMode] = 1}
 \bsEND
 \bsIF{num\_refs() == 2}
     \bsIF{read\_boola(\PredModeTwo)==\true}
-        \bsCODE{\BlockData[ypos][xpos][\RMode] += 2}
+        \bsCODE{\BlockData[y][x][\RMode] += 2}
     \bsEND
 \bsEND
-\bsCODE{\BlockData[ypos][xpos][\RMode] \wedge=ref\_mode\_prediction(ypos, xpos)}{\ref{modeprediction}}
+\bsCODE{\BlockData[y][x][\RMode] \wedge=ref\_mode\_prediction(x, y)}{\ref{modeprediction}}
 \end{pseudo}
-
 
 \paragraph{Block global mode}
 \label{blockglobal}
 $\ $\newline
 
-The $block\_global\_mode(ypos,xpos)$ process parses the global motion mode for the block at position $(xpos, ypos)$. It shall be defined as follows:
+The $block\_global\_mode()$ process shall be defined as follows:
 
-\begin{pseudo}{block\_global}{ypos, xpos}
+\begin{pseudo}{block\_global}{x, y}
 \bsCODE{\BlockData[y][x][\GMode]=\false}
 \bsIF{\PictureUsingGlobal==\true}
-    \bsIF{\BlockData[ypos][xpos][\RMode]!=\Intra}
+    \bsIF{\BlockData[y][x][\RMode]!=\Intra}
         \bsCODE{block\_global\_residue = read\_boola(\BlockGlobal)}
-        \bsCODE{\BlockData[ypos][xpos][\GMode] = block\_global\_residue}
-        \bsCODE{\BlockData[ypos][xpos][\GMode] \wedge= block\_global\_prediction(ypos, xpos)}{\ref{blockglobalprediction}}
+        \bsCODE{\BlockData[y][x][\GMode] = block\_global\_residue}
+        \bsCODE{\BlockData[y][x][\GMode] \wedge= block\_global\_prediction(x, y)}{\ref{blockglobalprediction}}
     \bsEND
 \bsEND
 \end{pseudo}
@@ -263,8 +306,10 @@ The $block\_global\_mode(ypos,xpos)$ process parses the global motion mode for t
 \subsubsection{Block motion vector elements}
 \label{blockmvelements}
 
-The $vector\_elements(ref,dirn)$ parses the $dirn$ (horizontal or vertical) component of the motion vectors associated with
-reference $ref$.
+The vector element process shall decode the set of horizontal, or the set of vertical  
+motion vector elements associated with one of the reference pictures.
+
+$vector\_elements()$ process shall be defined as follows:
 
 \begin{pseudo}{vector\_elements}{ref,dirn}
 \bsITEM{length}{uint}{}
@@ -275,14 +320,14 @@ reference $ref$.
 \VectorData,\VectorSign]
 \end{array}}
 \bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
-\bsFOR{y=0}{\SuperblocksY-1}
-    \bsFOR{x=0}{\SuperblocksX-1}
+\bsFOR{ysb=0}{\SuperblocksY-1}
+    \bsFOR{xsb=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}
             \bsFOR{p=0}{block\_count-1}
-                \bsCODE{block\_vector(4*y+q*step, 4*x+p*step,ref,dirn)}
-                \bsCODE{propagate\_data(4*y+q*step, 4*x+p*step, step,ref)}{\ref{propagatedata}}
+                \bsCODE{block\_vector(4*xsb+p*step, 4*ysb+q*step, ref, dirn)}
+                \bsCODE{propagate\_data(4*xsb+p*step, 4*ysb+q*step, step,\Vect)}{\ref{propagatedata}}
            \bsEND
         \bsEND
     \bsEND
@@ -290,15 +335,15 @@ reference $ref$.
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
 \end{pseudo}
 
-The $block\_vector(ypos, xpos, ref, dirn)$ decodes an individual motion vector element for reference
-$ref$ and in direction $dirn$ (0=horizontal, 1=vertical).
+The block vector proces shall decode an individual motion vector element. 
+It shall be defined as follows:
 
-\begin{pseudo}{block\_vector}{ypos, xpos, ref, dirn}
-\bsIF{\BlockData[ypos][xpos][\RMode][ref] == \true}
-    \bsIF{\BlockData[ypos][xpos][\GMode]==\false}
+\begin{pseudo}{block\_vector}{x, y, ref, dirn}
+\bsIF{\BlockData[y][x][\RMode][ref] == \true}
+    \bsIF{\BlockData[y][x][\GMode]==\false}
         \bsCODE{mv\_residual = read\_sinta(mv\_contexts() ) }{\ref{mvcontexts}}
-        \bsCODE{\BlockData[ypos][xpos][ref][dirn] = mv\_residual}
-        \bsCODE{\BlockData[ypos][xpos][ref][dirn] +=mv\_prediction(ypos, xpos, ref, dirn)}
+        \bsCODE{\BlockData[y][x][\Vect][ref][dirn] = mv\_residual}
+        \bsCODE{\BlockData[y][x][\Vect][ref][dirn] +=mv\_prediction(x, y, ref, dirn)}
     \bsEND
 \bsEND
 \end{pseudo}
@@ -306,7 +351,7 @@ $ref$ and in direction $dirn$ (0=horizontal, 1=vertical).
 \subsubsection{DC values}
 \label{DCvalues}
 
-The $dc\_values(c)$ parses the DC values for component $c$.
+The DV value process shall decode the DC values for a intra blocks for a given video component (Y, C1 or C2). It shall be defined as follows:
 
 \begin{pseudo}{dc\_values}{c}
 \bsITEM{length}{uint}{}
@@ -314,14 +359,14 @@ The $dc\_values(c)$ parses the DC values for component $c$.
 \bsCODE{byte\_align()}
 \bsCODE{ctx\_labels=[\DCFollowOne,\DCFollowTwoPlus,\DCData,\DCSign]}
 \bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
-\bsFOR{y=0}{\SuperblocksY-1}
-    \bsFOR{x=0}{\SuperblocksX-1}
+\bsFOR{ysb=0}{\SuperblocksY-1}
+    \bsFOR{xsb=0}{\SuperblocksX-1}
         \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}
             \bsFOR{p=0}{block\_count-1}
-                \bsCODE{block\_dc(4*y+q*step, 4*x+p*step,ref,dirn)}
-                \bsCODE{propagate\_data(4*y+q*step, 4*x+p*step, step,DC)}{\ref{propagatedata}}
+                \bsCODE{block\_dc(4*xsb+p*step, 4*ysb+q*step, c)}
+                \bsCODE{propagate\_data(4*xsb+p*step, 4*ysb+q*step, step,\DC)}{\ref{propagatedata}}
            \bsEND
         \bsEND
     \bsEND
@@ -329,14 +374,14 @@ The $dc\_values(c)$ parses the DC values for component $c$.
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
 \end{pseudo}
 
-The $block\_dc(ypos, xpos,c)$ process parses a block DC value for the block at position 
-$(xpos, ypos)$.
+The block DC process shall decode an individual component DC value. It shall
+be defined as follows:
 
-\begin{pseudo}{block\_dc}{ypos, xpos,c}
-\bsIF{\BlockData[ypos][xpos][\RMode]=\Intra}
+\begin{pseudo}{block\_dc}{x, y,c}
+\bsIF{\BlockData[y][x][\RMode]=\Intra}
     \bsCODE{dc\_residual = read\_sinta(dc\_contexts()) }{\ref{dcvaluecontexts}}
-    \bsCODE{\BlockData[ypos][xpos][\DC][c] = dc\_residual}
-    \bsCODE{\BlockData[ypos][xpos][\DC][c] +=dc\_prediction(ypos, xpos, c)}{\ref{dcprediction}}
+    \bsCODE{\BlockData[y][x][\DC][c] = dc\_residual}
+    \bsCODE{\BlockData[y][x][\DC][c] +=dc\_prediction(x, y, c)}{\ref{dcprediction}}
 \bsEND
 \end{pseudo}
 
@@ -344,11 +389,12 @@ $(xpos, ypos)$.
 
 \label{spatialprediction}
 
-\paragraph{Prediction apertures}
+\paragraph{Prediction apertures\\}
 
 A consistent convention for prediction apertures is used. The nominal prediction 
 aperture for block motion data is defined to be the relevant data to the left, top
-and top-left of the data element in question (Figure \ref{predaperture}). For the superblock split mode of 
+and top-left of the data element in question (Figure \ref{predaperture}). 
+For the superblock split mode of 
 the superblock with index $(i,j)$ this means the superblocks with indices $(i-1,j)$,
 $(i,j-1)$ and $(i-1,j-1)$. For the block motion data itself, the same applies where these
 indices are {\em block} indices. 
@@ -377,15 +423,16 @@ indices are {\em block} indices.
 \caption{Basic prediction aperture}\label{predaperture}
 \end{figure}
 
-Note that this is the nominal prediction aperture. Not all data elements in this prediction
-aperture may be available, either because they would require negative indices, or because
-the data is not available - for example a block to the left of a block with mode \RefTwoOnly
-may have mode \RefOneOnly and so can furnish no contribution for a prediction to the
+This is the nominal prediction aperture. Not all data elements in this prediction
+aperture may be available, either because they would require negative indices, or
+ because the data is not available - for example a block to the left of a block with 
+reference mode  \RefTwoOnly may have reference mode \RefOneOnly and so 
+can furnish no contribution for a prediction to the
 Reference 2 motion vector.
 
-Note also that when superblocks have split level 1 or 0, block data has been propagated
+When superblocks have split level 1 or 0, block data shall be propagated
 (Section \ref{propagatedata}) across 4 or 16 blocks so as to furnish a prediction. The
-effect is illustrated for a variety of splitting modes in Figure \ref{splitapertures}.
+effect is illustrated in Figure \ref{splitapertures}.
 
 \setlength{\unitlength}{.75em}
 \begin{figure}[!ht]
@@ -448,22 +495,22 @@ effect is illustrated for a variety of splitting modes in Figure \ref{splitapert
 $\ $\newline
 $split\_prediction$ returns the mean of the the neighbouring split values:
 
-\begin{pseudo}{split\_prediction}{ypos, xpos}
-\bsIF{ xpos==0 \text{\bf and } ypos==0 }
+\begin{pseudo}{split\_prediction}{x, y}
+\bsIF{ x==0 \text{ \bf and } y==0 }
     \bsRET{0}
-\bsELSEIF{ypos==0}
-    \bsRET{\SBSplit[ypos][xpos-1]}
-\bsELSEIF{xpos==0}
-    \bsRET{\SBSplit[ypos-1][xpos]}
+\bsELSEIF{y==0}
+    \bsRET{\SBSplit[0][x-1]}
+\bsELSEIF{x==0}
+    \bsRET{\SBSplit[y-1][0]}
+\bsELSE
+    \bsCODE{ 
+    \begin{array}{ll}
+    \text{\bf return} & \mean(\SBSplit[y-1][x-1], \\
+                       &  \quad\quad\quad \SBSplit[y][x-1],  \\
+                       &  \quad\quad\quad \SBSplit[y-1][x])
+    \end{array}
+    }
 \bsEND
-
-\bsCODE{ 
-\begin{array}{ll}
-\text{return} & \mean(\SBSplit[ypos-1][xpos-1], \\
-                   &  \quad\quad\quad \SBSplit[ypos][xpos-1],  \\
-                   &  \quad\quad\quad \SBSplit[ypos-1][xpos])
-\end{array}
-}
 \end{pseudo}
 
 \paragraph{Block mode prediction}
@@ -473,21 +520,21 @@ The $ref\_mode\_prediction()$ function shall return a value that represents a ma
  verdict for the presence of each of the references individually. It shall be defined
  as follows:
 
-\begin{pseudo}{ref\_mode\_prediction}{ypos, xpos}
-\bsIF{ xpos==0 \text{\bf and } ypos==0 }
+\begin{pseudo}{ref\_mode\_prediction}{x, y}
+\bsIF{ x==0 \text{ \bf and } y==0 }
     \bsRET{\Intra}
-\bsELSEIF{ypos==0}
-    \bsRET{\BlockData[0][xpos-1][\RMode]}
-\bsELSEIF{xpos==0}
-    \bsRET{\BlockData[ypos-1][0][\RMode]}
+\bsELSEIF{y==0}
+    \bsRET{\BlockData[0][x-1][\RMode]}
+\bsELSEIF{x==0}
+    \bsRET{\BlockData[y-1][0][\RMode]}
 \bsELSE
-    \bsCODE{num\_ref1\_nbrs=\BlockData[ypos-1][xpos] \& 1}
-    \bsCODE{num\_ref1\_nbrs +=\BlockData[ypos-1][xpos-1] \& 1}
-    \bsCODE{num\_ref1\_nbrs +=\BlockData[ypos][xpos-1] \& 1}
+    \bsCODE{num\_ref1\_nbrs=\BlockData[y-1][x] \& 1}
+    \bsCODE{num\_ref1\_nbrs +=\BlockData[y-1][x-1] \& 1}
+    \bsCODE{num\_ref1\_nbrs +=\BlockData[y][x-1] \& 1}
     \bsCODE{pred=num\_ref1\_nbrs//2}    
-    \bsCODE{num\_ref2\_nbrs=(\BlockData[ypos-1][xpos]\gg 1) \& 1}
-    \bsCODE{num\_ref2\_nbrs +=(\BlockData[ypos-1][xpos-1] \gg 1) \& 1}
-    \bsCODE{num\_ref2\_nbrs +=(\BlockData[ypos][xpos-1] \gg 1) \& 1}
+    \bsCODE{num\_ref2\_nbrs=(\BlockData[y-1][x]\gg 1) \& 1}
+    \bsCODE{num\_ref2\_nbrs +=(\BlockData[y-1][x-1] \gg 1) \& 1}
+    \bsCODE{num\_ref2\_nbrs +=(\BlockData[y][x-1] \gg 1) \& 1}
     \bsCODE{pred \wedge= (num\_ref2\_nbrs//2)\ll 1}    
     \bsRET{pred}
 \bsEND
@@ -496,94 +543,82 @@ The $ref\_mode\_prediction()$ function shall return a value that represents a ma
 \paragraph{Block global flag prediction}
 \label{blockglobalprediction}
 $\ $\newline
+The $block\_global\_prediction()$ function shall return a value that represents a majority
+ verdict of the neighbouring blocks. It shall be defined as follows:
 
-$block\_global\_prediction$ returns a majority verdict of the neighbouring blocks:
-
-\begin{pseudo}{block\_global\_prediction}{ypos, xpos}
-\bsIF{ xpos==0 \text{\bf and } ypos==0 }
+\begin{pseudo}{block\_global\_prediction}{x, y}
+\bsIF{ x==0 \text{ \bf and } y==0 }
     \bsRET{\false}
-\bsELSEIF{ ypos==0 }
-    \bsRET{\BlockData[ypos][xpos-1][\GMode]}
-\bsELSEIF{xpos==0}
-    \bsRET{\BlockData[ypos-1][xpos][\GMode]}
+\bsELSEIF{ y==0 }
+    \bsRET{\BlockData[0][x-1][\GMode]}
+\bsELSEIF{x==0}
+    \bsRET{\BlockData[y-1][0][\GMode]}
+\bsELSE
+    \bsCODE{
+    \begin{array}{ll}
+    \text{\bf return} & \majority(\BlockData[y-1][x-1][\GMode], \\
+    & \quad\quad\quad \BlockData[y-1][x][\GMode],  \\
+    & \quad\quad\quad \BlockData[y][x-1][\GMode]) 
+    \end{array}
+    }
 \bsEND
-
-\bsCODE{
-\begin{array}{ll}
-\text{return} & \majority(\BlockData[ypos-1][xpos-1][\GMode], \\
-& \quad\quad\quad \BlockData[ypos-1][xpos][\GMode],  \\
-& \quad\quad\quad \BlockData[ypos][xpos-1][\GMode]) 
-\end{array}
-}
-
 \end{pseudo}
 
 \paragraph{Motion vector prediction}
 \label{mvprediction}
 $\ $\newline
-Motion vectors are predicted using the median of available block vectors in the aperture. A vector is available for
-prediction if a) its block falls within the picture area and b) its prediction mode allows it to be defined and c) it
-is not a global motion block. 
+Motion vectors shall be predicted using the median of available block vectors 
+in the aperture. A vector shall be available for prediction if:
+\begin{enumerate}
+\item its block falls within the picture area,
+\item its prediction mode allows it to be defined, and
+\item it is not a global motion block. 
+\end{enumerate}
 
-The process $mv\_prediction(ypos, xpos, ref, dirn)$ returns motion values according to
+The $mv\_prediction(x, y, ref, dirn)$ shall return motion values according to
 the following rules:
 
-{\bf Case 1.}  If $xpos==0$ and $ypos==0$, there are no vectors in the prediction aperture and
- $0$ is returned.
+{\bf Case 1.}  If $x==0$ and $y==0$, the value $0$ shall be returned.
 
-{\bf Case 2.} If $xpos>0$ and $ypos==0$ then:
+{\bf Case 2.} If $x>0$ and $y==0$ then:
 \begin{enumerate}
-   \item If 
-
-$\BlockData[ypos][xpos-1][\GMode]==\false$ 
-
-and 
-
-$\BlockData[ypos][xpos-1][\RMode][ref]==\true$ 
-
-then vector element $\BlockData[ypos][xpos-1][ref][dirn]$ is returned.
-
-   \item Otherwise, $0$ is returned
+   \item If  $\BlockData[0][x-1][\GMode]==\false$  and 
+$\BlockData[0][x-1][\RMode][ref]==\true$ then vector element $\BlockData[0][x-1][ref][dirn]$ shall be returned,
+   \item otherwise, $0$ shall be returned
 \end{enumerate}
 
-{\bf Case 3.} If $xpos==0$ and $ypos>0$ then:
+{\bf Case 3.} If $x==0$ and $y>0$ then:
 \begin{enumerate}
-   \item If 
-
-$\BlockData[ypos-1][xpos][\GMode]==\false$ 
-
-and 
-
-$\BlockData[ypos-1][xpos][\RMode][ref]==\true$
-
-then vector element $\BlockData[ypos-1][xpos][ref][dirn]$ is returned.
-
-   \item Otherwise, $0$ is returned
+   \item If  $\BlockData[y-1][0][\GMode]==\false$ and 
+$\BlockData[y-1][0][\RMode][ref]==\true$ then vector element 
+$\BlockData[y-1][0][ref][dirn]$ shall be returned,
+   \item otherwise, $0$ shall be returned
 \end{enumerate}
 
-{\bf Case 4.} If both $xpos>0$ and $ypos>0$ then all 3 blocks in the prediction aperture may potentially
-contribute to the prediction. Define the set $values=\emptyset$. The prediction is the 
-median of the available vector elements:
+{\bf Case 4.} If both $x>0$ and $y>0$ then all 3 blocks in the prediction aperture 
+may potentially contribute to the prediction. Define the set $values=\{\}$. The prediction 
+shall be the median of the available vector elements, as defined in the following
+pseudocode:
 
 \begin{pseudo*}
-\bsIF{xpos>0 \text{ and } ypos>0 }
-    \bsIF{\BlockData[ypos][xpos-1][\GMode]==\false}
-        \bsIF{\BlockData[ypos][xpos-1][\RMode][ref]==\true}
-            \bsCODE{values = values\cup\{\BlockData[ypos][xpos-1][ref][dirn] \} }
+\bsIF{x>0 \text{ \bf and } y>0 }
+    \bsIF{\BlockData[y][x-1][\GMode]==\false}
+        \bsIF{\BlockData[y][x-1][\RMode][ref]==\true}
+            \bsCODE{values = values\cup\{\BlockData[y][x-1][ref][dirn] \} }
         \bsEND
     \bsEND
-    \bsIF{\BlockData[ypos-1][xpos][\GMode]==\false}
-        \bsIF{\BlockData[ypos-1][xpos][\RMode][ref]==\true}
-            \bsCODE{values = values\cup\{\BlockData[ypos-1][xpos][ref][dirn] \} }
+    \bsIF{\BlockData[y-1][x][\GMode]==\false}
+        \bsIF{\BlockData[y-1][x][\RMode][ref]==\true}
+            \bsCODE{values = values\cup\{\BlockData[y-1][x][ref][dirn] \} }
         \bsEND
     \bsEND
-    \bsIF{\BlockData[ypos-1][xpos-1][\GMode]==\false}
-        \bsIF{\BlockData[ypos-1][xpos-1][\RMode][ref]==\true}
-            \bsCODE{values = values\cup\{\BlockData[ypos-1][xpos-1][ref][dirn] \} }
+    \bsIF{\BlockData[y-1][x-1][\GMode]==\false}
+        \bsIF{\BlockData[y-1][x-1][\RMode][ref]==\true}
+            \bsCODE{values = values\cup\{\BlockData[y-1][x-1][ref][dirn] \} }
         \bsEND
     \bsEND
 
-    \bsRET{\median(values)}
+    \bsRET{\median(values)}{\ref{integerops}}
 \bsEND
 \end{pseudo*}
 
@@ -592,42 +627,44 @@ median of the available vector elements:
 \paragraph{DC value prediction}
 \label{dcprediction}
 $\ $\newline
-DC values are predicted using the unbiased mean available values in the aperture. The
-process $dc\_prediction(ypos, xpos, comp)$ returns values according to
+DC values shall be predicted using the unbiased mean of available values 
+in the prediction aperture. 
+
+The process $dc\_prediction(x, y, c)$ shall return values according to
 the following rules:
 
-{\bf Case 1.}  If $xpos==0$ and $ypos==0$, there are no blocks in the prediction aperture and
-the default prediction 0 is returned.
+{\bf Case 1.}  If $x==0$ and $y==0$, $0$ shall be returned.
 
-{\bf Case 2.} If $xpos>0$ and $ypos==0$ then:
+{\bf Case 2.} If $x>0$ and $y==0$ then:
 \begin{enumerate}
-   \item If $\BlockData[ypos][xpos-1][\RMode]==\Intra$, $\BlockData[ypos][xpos-1][\DC][comp]$ is returned
-   \item Otherwise, 0 is returned
+   \item If $\BlockData[0][x-1][\RMode]==\Intra$, $\BlockData[0][x-1][\DC][c]$ 
+shall be returned,
+   \item otherwise, $0$ shall be returned.
 \end{enumerate}
 
-{\bf Case 3.} If $xpos==0$ and $ypos>0$ then:
+{\bf Case 3.} If $x==0$ and $y>0$ then:
 \begin{enumerate}
-   \item If $\BlockData[ypos-1][xpos][\RMode]==\Intra$, $\BlockData[ypos-1][xpos][\DC][comp$ is returned
-   \item Otherwise, 0 is returned
+   \item If $\BlockData[y-1][0][\RMode]==\Intra$, $\BlockData[y-1][0][\DC][c]$
+shall be returned,
+   \item otherwise, 0 shall be returned.
 \end{enumerate}
 
-{\bf Case 4.} If both $xpos>0$ and $ypos>0$ then all 3 blocks in the prediction aperture may potentially
-contribute to the prediction. Define a set $values=\emptyset$. The prediction is the 
-unbiased mean of available values:
+{\bf Case 4.} If both $x>0$ and $y>0$ then all 3 blocks in the prediction aperture may
+ potentially contribute to the prediction. Define a set $values=\{\}$. The prediction shall
+be the unbiased mean of available values, as defined in the following pseudocode:
 
 \begin{pseudo*}
-\bsIF{ xpos>0 \text{ and } ypos>0 }
-    \bsIF{\BlockData[ypos][xpos-1][\RMode]==\Intra}
-        \bsCODE{values = values\cup\{\BlockData[ypos][xpos-1][\DC][comp] \} }
+\bsIF{ x>0 \text{ \bf and } y>0 }
+    \bsIF{\BlockData[y][x-1][\RMode]==\Intra}
+        \bsCODE{values = values\cup\{\BlockData[y][x-1][\DC][c] \} }
     \bsEND
-    \bsIF{\BlockData[ypos-1][xpos][\RMode]==\Intra}
-        \bsCODE{values = valuesx\cup\{\BlockData[ypos-1][xpos][ref][\DC][comp] \} }
+    \bsIF{\BlockData[y-1][x][\RMode]==\Intra}
+        \bsCODE{values = valuesx\cup\{\BlockData[y-1][x][ref][\DC][c] \} }
     \bsEND
-    \bsIF{\BlockData[ypos-1][xpos-1][\RMode]==\Intra}
-        \bsCODE{values = values\cup\{\BlockData[ypos-1][xpos-1][ref][\DC][comp] \} }
+    \bsIF{\BlockData[y-1][x-1][\RMode]==\Intra}
+        \bsCODE{values = values\cup\{\BlockData[y-1][x-1][ref][\DC][c] \} }
     \bsEND
-
-    \bsIF{values!=\emptyset}
+    \bsIF{values!=\{\}}
         \bsRET{pred =\mean(values)}
     \bsELSE
         \bsRET{0}
@@ -635,41 +672,38 @@ unbiased mean of available values:
 \bsEND
 \end{pseudo*}
 
-
 \subsubsection{Block motion parameter contexts}
 
-\paragraph{Superblock splitting mode}
+\paragraph{Superblock splitting mode}\label{sbcontexts}
 $\ $\newline
-The $sb\_split\_contexts()$ function returns the following unsigned integer context set:
+The $sb\_split\_contexts()$ function shall return a context label map $c$ with the 
+following values:
 
 \begin{itemize}
-\item Follow = [ \SBSplitFollowOne, \SBSplitFollowTwo ]
-\item Data = \SBSplitData
+\item $c[FOLLOW] = [ \SBSplitFollowOne, \SBSplitFollowTwo ]$
+\item $c[DATA] = \SBSplitData$
 \end{itemize}
 
 \paragraph{Motion vectors}
 \label{mvcontexts}
 $\ $\newline
-There is a single signed integer context set for motion vector data, which is re-used for each of the four vector elements
-(references 1 and 2, horizontal and vertical).
+The $mv\_contexts()$ function shall return a context label map $c$ with the 
+following values:
 
-$mv\_contexts()$ returns the set with
 \begin{itemize}
-\item Follow = [ \VectorFollowOne, \VectorFollowTwo, \VectorFollowThree, \VectorFollowFour, \VectorFollowFivePlus ]
-\item Data = \VectorData
-\item Sign = \VectorSign
+\item $c[FOLLOW] = [ \VectorFollowOne, \VectorFollowTwo, \VectorFollowThree, \VectorFollowFour, \VectorFollowFivePlus ]$
+\item $c[DATA] = \VectorData$
+\item $c[SIGN] = \VectorSign$
 \end{itemize}
 
 \paragraph{DC values}
 \label{dcvaluecontexts}
 
-There is a single signed integer context set for DC values, which is reused for each component. 
-
-$dc\_contexts(Y)$ returns the set:
+The $dc\_contexts()$ function shall return a context label map $c$ with the 
+following values:
 
 \begin{itemize}
-\item Follow = [ \DCFollowOne, \DCFollowTwoPlus ]
-\item Data = \DCData
-\item Sign = \DCSign
+\item $c[FOLLOW] = [ \DCFollowOne, \DCFollowTwoPlus ]$
+\item $c[DATA] = \DCData$
+\item $c[SIGN] = \DCSign$
 \end{itemize}
-

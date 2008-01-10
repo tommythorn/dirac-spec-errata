@@ -1,31 +1,24 @@
 \label{wltunpacking}
 
-This section specifies the $transform\_data()$ process for
-unpacking (parsing, entropy decoding and inverse
-quantising) of wavelet coefficient data
-from the Dirac stream. . Wavelet coefficients shall be signed integer 
-values and shall be extracted using the integer VLC and (optionally) arithmetic 
-decoding functions  defined in Annex \ref{dataenc}. 
-
-The result of this process shall be a set
-of fully-populated wavelet subband data arrays, as defined in
+This section defines the process for unpacking (parsing, entropy decoding and 
+inverse quantizing) wavelet transform coefficient data from the Dirac stream. 
+Wavelet coefficients shall be signed integer values and shall be extracted 
+using the integer VLC and (optionally) arithmetic decoding functions defined in annex A. 
+The use of arithmetic coding within a picture shall be as signaled by the parse codes
+defined in Section \ref{parsecodes}. The result of this process shall be a set of fully
+ populated wavelet subband data arrays, as defined in
 Section \ref{wltdecodeconventions}.
 
-Wavelet coefficients are packed in one of two possible formats:
-
-\begin{itemize}
-\item In the core syntax, coefficients shall be grouped within individual
-subbands, representing a range of spatial frequencies, from the
-lowest to the highest. A full set of subbands shall be encoded for each
-video component in turn. 
-
-\item In the low delay syntax, coefficients
-shall be grouped into `slices' which represent coefficients pertaining
-to an area of the picture. Each slice shall contain data for all video 
-components and spatial frequency bands. Unpacking a slice 
-allows an area of picture to be extracted without extracting (or even
-receiving) the remaining picture data.
-\end{itemize}
+Wavelet coefficients shall be packed in the bitstream in one of two possible formats: 
+\begin{enumerate}
+\item In the core syntax, coefficients shall be grouped within individual subbands,
+ representing a range of spatial frequencies, from the lowest to the highest. A full set of
+ subbands shall be encoded for each video component in turn.  
+\item  In the low delay syntax, coefficients shall be grouped into slices that represent
+coefficients pertaining to an area of the picture. Each slice shall contain data for all video
+components and spatial frequency bands. Unpacking a slice allows an area of picture to
+be extracted without extracting (or even receiving) the remaining picture data.
+\end{enumerate}
 
 The overall process for unpacking transform data shall be as follows:
 
@@ -39,8 +32,8 @@ The overall process for unpacking transform data shall be as follows:
 \bsEND
 \end{pseudo}
 
-Unpacked wavelet coefficient data shall be stored in the state variables $\YTransform$, $COneTransform$ and $CTwoTransform$ for subsequent picture decoding 
-(Section \ref{picturedec}).
+Unpacked wavelet coefficient data shall be stored in the state variables $\YTransform$,
+ $COneTransform$ and $CTwoTransform$ for the IDWT process (Section \ref{idwt}).
 
 \subsection{Subband data structures}
 \label{wltdecodeconventions}
@@ -117,7 +110,7 @@ numbering, for a 4-level wavelet decomposition}\label{fig:orientlevel}
 
 \label{wltinit}
 
-This section specifies the $initialise\_wavelet\_data(comp)$ process, which returns a structure which will
+This section defines the $initialise\_wavelet\_data(comp)$ process, which returns a structure which will
 contain the wavelet coefficients for the component (Y, C1 or C2) indicated by $comp$. 
 
 The coefficient data shall comprise the four dimensional array $coeff\_data$, where
@@ -207,7 +200,7 @@ bottom and right edges at high levels of compression.
 \subsection{Inverse quantisation}
 \label{invquant}
 
-This section specifies the operation of inverse quantisation, which scales the
+This section defines the operation of inverse quantisation, which scales the
 dynamic range of unpacked wavelet coefficients according to a pre-determined factor.
 The inverse quantisation operation is common to both the low-delay and core syntax.
 
@@ -241,7 +234,7 @@ then inverse quantise, and then extract the coefficient sign.
 \subsubsection{Quantisation factors and offsets}
 \label{quantfacs}
 
-This section specifies the operation of the $quant\_factor()$ and 
+This section defines the operation of the $quant\_factor()$ and 
 $quant\_offset()$ functions for performing inversion quantisation.
 
 Quantisation factors shall be determined as follows:
@@ -308,11 +301,11 @@ The Intra DC subband prediction process shall be defined as follows:
 \bsCODE{prediction = 0 }
 \bsFOR{v=0}{\height(band)-1}
   \bsFOR{h=0}{\width(band)-1}
-      \bsIF{h>0 \text{\bf and} v>0}
+      \bsIF{h>0 \text{ \bf and } v>0}
             \bsCODE{prediction=\mean(band[v][h-1],band[v-1][h-1],band[v-1][h])}
-      \bsELSEIF{h>0 \text{\bf and} v==0}
+      \bsELSEIF{h>0 \text{ \bf and } v==0}
             \bsCODE{prediction=band[0][h-1]}
-      \bsELSEIF{h==0 \text{\bf and} v>0}
+      \bsELSEIF{h==0 \text{ \bf and } v>0}
             \bsCODE{prediction=band[v-1][0]}
       \bsELSE
             \bsCODE{prediction = 0}
@@ -326,7 +319,7 @@ The Intra DC subband prediction process shall be defined as follows:
 
 \label{transformdec}
 
-This section specifies the overall operation of the $core\_transform\_data(comp)$ process
+This section defines the overall operation of the $core\_transform\_data(comp)$ process
 for unpacking the set of coefficient subbands corresponding
 to a video component (Y, C1 or C2) of a picture in the core Dirac syntax, 
 according to the conventions set out in Section \ref{wltdecodeconventions}.
@@ -469,7 +462,7 @@ The process for unpacking coefficients within the codeblock shall be defined as 
   \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{v=cb\_top(y,band,level)}{cb\_bottom(y,band,level)-1}{\ref{codeblockdimensions}}
     \bsFOR{h=cb\_left(x,band,level)}{cb\_right(x,band,level)-1}{\ref{codeblockdimensions}}
-          \bsCODE{coeff\_unpack(coeff\_data,level,orient,quant_idx,v,h)}{\ref{wltcoeff}}
+          \bsCODE{coeff\_unpack(coeff\_data,level,orient,quant\_idx,h,v)}{\ref{wltcoeff}}
       \bsEND
     \bsEND
   \bsEND
@@ -572,7 +565,7 @@ The $coeff\_unpack()$ process shall be defined as follows:
 \bsELSE
     \bsCODE{quant\_coeff = read\_sintb()}{}
 \bsEND
-\bsCODE{coeff\_data[level][orient][x][y] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
+\bsCODE{coeff\_data[level][orient][y][x] = inverse\_quant( quant\_coeff, quant\_index )}{\ref{invquant}}
 \end{pseudo}
 
 \paragraph{Zero parent}
@@ -826,7 +819,7 @@ DC values at the top and left edges of a slice shall be predicted from DC values
 \subsubsection{Slices}
 \label{sliceparsing}
 
-This section specifies the operation of the $slice(sx,sy)$ process for unpacking
+This section defines the operation of the $slice(sx,sy)$ process for unpacking
  coefficients within the slice with coordinates $(sx,sy)$. 
 
 Each slice shall contain the relevant coefficients from all subbands and for all 
@@ -876,7 +869,7 @@ the chroma coefficients, initializing to the number of bits remaining.
 \subsubsection{Slice bytes}
 \label{slicebytes}
 
-This section specifies the $slice\_bytes(sx,sy)$ function for determining the number of bytes to be used for the slice at location $(sx,sy)$:
+This section defines the $slice\_bytes(sx,sy)$ function for determining the number of bytes to be used for the slice at location $(sx,sy)$:
 
 \begin{pseudo}{slice\_bytes}{sx,sy}
 \bsCODE{slice\_num=sy*\SlicesX+sx}
@@ -894,7 +887,7 @@ bytes &-= & ((slice\_num)*\SliceBytesNum)// \\
 \subsubsection{Setting slice quantisers}
 \label{slicequantisers}
 
-This section specifies how quantisers for individual subbands are determined from the quantisation matrix and the quantisation index.
+This section defines how quantisers for individual subbands are determined from the quantisation matrix and the quantisation index.
 
 \begin{pseudo}{set\_band\_quantisers}{qindex}
 \bsCODE{\Quant[0][\LL]=\max(qindex-\QuantMatrix[0][\LL],0)}
@@ -909,7 +902,7 @@ This section specifies how quantisers for individual subbands are determined fro
 \subsubsection{Slice subbands}
 \label{sliceband}
 
-This section specifies the operation of the $luma\_slice\_band( level,orient,sx,sy)$ for 
+This section defines the operation of the $luma\_slice\_band( level,orient,sx,sy)$ for 
 unpacking individual luma slice subbands, and $chroma\_slice\_band( level,orient,sx,sy)$. for 
 unpacking individual chroma slice subbands.
 
