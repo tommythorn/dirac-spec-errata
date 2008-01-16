@@ -248,7 +248,7 @@ The horizontal weighting function shall be defined as follows:
 
 \begin{pseudo}{h\_wt}{i}
 \bsFOR{x=0}{2*\XOffset-1}
-    \bsCODE{hwt[x]=1+(6*x+\XOffset-1)//(2*\XOffset-1)}
+    \bsCODE{hwt[x]=1+(6*(x+1)+\XOffset)//(2*\XOffset+1)}
     \bsCODE{hwt[x+\XBsep]=8-hwt[x]}
 \bsEND
 \bsFOR{2*\XOffset}{\XBsep-1}
@@ -270,11 +270,11 @@ The vertical weighting function  shall be defined as follows:
 
 \begin{pseudo}{v\_wt}{j}
 \bsFOR{y=0}{2*\YOffset-1}
-    \bsCODE{vwt[y]=1+(6*y+\XOffset-1)//(2*\YOffset-1)}
-    \bsCODE{vwt[y+\XBsep]=8-vwt[y]}
+    \bsCODE{vwt[y]=1+(6*(y+1)+\YOffset)//(2*\YOffset+1)}
+    \bsCODE{vwt[y+\YBsep]=8-vwt[y]}
 \bsEND
 \bsFOR{2*\YOffset}{\YBsep-1}
-    \bsCODE{xwt[y]=8}
+    \bsCODE{vwt[y]=8}
 \bsEND
 \bsIF{j==0}
     \bsFOR{y=0}{2*\YOffset-1}
@@ -282,7 +282,7 @@ The vertical weighting function  shall be defined as follows:
     \bsEND
 \bsELSEIF{j==\BlocksY-1}
     \bsFOR{y=0}{2*\YOffset-1}
-        \bsCODE{vwt[x+\YBsep]=8}
+        \bsCODE{vwt[y+\YBsep]=8}
     \bsEND
 \bsEND
 \bsRET{vwt}
