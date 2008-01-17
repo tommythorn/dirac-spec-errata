@@ -140,12 +140,14 @@ has been padded (if necessary) so that its
 dimensions are a multiple of $2^{\TransformDepth}$.
 
 Individual subband coefficients shall be signed integers accessed by vertical and 
-horizontal coordinates within the subband
+horizontal coordinates within the subband, e.g.:
 \[c = coeff\_data[level][orient][y][x]\]
 
-where the range of allowable coordinates for a subband coefficient is 
-$0\leq x<subband\_width(level,comp)$ and
-$0\leq y<subband\_height(level,comp)$.
+for coordinates $(x,y)$ such that
+\begin{eqnarray*} 
+0\leq x<subband\_width(level,comp) \\
+0\leq y<subband\_height(level,comp)
+\end{eqnarray*}
 
 \subsubsection{Subband dimensions}
 \label{subbandwidthheight}
