@@ -1,8 +1,7 @@
-\input{dirac-concepts}
-
 \subsection{Purpose}
 \label{intropurpose}
-Dirac was developed to address the growing complexity and cost of current video
+Dirac is an open video codec developed by the BBC. Itwas developed to address 
+the growing complexity and cost of current video
 compression technologies, which provide greater compression efficiency
 at the expense of implementing a very large number of tools. Dirac is
 a powerful and flexible compression system, yet uses only a small number
@@ -19,97 +18,59 @@ open source at \underline{http://schrodinger.sourceforge.net}.
 \subsection{Scope}
 \label{introscope}
 
-This document specifies normative decoder operations and 
-stream syntax. The stream syntax is primarily specified by means of
-pseudocode, the conventions of which are described in Section \ref{pseudocode}.
-The decoder operations are specified by means of a mixture of pseudocode
-and conventional mathematical symbolism.
-
-A number of other elements are also included for informative purposes.
-The specification is not an implementation guide, and in the interests
-of clarity many of the operations are specified in a way that would not be 
-efficient to implement. However, we have attempted
-to indicate where this is so, and to suggest ways in which an efficient implementation
-may be achieved, but these are by no means exhaustive. An optimised Open Source
-software Dirac encoder and decoder system, named Schr\"odinger, is available at
-\underline{http://sourceforge.net/projects/schrodinger}, and may be studied to aid implementation.
-
-In addition, we are well aware that many users of this document may wish
-to make both encoders and decoders. There are many sources of information
-on how to design efficient compression algorithms, for example for entropy coding,
-motion estimation, frame-dropping, rate control, motion estimation and 
-rate-distortion optimisation. This document does not attempt to address these
-issues in detail, but to provide supplementary information where appropriate
-to allow those reasonably `skilled in the art' to develop a Dirac encoder
-rapidly and accurately, and approach design compromises knowledgably.
+This standard defines the Dirac video compression codec through the stream syntax,
+ entropy coding, coefficient unpacking and picture decoding processes. The decoder
+ operations are defined by means of a mixture of pseudocode and mathematical 
+operations.
+ 
+Dirac is a long-GOP video codec that uses wavelet transforms and motion compensation
+ together with entropy coding, that can be readily implemented in hardware or software.
+Dirac is a superset of the proposed SMPTE VC-2 video codec standard which 
+comprises the intra coding parts of this specification.
 
 \subsection{Status}
 \label{introstatus}
 
 This is version $\SpecVersion$ of the Dirac specification. The document includes
-a full description of the core Dirac stream syntax and decoder operations, together
-with compatible extensions to support low-delay operation. It does
-not yet contain a full specification of profiles and levels supported by Dirac.
+a full description of the Dirac stream syntax and decoder operations.
 
-\subsection{Document structure}
-\label{introdocstruct}
+This version is compatible with and extends Version 1.0 by the addition of motion
+ compensated coding. Version 1.0 corresponds exactly to the proposed SMPTE VC-2
+ video codec standard.
 
-This document specifies the Dirac decoder and stream structure in terms of
-a layered model:
+Subsequent versions of this specification may contain additional tools.
 
-\begin{enumerate}
-    \item Stream data access
-    \item Parsing and interpretation of the Dirac stream metadata
-    \item Unpacking of Dirac data -- coefficients and motion data
-    \item Picture decoding operations
-\end{enumerate}
+\subsection{Conformance notation}
 
-Stream data access consists of the operations used to extract data values
-(of boolean and integer type) from a raw Dirac bitstream. These include
-data that has been encoded `literally' (i.e. according to conventional bit-wise
-representations), variable-length codes, and data entropy coded using arithmetic
-encoding. Stream data access methods are used both by parsing and unpacking operations.
+Normative text is text that describes elements of the design that are indispensable or
+ contains the conformance language keywords: "shall", "should", or "may". Informative 
+text is text that is potentially helpful to the user, but not indispensable, and can be 
+removed, changed, or added editorially without affecting interoperability. Informative 
+text does not contain any conformance keywords.
 
-Parsing and interpretation defines the structure of Dirac streams, including
-random access points and navigation. 
+All text in this document is, by default, normative, except: the Introduction, any section
+ explicitly labeled as "Informative" or individual paragraphs that start with "Note:”
+The keywords "shall" and "shall not" indicate requirements strictly to be followed in order
+ to conform to the document and from which no deviation is permitted
 
-Unpacking comprises parsing transform and motion data, and performing
-inverse quantisation to reconstruct wavelet coefficients, and defines
-intermediate decoder data structures in which extracted data is stored. This
-step may be seen either as a stream parsing operation or as a decoding
-operation, but it is separated here for clarity, and also because it
-deals with intermediate data structures (transform coefficients and motion vectors), 
-neither directly present in the bitstream nor output by the decoder.
+The keywords, "should" and "should not" indicate that, among several possibilities, one 
+is recommended as particularly suitable, without mentioning or excluding others; or that a
+ certain course of action is preferred but not necessarily required; or that (in the negative
+ form) a certain possibility or course of action is deprecated but not prohibited.
 
-Picture decoding operations produce decoded pictures from these populated
-data structures by applying specified functions to them. These operations
-are logically distinct from those for navigating the stream, reading the stream data
-or reconstructing coefficients.
+The keywords "may" and "need not" indicate courses of action permissible within the 
+limits of the document.
 
-Note in particular that the distinction between parsing and picture decoding is
-{\em not} exactly that between syntax and semantics: complex semantics are
-required for correct parsing of the stream as well as for decoding pictures. 
+The keyword “reserved” indicates a provision that is not defined at this time, shall not 
+be used, and may be defined in the future. The keyword “forbidden” indicates “reserved”
+ and in addition indicates that the provision will never be defined in the future.
+A conformant implementation according to this document is one that includes all
+ mandatory provisions ("shall") and, if implemented, all recommended provisions ("should") 
+as described. A conformant implementation need not implement optional provisions 
+("may") and need not implement them as described.
 
-It is perhaps unusual in a specification to separate these layers quite so distinctly, 
-and our purpose in doing so is to provide much greater clarity. For implementors,
-we hope that the decoupling of the stream structure from the (computationally intensive)
-picture decoding processes will avoid imposing
-implicit design decisions merely through the style of the specification. Many
-other users of the specification will not be interested in the precise format
-of stream elements but in how the underlying algorithm works - or vice-versa.
-It should be possible to construct a Dirac parsing engine, for example for
-frame skipping in video playback applications, extremely simply and without
-requiring comprehension of the entire specification.
+Unless otherwise specified the order of precedence of the types of normative 
+information in this document shall be as follows. Normative prose shall be the authoritative 
+definition. Tables shall be next, followed by formal languages, then figures, and then any
+ other language forms.
 
-\begin{comment}
-This layered structure is reflected in the structure of the specification,
-which, after defining conventions used, is divided into three
-corresponding parts: stream data access, defining functions for data types; 
-accessing and parsing the Dirac bitstream and populating data
-structures (including the wavelet coefficients and motion data); and 
-high-level decoder operations and picture output, specifically the
-inverse wavelet transform and motion compensation.
-
-In addition to these parts, appendices deal with standard settings, parameter
-presets and levels and profiles.
-\end{comment}

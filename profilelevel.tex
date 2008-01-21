@@ -1,22 +1,58 @@
 \label{profilelevel}
 
-A compliant Dirac decoder may support a number of different profiles and levels, which determine 
-which tools, syntax elements and structures are to be supported, and what decoder resources 
-(computational and memory) are required. Profiles deal largely with the former and levels
-with the latter, although in particular in a software implementation, the choice of supported tools
-also affects decoder resources. Level constraints are expressed in terms of picture sizes and 
-formats 
+A profile determines which tools, syntax elements and parameter values (such as wavelet 
+ filters or wavelet depths) are to be 
+supported. A level determines what decoder resources (computational and memory)
+ are required. 
 
-A particular profile will require that particular syntax/syntax elements be used and that decoder
-variables or functions are set to particular values. Currently only two profiles are defined, Main and Low-Delay. Low-delay profile corresponds to a decoder capable of decoding the low-delay syntax only. 
-Main profile corresponds to a decoder capable of decoding the both the core syntax and low-delay syntax.
+A particular profile may require that particular syntax elements be used and that decoder
+variables or functions be set to particular values. 
 
-Levels determine the size of the
-decoded picture buffer $\DecodedBuffer$ and the stream buffer for data entering the decoder. Levels
-apply differently in Low-Delay and Main profile, as buffering requirements are quite different (and much
-less demanding) for Low-Delay operation.
-The operation of these buffers is described in Sections \ref{decodedbufferop} and \ref{streambufferop}.
+A decoder may advertise compliance with a given profile or set of profiles. 
+Such a decoder shall support decoding of all syntax elements supported by the profile(s),
+ and all parameter settings defined by the profile(s).
 
+A decoder may advertise compliance with a given level or levels. Such a decoder shall
+perform real-time decoding of Dirac sequences satisfying the level constraints.
+
+An `Undefined' profile and an `Undefined' level are defined also, as defined in annexes 
+\ref{profile} and \ref{level}. These shall have corresponding value 0 encoded in the stream.
+
+\begin{informative}
+Software decoder implementations cannot in general guarantee real-time performance,
+and hence are unlikely to be able to advertise level compliance.
+\end{informative}
+
+\subsection{Profiles}
+\label{profiles}
+
+A sequence compliant with a given profile $n$ shall set $\Profile$ equal to $n$.
+
+The following profiles shall be defined:
+\begin{description}
+\item[0 -- Undefined] An Undefined profile sequence may contain any valid combination
+of syntax elements or parameter values defined in this specification. Decoding an
+undefined profile sequence may require any decoding function defined in this
+ specification.
+\end{description}
+
+Subsequent editions of this specification may define further profiles.
+
+\subsection{Levels}
+\label{level}
+
+A sequence compliant with a given level $n$ shall set $\Level$ equal to $n$.
+
+The following levels shall be defined:
+\begin{description}
+\item[0 -- Undefined] An Undefined level sequence shall impose no constraints on
+any feature of the sequence. A compliant decoder shall not be required to decode level 0
+streams in real time.
+\end{description}
+
+Subsequent editions of this specification may define further levels.
+
+\begin{comment}
 \subsection{Decoded picture buffer model operation}
 \label{decodedbufferop}
 
@@ -156,9 +192,4 @@ how an identically-sized encoder stream buffer (ESB) would operate to ensure cor
 in practice some encoder-side headroom may be required.
 
 [TBC]
-
-\subsection{Supported profiles}
-
-
-\subsection{Supported levels}
-[TBC]
+\end{comment}
