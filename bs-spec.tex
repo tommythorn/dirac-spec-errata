@@ -408,15 +408,24 @@ of the sequence header within a Dirac sequence.
 
 \subsubsection{Version number}
 
-The major version number shall define the version of the syntax with which the stream complies. A decoder complies with a major version number if it can parse all bit streams that comply with that version number. Decoders that comply with a major version of the specification may not be able to parse the bit stream corresponding to a later specification.
+The major version number shall define the version of the syntax with which the stream complies. 
+A decoder complies with a major version number if it can parse all bit streams that comply with 
+that version number. Decoders that comply with a major version of the specification may not be 
+able to parse the bit stream corresponding to a later specification.
 
-Depending on the profile and level defined, a decoder compliant with a given major version number may still not be able to decode fully all parts of a stream.
+Depending on the profile and level defined, a decoder compliant with a given major version 
+number may still not be able to decode fully all parts of a stream.
 
-All minor versions of the specification shall be functionally compatible with earlier minor versions with the same major version number. Later minor versions may contain corrections, clarifications, and removal of ambiguities. Later minor version numbers shall not contain new features or new normative provisions.
+All minor versions of the specification shall be functionally compatible with earlier minor versions 
+with the same major version number. Later minor versions may contain corrections, clarifications, 
+and removal of ambiguities. Later minor version numbers shall not contain new features or new 
+normative provisions.
 
-The major version number of a stream compliant with this version of the Dirac standard shall be 2.
+The major version number of a stream compliant with this version of the Dirac standard shall 
+be \MajorVersion.
 
-The minor version number of a stream compliant with this version of the Dirac standard shall be 0.
+The minor version number of a stream compliant with this version of the Dirac standard 
+shall be \MinorVersion.
 
 
 \subsubsection{Profiles and levels}

@@ -247,9 +247,16 @@ weighting matrix. It shall be defined as follows:
 The horizontal weighting function shall be defined as follows:
 
 \begin{pseudo}{h\_wt}{i}
-\bsFOR{x=0}{2*\XOffset-1}
-    \bsCODE{hwt[x]=1+(6*(x+1)+\XOffset)//(2*\XOffset+1)}
-    \bsCODE{hwt[x+\XBsep]=8-hwt[x]}
+\bsIF{\XOffset!=1}
+    \bsFOR{x=0}{2*\XOffset-1}
+        \bsCODE{hwt[x]=1+(6*x+\XOffset-1)//(2*\XOffset-1)}
+        \bsCODE{hwt[x+\XBsep]=8-hwt[x]}
+    \bsEND
+\bsELSE
+    \bsCODE{hwt[0]=3}
+    \bsCODE{hwt[1]=5}
+    \bsCODE{hwt[\XBsep]=5}
+    \bsCODE{hwt[\XBsep+1]=3}
 \bsEND
 \bsFOR{2*\XOffset}{\XBsep-1}
     \bsCODE{hwt[x]=8}
@@ -269,9 +276,16 @@ The horizontal weighting function shall be defined as follows:
 The vertical weighting function  shall be defined as follows:
 
 \begin{pseudo}{v\_wt}{j}
-\bsFOR{y=0}{2*\YOffset-1}
-    \bsCODE{vwt[y]=1+(6*(y+1)+\YOffset)//(2*\YOffset+1)}
-    \bsCODE{vwt[y+\YBsep]=8-vwt[y]}
+\bsIF{\YOffset!=1}
+    \bsFOR{y=0}{2*\YOffset-1}
+        \bsCODE{vwt[y]=1+(6*y+\YOffset-1)//(2*\YOffset-1)}
+        \bsCODE{vwt[y+\YBsep]=8-vwt[y]}
+    \bsEND
+\bsELSE
+    \bsCODE{vwt[0]=3}
+    \bsCODE{vwt[1]=5}
+    \bsCODE{vwt[\YBsep]=5}
+    \bsCODE{vwt[\YBsep+1]=3}
 \bsEND
 \bsFOR{2*\YOffset}{\YBsep-1}
     \bsCODE{vwt[y]=8}
@@ -314,7 +328,7 @@ in Table \ref{blockparamsvalues} for both luma and chroma.
 \rowcolor[gray]{0.75}\bf{Overlap}  & \bf{Offset} & \bf{Leading edge} \\
 \rowcolor[gray]{0.75}\bf{(length-separation)} & & \\
 \hline
-2 & 1 & 1,7\\
+2 & 1 & 3,5\\
 \hline
 4 & 2 & 1,3,5,7\\
 \hline
