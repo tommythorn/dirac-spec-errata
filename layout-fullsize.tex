@@ -13,6 +13,7 @@
 \usepackage{fancyhdr}
 \usepackage{layout}
 \usepackage{makeidx}
+\usepackage[dvipdfm,colorlinks,linkcolor=blue]{hyperref}
 \DeclareFontShape{OT1}{cmtt}{bx}{n}{<->cmbtt10}{}
 
 \setlength\voffset{-0.5in}
@@ -36,7 +37,7 @@
 \fancyhead[LE,OR]{\bfseries\thepage}
 \fancyhead[RE]{\bfseries\leftmark}
 \fancyhead[OL]{\bfseries\rightmark}
-%\fancyfoot[EC,OC]{\input{.version-date}}
+\fancyfoot[EC,OC]{\copyright BBC \today}
 \renewcommand{\headrulewidth}{0.5pt}
 \renewcommand{\footrulewidth}{0.5pt}
 \addtolength{\headheight}{0.5pt}
@@ -90,7 +91,7 @@
 
 \begin{document}
 \newcommand{\MajorVersion}{\text{2}}
-\newcommand{\MinorVersion}{\text{1}}
+\newcommand{\MinorVersion}{\text{2}}
 \newcommand{\TypoVersion}{\text{0}}
 \newcommand{\SpecVersion}{\text{\MajorVersion.\MinorVersion.\TypoVersion}}
 
@@ -111,7 +112,6 @@
 \end{abstract}
 }
 \end{titlepage}
-
 
 \input{state-macros}
 
