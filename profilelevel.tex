@@ -22,9 +22,13 @@ in the sequence.
 in the parse parameters for each sequence header in the sequence.
 \item A Main (Intra) profile sequence shall set $\Profile$ equal to a value of $2$ 
 in the parse parameters for each sequence header in the sequence.
-\item A Main (Long GOP) profile sequence shall set $\Profile$ equal to a value of $3$ 
+\item A Main (Long GOP) profile sequence shall set $\Profile$ equal to a value of $8$ 
 in the parse parameters for each sequence header in the sequence.
 \end{itemize}
+
+Further VC-2 compatible profiles may be added in future revisions of this 
+specification with profile number less than 8; other profiles may be added with
+profile number greater than 8.
 
 A Dirac sequence shall comply with one of the supported profiles.
 
@@ -106,7 +110,7 @@ parse codes are listed in Table \ref{table:mainintraprofile}.
 \caption{Parse code values for Main (Intra)  profile sequences}\label{table:mainintraprofile}
 \end{table}
 
-\subsubsection{Main (Long GOP) profile}
+\subsubsection{Main (Long GOP) profile [TBC]}
 
 A Main (Long GOP) profile sequence shall contain only those data units whose 
 parse codes are listed in Table \ref{table:mainlonggopprofile}.
@@ -154,8 +158,10 @@ A particular application domain may impose additional constraints
 on a decoder, for example the presence or absence of a suitable video 
 interface. Such additional constraints are not covered by this specification.
 
-This specification defines levels 0, 1, and 2. Other levels are application 
-specific and will be defined in future revisions of this specification.
+This specification defines levels 0, 1, and 128. Other levels are application 
+specific and will be defined in future revisions of this specification. VC-2
+compatible levels will have level number less than 128 and other levels
+will have level number greater than 128.
 
 Level 0 is an unconstrained level that may be used for streams that do not 
 conform to any other level. 
@@ -166,7 +172,7 @@ and the video parameters
 of the base video format shall not be overridden. Level 1 shall be available
 for Low Delay, Simple and Main (Intra) (VC-2 compatible) profiles only.
 
-For level 2, the video parameters shall correspond to one of the base video
+For level 128, the video parameters shall correspond to one of the base video
 formats as defined in annex \ref{videoformatdefaults}, 
 except that the signal range is restricted
 to 8 bit ranges and the chroma sampling format and frame dimensions may be
@@ -243,7 +249,7 @@ between $-2^{19}$ and $2^{19}$ inclusive
     \end{itemize} 
 \end{itemize} 
 
-\subsubsection{Level 2: Long-GOP default level [TBC]}
+\subsubsection{Level 128: Long-GOP default level [TBC]}
 
 This level is intended to provide minimal constraints on long GOP
 streams encoding simple variants of the base video formats 
