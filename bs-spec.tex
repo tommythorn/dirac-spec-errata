@@ -338,7 +338,8 @@ The sequence header shall be byte aligned.
 Parsing this header consists of reading the sequence parameters 
 (parse parameters, base video format, source parameters and 
 picture coding mode) and initializing the decoder parameters. The decoder 
-parameters are initialized in the $coding_parameters()$ process (below).
+parameters are initialized in the $set\_coding\_parameters()$ process (Section 
+\ref{codingparameters}).
 
 The sequence header shall remain byte identical throughout a sequence.
 
@@ -470,11 +471,11 @@ predefined formats. These base parameters may be modified by subsequent metadata
 \hline
 6	&	4CIF\\
 \hline
-7	&	SD 480I-60 (525 Line 60 Field/s Standard Definition)\\
+7	&	SD 480I-60 (525 Line 59.94 Field/s Standard Definition)\\
 \hline
 8	&	SD 576I-50 (625 Line 50 Field/s Standard Definition)\\
 \hline
-9	&	HD 720P-60 (720 Line 60 Frame/s High Definition)\\
+9	&	HD 720P-60 (720 Line 59.94 Frame/s High Definition)\\
 \hline
 10 &	HD 720P-50 (720 Line 50 Frame/s High Definition)\\
 \hline
@@ -482,13 +483,21 @@ predefined formats. These base parameters may be modified by subsequent metadata
 \hline
 12	&	HD 1080I-50 (1080 Line 50 Field/s High Definition)\\
 \hline
-13	&	HD 1080P-60 (1080 Line 60 Frame/s High Definition)\\
+13	&	HD 1080P-60 (1080 Line 59.94 Frame/s High Definition)\\
 \hline
 14	&	HD 1080P50 (1080 Line 50 Frame/s High Definition)\\
 \hline
 15	&	DC 2K-24 (2K D-Cinema, 24fps)\\
 \hline
 16	&	DC 4K-24 (2K D-Cinema, 24fps)\\
+\hline
+17	&	UHDTV 4K-60 (2160-line 59.94 Frame/s UHDTV)\\
+\hline
+18	&	UHDTV 4K-50 (2160-line 50 Frame/s UHDTV)\\
+\hline
+19	&	UHDTV 8K-60 (4320-line 59.94 Frame/s UHDTV)\\
+\hline
+20	&	UHDTV 8K-50 (4320-line 50 Frame/s UHDTV)\\
 \hline
 \end{tabular}
 \caption{Dirac predefined video formats}

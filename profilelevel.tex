@@ -1,195 +1,324 @@
 \label{profilelevel}
 
-A profile determines which tools, syntax elements and parameter values (such as wavelet 
- filters or wavelet depths) are to be 
-supported. A level determines what decoder resources (computational and memory)
- are required. 
-
-A particular profile may require that particular syntax elements be used and that decoder
-variables or functions be set to particular values. 
-
-A decoder may advertise compliance with a given profile or set of profiles. 
-Such a decoder shall support decoding of all syntax elements supported by the profile(s),
- and all parameter settings defined by the profile(s).
-
-A decoder may advertise compliance with a given level or levels. Such a decoder shall
-perform real-time decoding of Dirac sequences satisfying the level constraints.
-
-An `Undefined' profile and an `Undefined' level are defined also, as defined in annexes 
-\ref{profile} and \ref{level}. These shall have corresponding value 0 encoded in the stream.
-
-\begin{informative}
-Software decoder implementations cannot in general guarantee real-time performance,
-and hence are unlikely to be able to advertise level compliance.
-\end{informative}
+A Dirac decoder shall support one or more different profiles and levels. 
+Profiles and levels determine which tools, syntax elements and structures 
+shall be supported, and what decoder resources (computational and memory) are required.
 
 \subsection{Profiles}
 \label{profiles}
+A given profile requires that particular syntax/syntax elements shall 
+be used and that decoder variables or functions shall be set to particular values.
 
-A sequence compliant with a given profile $n$ shall set $\Profile$ equal to $n$.
+Dirac defines four profiles, Main (Long GOP), Main (Intra), Simple and Low Delay, 
+corresponding to different picture types. The Main (Intra), Simple and Low Delay
+profiles shall correspond to the Main, Simple and Low Delay profiles of VC-2. 
 
-The following profiles shall be defined:
-\begin{description}
-\item[0 -- Undefined] An Undefined profile sequence may contain any valid combination
-of syntax elements or parameter values defined in this specification. Decoding an
-undefined profile sequence may require any decoding function defined in this
- specification.
-\end{description}
+The profiles shall satisfy the following conditions:
+\begin{itemize}
+\item A Low Delay profile Dirac sequence shall set $\Profile$ equal to a value of 
+$0$ in the parse parameters (Section \ref{parseparams}) for each sequence header 
+in the sequence.
+\item A Simple profile sequence shall set $\Profile$ equal to a value of $1$ 
+in the parse parameters for each sequence header in the sequence.
+\item A Main (Intra) profile sequence shall set $\Profile$ equal to a value of $2$ 
+in the parse parameters for each sequence header in the sequence.
+\item A Main (Long GOP) profile sequence shall set $\Profile$ equal to a value of $3$ 
+in the parse parameters for each sequence header in the sequence.
+\end{itemize}
 
-Subsequent editions of this specification may define further profiles.
+A Dirac sequence shall comply with one of the supported profiles.
+
+\subsubsection{Low Delay profile}
+
+A Low Delay profile sequence shall contain only those data units whose 
+parse codes are listed in Table \ref{table:ldprofile}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|l|c|}
+\hline
+\rowcolor[gray]{0.75}
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+0x00 & 0000 0000 & Sequence header &--\\
+\hline
+0x10 & 0001 0000 & End of Sequence & -- \\
+\hline
+0x20 & 0010 0000 & Auxiliary data & -- \\
+\hline
+0x30 & 0011 0000 & Padding data & -- \\
+\hline
+0xC8 & 1100 1000 & Intra Non Reference Picture & 0\\
+\hline
+\end{tabular}
+\caption{Parse code values for Low Delay profile sequences}\label{table:ldprofile}
+\end{table}
+
+\subsubsection{Simple profile}
+
+A Simple profile sequence shall contain only those data units whose 
+parse codes are listed in Table \ref{table:simpeprofile}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|l|c|}
+\hline
+\rowcolor[gray]{0.75}
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+0x00 & 0000 0000 & Sequence header &--\\
+\hline
+0x10 & 0001 0000 & End of Sequence & -- \\
+\hline
+0x20 & 0010 0000 & Auxiliary data & -- \\
+\hline
+0x30 & 0011 0000 & Padding data & -- \\
+\hline
+0x48 & 0100 1000 & Intra Non Reference Picture (no arithmetic coding) & 0\\
+\hline
+\end{tabular}
+\caption{Parse code values for Simple profile sequences}\label{table:simpleprofile}
+\end{table}
+
+\subsubsection{Main (Intra) profile}
+
+A Main (Intra) profile sequence shall contain only those data units whose 
+parse codes are listed in Table \ref{table:mainintraprofile}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|l|c|}
+\hline
+\rowcolor[gray]{0.75}
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+0x00 & 0000 0000 & Sequence header &--\\
+\hline
+0x10 & 0001 0000 & End of Sequence & -- \\
+\hline
+0x20 & 0010 0000 & Auxiliary data & -- \\
+\hline
+0x30 & 0011 0000 & Padding data & -- \\
+\hline
+0x08 & 0000 1000 & Intra Non Reference Picture (arithmetic coding) & 0\\
+\hline
+\end{tabular}
+\caption{Parse code values for Main (Intra)  profile sequences}\label{table:mainintraprofile}
+\end{table}
+
+\subsubsection{Main (Long GOP) profile}
+
+A Main (Long GOP) profile sequence shall contain only those data units whose 
+parse codes are listed in Table \ref{table:mainlonggopprofile}.
+
+\begin{table}[!ht]
+\centering
+\begin{tabular}{|c|c|l|c|}
+\hline
+\rowcolor[gray]{0.75}
+\ParseCode &  {\bf Bits} & {\bf Description} & \begin{tabular}{c} {\bf Number of}\\ {\bf Reference}\\{\bf Pictures}\end{tabular}\\
+\hline
+0x00 & 0000 0000 & Sequence header &--\\
+\hline
+0x10 & 0001 0000 & End of Sequence & -- \\
+\hline
+0x20 & 0010 0000 & Auxiliary data & -- \\
+\hline
+0x30 & 0011 0000 & Padding data & -- \\
+\hline
+0x0C & 0000 1100 & Intra Reference Picture (arithmetic coding) & 0\\
+\hline
+0x08 & 0000 1000 & Intra Non Reference Picture (arithmetic coding) & 0\\
+\hline
+0x0D & 0000 1101 & Inter Reference Picture (arithmetic coding) & 1\\
+\hline
+0x0E & 0000 1110 & Inter Reference Picture (arithmetic coding) & 2\\
+\hline
+0x09 & 0000 1001 & Inter Non Reference Picture (arithmetic coding)& 1\\
+\hline
+0x0A & 0000 1010 & Inter Non Reference Picture (arithmetic coding) & 2\\
+\hline
+\end{tabular}
+\caption{Parse code values for Main (Long GOP)  profile sequences}
+\label{table:mainlonggopprofile}
+\end{table}
 
 \subsection{Levels}
 \label{level}
 
+A given value of level shall define constraints on the decoder 
+resources required to decode a compliant sequence. The values that are 
+constrained are defined individually for each level.
+
+A particular application domain may impose additional constraints 
+on a decoder, for example the presence or absence of a suitable video 
+interface. Such additional constraints are not covered by this specification.
+
+This specification defines levels 0, 1, and 2. Other levels are application 
+specific and will be defined in future revisions of this specification.
+
+Level 0 is an unconstrained level that may be used for streams that do not 
+conform to any other level. 
+
+For level 1, the video parameters shall correspond 
+to one of the base video formats as defined in annex \ref{videoformatdefaults} 
+and the video parameters
+of the base video format shall not be overridden. Level 1 shall be available
+for Low Delay, Simple and Main (Intra) (VC-2 compatible) profiles only.
+
+For level 2, the video parameters shall correspond to one of the base video
+formats as defined in annex \ref{videoformatdefaults}, 
+except that the signal range is restricted
+to 8 bit ranges and the chroma sampling format and frame dimensions may be
+overridden by suitable values. Level 2 shall be available for Main (Long GOP)
+profile only.
+
 A sequence compliant with a given level $n$ shall set $\Level$ equal to $n$.
 
-The following levels shall be defined:
-\begin{description}
-\item[0 -- Undefined] An Undefined level sequence shall impose no constraints on
-any feature of the sequence. A compliant decoder shall not be required to decode level 0
-streams in real time.
-\end{description}
+\subsubsection{Level 0: the unconstrained level}
 
-Subsequent editions of this specification may define further levels.
+This level provides no constraints on the values in the Dirac stream.
 
-\begin{comment}
-\subsection{Decoded picture buffer model operation}
-\label{decodedbufferop}
+\subsubsection{Level 1: VC-2 default level}
 
-In order to define compliance with level and profile requirements, a model of decoded picture buffer
-operation is specified.
+This level is intended to provide minimal constraints on VC-2 compatible
+streams encoding one of the base video formats 
+(annex \ref{videoformatdefaults}). Data rates in 
+this level are not bounded. This level is not intended to provide
+guarantees of real time decoding.
 
-The decoded picture buffer (DPB) $\DecodedBuffer$ exists to allow for pictures to be presented in display, or 
-picture number, order whilst pictures are coded out of order. No constraints are placed on the order
-of pictures within a Dirac stream provided that reordering can be carried out within the given size of
-the DPB. The DPB size is the minimum delay required by the decoder, ignoring decoding time and stream
-buffering delays (Section \ref{streambufferop}).
+This level shall only be available if the profile is set to Low Delay, Simple, or
+Main (Intra).
 
-Note that the DPB is distinct from the reference picture buffer, and the removal of pictures from,
-or placement in, the DPB is wholly independent in this specification, although in practice shared
-storage may be employed.
+\paragraph{Sequence header parameters\newline}
 
-Pictures are deemed to be output from the decoder and placed in the DPB instantaneously at multiples
-of the (real number) picture sample interval $\PictureInterval$. This interval is defined as follows:
+The following constraints shall apply to the sequence header parameters
+(section \ref{sequenceheader}):
 \begin{itemize}
-%\item if $\SInterlaced$ is $\true$ (i.e. pictures are fields [WRONG!!])
-%\begin{equation*}
-%\PictureInterval=\dfrac{\SFrameRateDenom}{2*\SFrameRateNumer}
-%\end{equation*}
-\item otherwise (i.e. pictures are frames) then 
-\begin{equation*}
-\PictureInterval=\dfrac{\SFrameRateDenom}{\SFrameRateNumer}
-\end{equation*}
+\item$base\_video\_format$ shall be between 1 and 20 inclusive
+\item $custom\_dimensions\_flag$ shall be $\false$
+\item $custom\_chroma\_format\_flag$ shall be $\false$
+\item$custom\_scan\_format\_flag$ shall be $\false$
+\item $custom\_frame\_rate\_flag$ shall be $\false$
+\item $custom\_pixel\_aspect\_ratio\_flag$ be $\false$
+\item $custom\_clean\_area\_flag$ shall be $\false$
+\item $custom\_signal\_range\_flag$ shall be $\false$
+\item $custom\_color\_spec\_flag$ shall be $\false$
+\item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
 \end{itemize}
 
-If a picture is output from the DPB, it is deemed to occur at the same instant as a picture is
-added, resulting in no net increase in DPB occupancy.
+\paragraph{Picture header parameters\newline}
 
-A decoder may access a Dirac stream at an sequence header. Let $N_n$ denote
-the picture number of the $r$th picture in coded order after
-the AU header, with $N_0r$ the first one. Picture decoding/parsing 
-is deemed to start at this point. 
+The following constraints shall apply to picture header parameters
+(section \ref{pictureheader}):
+\begin{itemize}
+\item $\WaveletIndex$ shall be as table \ref{wltfilterpresets}
+\item $\TransformDepth$ shall be between 0 and 4 inclusive
+\item for core syntax pictures:
+    \begin{itemize}
+    \item $\CodeblocksX$ and $\CodeblocksY$ shall be such that there is 
+    at least one coefficient in each codeblock.
+    \end{itemize}
+\item for low delay syntax pictures:
+    \begin{itemize}
+    \item $\SlicesX$ and $\SlicesY$ shall be such that there is at least one 
+    DC (0-LL) coefficient per slice.
+    \item values in the quantizer matrix shall lie between 0 and 127 inclusive
+    \end{itemize}
+\end{itemize}
 
-In case $\DPBSize$ is 0, the picture output at time $t_0+n*\PictureInterval$
-shall be the picture decoded at time $n*\PictureInterval$. In this case
-the picture numbers of pictures output by the decoder shall increment
-by 1 with each picture decoded, and form a contiguous sequence of integers.
+\paragraph{Transform data\newline}
 
-In case $\DPBSize>0$, a compliant stream shall satisfy the following
-conditions
-\begin{enumerate}
-\item For $k\geq 0$, there exists some $n$ with $N_n=P_0+k$ with
-\[k\leq n\leq k+\DPBSize+2\]
-\item For $n\geq\DPBSize+2$, picture $N_n$ is decodeable 
-using only data received subsequent to the AU header
-\end{enumerate}
+The following constraints shall apply to transform data elements 
+(section \ref{wavelettransform}):
+\begin{itemize}
+\item quantized and inverse quantized wavelet coefficients shall lie 
+between $-2^{19}$ and $2^{19}$ inclusive
+\item for core syntax pictures:
+    \begin{itemize}
+    \item quantization indices for subbands and codeblocks shall lie between 
+    0 and 68 inclusive 
+    \item quantization offsets encoded in codeblocks shall lie between 
+    -68 and 68 inclusive
+    \end{itemize} 
+\end{itemize} 
 
-These conditions are sufficient to ensure that a buffer of size $\DPBSize$
-is sufficient to reorder all pictures to produce a stream of pictures
-with contiguous picture numbers, and these pictures shall be capable of being fully 
-decoded and displayed after a delay equal to at most $\DPBSize+2$ picture intervals.
+\subsubsection{Level 2: Long-GOP default level [TBC]}
 
-\begin{informative*}
-\subsubsection{Example operation (Informative)}
-Consider a conventional MPEG-2 style `IBBP' Group of Pictures (GOP), consisting
-of intra pictures (I), forward-predicted pictures (P) and bi-directionally
-predicted pictures (B). In picture order, this is
-\[\ldots\ I_{N_0}\ B_{N_0+1}\ B_{N_0+2}\ P_{N_0+3}\ B_{N_0+4}\ B_{N_0+5}\ 
-P_{N_0+6}\ B_{N_0+7}\ B_{N_0+8}\ P_{N_0+9}\ B_{N_0+10}\ B_{N_0+11}\ I_{N_0+12}
-\ B_{N_0+13}\ \ldots\]
+This level is intended to provide minimal constraints on long GOP
+streams encoding simple variants of the base video formats 
+(annex \ref{videoformatdefaults}). 
+Data rates in this level are not bounded. This level is not intended to provide
+guarantees of real time decoding.
 
-Each P-picture is predicted from the previous P or I picture, and each B-picture
-from the previous and subsequent P- or I-picture. Hence coded order is:
-\[\ldots\ I_{N_0}\ B_{N_0-2}\ B_{N_0-1}\ P_{N_0+3}\ B_{N_0+1}\ B_{N_0+2}\ 
-P_{N_0+6}\ B_{N_0+4}\ B_{N_0+5}\ P_{N_0+9}\ B_{N_0+7}\ B_{N_0+8}\ I_{N_0+12} 
-\ B_{N_0+10}\ B_{N_0+11}\ \ldots\]
-with random access at each intra picture. A decoder accessing the stream at
-$I_{N_0}$ would require a buffer of 2 pictures, since B-pictures can be
-displayed immediately. The DPB would operate as follows:
-\begin{enumerate}
-\item Time $t_0$. \\
-Receive $I_{N_0}$ and store in the DPB.\\
-DPB=$\{I_{N_0}\}$\\
-Displayed picture=
-\item Time $t_0+\PictureInterval$. \\
-Receive $B_{N_0-2}$ (undecoded) and discard:\\
-DPB=$\{I_{N0}\}$\\
-Displayed picture=
-\item Time $t_0+2*\PictureInterval$. \\
-Receive $B_{N_0-1}$ (undecoded) and discard:\\
-DPB=$\{I_{N0}\}$\\
-Displayed picture=
-\item Time $t_0+3*\PictureInterval$. \\
-Receive $P_{N_0+3}$ (decoded) and place in DPB, 
-display $I_{N_0}$ and remove from DPB:\\
-DPB=$\{P_{N_0+3}\}$\\
-Displayed picture=$I_{N_0}$
-\item Time $t_0+4*\PictureInterval$. \\
-Receive $B_{N_0+1}$ (decoded) and display immediately:\\
-DPB=$\{P_{N_0+3}\}$\\
-Displayed picture=$B_{N_0+1}$
-\item Time $t_0+5*\PictureInterval$. \\
-Receive $B_{N_0+2}$ (decoded) and display immediately:\\
-DPB=$\{P_{N_0+3}\}$\\
-Displayed picture=$B_{N_0+2}$
-\item Time $t_0+6*\PictureInterval$. \\
-Receive $P_{N_0+6}$ (decoded) and place in DPB, display 
-$P_{N_0+3}$ and remove from the DPB:\\
-DPB=$\{P_{N_0+6}\}$\\
-Displayed picture=$P_{N_0+3}$
-\item Time $t_0+7*\PictureInterval$. \\
-Receive $B_{N_0+4}$ (decoded) and display immediately:\\
-DPB=$\{P_{N_0+6}\}$\\
-Displayed picture=$B_{N_0+4}$
-\item Time $t_0+8*\PictureInterval$. \\
-Receive $B_{N_0+5}$ (decoded) and display immediately:\\
-DPB=$\{P_{N_0+6}\}$\\
-Displayed picture=$B_{N_0+5}$
-\item Time $t_0+9*\PictureInterval$. \\
-Receive $P_{N_0+9}$ (decoded) and place in DPB, display 
-$P_{N_0+6}$ and remove from the DPB:\\
-DPB=$\{P_{N_0+9}\}$\\
-Displayed picture=$P_{N_0+6}$
-\item $\ldots$
-\end{enumerate}
+This level shall only be available if the profile is set to Main (Long GOP).
 
-Note that a better subjective experience can be gleaned if the
-decoder outputs the initial intra frame $I_{N_0}$ whilst buffering
-pictures initially.
+\paragraph{Sequence header parameters\newline}
 
-\end{informative*}
+The following constraints shall apply to the sequence header parameters
+(section \ref{sequenceheader}):
+\begin{itemize}
+\item$base\_video\_format$ shall be between 1 and 20 inclusive
+\item $custom\_dimensions\_flag$ may be $\false$ or $\true$; if $\true$ then
+the frame width and frame height shall be less than the values set in the
+base video format
+\item $custom\_chroma\_format\_flag$ may be $\false$ or $\true$
+\item$custom\_scan\_format\_flag$ may be $\false$ or $\true$
+\item $custom\_frame\_rate\_flag$ shall be $\false$
+\item $custom\_pixel\_aspect\_ratio\_flag$ be $\false$
+\item $custom\_clean\_area\_flag$ shall be $\false$
+\item $custom\_signal\_range\_flag$ shall be $\true$ and the signal range 
+parameters set to 8 bit SDI ranges (index 2 in table \ref{signalrangevalues})
+\item $custom\_color\_spec\_flag$ shall be $\false$
+\item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
+\end{itemize}
 
-\subsection{Stream buffer model operation}
-\label{streambufferop}
+\paragraph{Picture header parameters\newline}
 
-In order to define compliance with level and profile requirements, a model of decoded picture buffer
-operation is specified.
+The following constraints shall apply to picture header parameters
+(section \ref{pictureheader}):
+\begin{itemize}
+\item $\WaveletIndex$ shall be between 0 and 4 inclusive
+\item $\TransformDepth$ shall be between 0 and 4 inclusive
+\item for core syntax pictures:
+    \begin{itemize}
+    \item $\CodeblocksX$ and $\CodeblocksY$ shall be such that there is 
+    at least one coefficient in each codeblock
+    \end{itemize}
+\item for low delay syntax pictures:
+    \begin{itemize}
+    \item $\SlicesX$ and $\SlicesY$ shall be such that there is at least one 
+    DC (0-LL) coefficient per slice.
+    \item values in the quantizer matrix shall lie between 0 and 127 inclusive
+    \end{itemize}
+\end{itemize}
 
-The decoder stream buffer (DSB) $\StreamBuffer$ exists to allow for data to be transmitted at a constant bit
-rate (CBR), yet consist of varying bit allocations to individual pictures. It is well-known that input buffers
-operate in mirror-image to output buffers, and so the specification of the ISB implicitly defines
-how an identically-sized encoder stream buffer (ESB) would operate to ensure correct CBR operation, although
-in practice some encoder-side headroom may be required.
+\paragraph{Transform data\newline}
 
-[TBC]
-\end{comment}
+The following constraints shall apply to transform data elements 
+(section \ref{wavelettransform}):
+\begin{itemize}
+\item quantized and inverse quantized wavelet coefficients shall lie 
+between $-2^{15}$ and $2^{15}$ inclusive
+\item for core syntax pictures:
+    \begin{itemize}
+    \item quantization indices for subbands and codeblocks shall lie between 
+    0 and 63 inclusive 
+    \item quantization offsets encoded in codeblocks shall lie between 
+    -63 and 63 inclusive
+    \end{itemize} 
+\end{itemize} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -15,7 +15,7 @@ and motion data (Sections \ref{wltunpacking} and \ref{motiondec}).
 \label{overallpicturedec}
 
 Picture data from the current picture being decoded is stored in the $\CurrentPicture$ state
-variable, which is a map with labels $pic\_num$, and $Y$, $C1$ and $C2$ representing
+variable, which is a map with labels $\PicNum$, and $Y$, $C1$ and $C2$ representing
 luma and chroma data.
 
 After decoding the decoded picture is returned to the decoding application.
@@ -24,7 +24,7 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 
 \begin{pseudo}{picture\_decode}{}
 \bsCODE{\CurrentPicture=\{\}}
-\bsCODE{\CurrentPicture[pic\_num]=\PictureNumber}
+\bsCODE{\CurrentPicture[\PicNum]=\PictureNumber}
 \bsIF{is\_ref(()}
     \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
 \bsEND
@@ -52,19 +52,50 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 \bsRET{\CurrentPicture}
 \end{pseudo}
 
- 
-\begin{informative}
-When randomly accessing a sequence, a picture may not be decodeable 
-because reference pictures may not be available in the buffer. In this case the 
-current picture may be discarded, although some decoders may be designed to 
-produce an output. 
 
+\subsection{Picture re-ordering}
+\label{picturereordering}
 Picture numbers within the stream may not be in numerical order, and 
-subsequent reordering may be required: the size of the decoded picture buffer 
-required to perform any such reordering is specified as part of the application profile 
-and level (Annex \ref{profilelevel}).
-\end{informative}
+subsequent reordering may be required: the size (reordering depth) 
+of the decoded picture buffer required to perform any such reordering may be 
+specified as part of the application profile and level (Annex \ref{profilelevel}).
+ 
+\subsection{Random access}
+\label{randomaccess}
+Sequence headers represent safe entry points for decoding a sequence. Any picture 
+which satisfies the following conditions with respect to a given sequence header shall
+be decodeable without reference to pictures prior to the sequence
+header in coded order:
+\begin{enumerate}
+\item the picture is subsequent to the sequence header in coded order, and
+\item the picture number is greater than or equal to that of the first picture after
+the sequence header in coded order.
+\end{enumerate}
 
+Note that these conditions imply that the first picture after a sequence header shall
+be decodeable. 
+
+The term ``decodeable'' may depend on the application in
+which encoding takes place. In conventional (non P-only) coding applications, the 
+first picture after a sequence header should be an intra picture. If motion compensation 
+is used in the sequence, it should be an intra reference picture. Any picture 
+satisfying conditions 1 and 2 above should have no reference or chain of references 
+via intermediate reference pictures to any picture occuring prior to the sequence 
+header in coded order: where no specific provision to the contrary is specified in an
+applicable level or profile, this condition shall apply.
+
+P-only coded sequences may contain no intra pictures and all pictures may reference 
+pictures earlier in time and coded order: random access points may still be defined 
+in this case (and other similar cases) provided the processes for decoding pictures 
+where reference pictures may be unavailable are specified in an applicable level or profile.
+
+\begin{informative}
+If a sequence satisfies a maximum reordering depth constraint (Section \ref{picturereordering})
+of size $N$ all pictures more than $N$ pictures later than the sequence header will
+have larger picture numbers than the first picture after the sequence header, and hence 
+satisfy conditions 1 and 2. A reordering depth constraint thus implies that after a 
+sequence header at most $N$ pictures will need to be discarded before all pictures are decodeable.
+\end{informative}
 \subsection{Reference picture buffer management}
 \label{refbuffer}
 
@@ -78,7 +109,7 @@ follows:
 \begin{pseudo}{ref\_picture\_remove}{}
 \bsCODE{n=\RetiredPicture}
 \bsFOR{k=0}{\RefBufferSize-1}
-   \bsIF{\RefBuffer[k][pic\_number]==n}
+   \bsIF{\RefBuffer[k][\PicNum]==n}
         \bsFOR{j=k}{\RefBufferSize-2}
             \bsCODE{\RefBuffer[j]=\RefBuffer[j+1]}
         \bsEND

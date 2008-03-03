@@ -42,20 +42,11 @@ within the stream may not be sequential, and the decoded output pictures will no
 placed in the output buffer in order. Annex \ref{profilelevel} defines the constraints
 which may be placed upon re-ordering depth.
 
-\subsection{Random access}
-\label{randomaccess}
-
-Many applications involve random access of a Dirac sequence. In the context
- of this specification, this means beginning reading and parsing data from the 
-beginning of an sequence header, located at some point not at the beginning
- of a sequence. In such circumstances, the process of Section 
-\ref{sequencedecoding} is followed, except that parsing begins from the sequence header
- and pictures that cannot be decoded, since they use as references pictures not
- previously accessible or decoded, are discarded. Clearly, what is decodeable depends
- upon the point at which the sequence has been accessed.
-
-Sequence headers and prediction structures must be so arranged so that all pictures
-are decodeable after reading no more than three sequence headers and parsing and decoding (where possible) all pictures in between (Section \ref{picturedec}).
+Sequences need not be decoded from the start: decoding can start from any sequence header
+according to the provisions of Section \ref{randomaccess}, although some pictures might
+not be (completely) decodeable due to a chain of references reaching back earlier in the stream
+than the sequence header, introducing dependencies on unavailable pictures. 
+The behaviour of a decoder when confronted with such pictures is application-specific.
 
 \subsection{Non-sequential picture decoding}
 
@@ -76,7 +67,8 @@ prefix occuring is low: 1 in $2^{32}$, since the prefix is 4 bytes long. The pro
 two spurious prefix sequences separated by the value of the next (or previous) parse 
 offset is 1 in $2^{64}$.  
 
-Having synchronized with the stream the decoder now needs to locate a sequence Header in order to find parameters needed to decode pictures. This may be done by moving back (or forward) through the stream, using the parse offsets.
+Having synchronized with the stream the decoder now needs to locate a sequence header 
+in order to find parameters needed to decode pictures. This may be done by moving back (or forward) through the stream, using the parse offsets.
 
 The Dirac stream also supports seeking to a particular picture number, since this
 is contained in each picture header.

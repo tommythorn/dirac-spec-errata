@@ -1,5 +1,3 @@
-\subsection{Purpose}
-\label{intropurpose}
 Dirac is an open video codec developed by the BBC. It has been 
 developed to address the growing complexity and cost of current video
 compression technologies, which provide greater compression efficiency
@@ -11,66 +9,64 @@ residuals, which allows Dirac to be used across a very wide range of resolutions
 without enlarging the toolset.
 
 Dirac is an Open Source software project, and reference implementations
-of the decoder and encoder are available at \underline{http://sourceforge.net/projects/dirac}.
+of the decoder and encoder are available at \url{http://sourceforge.net/projects/dirac}.
 A high-performance implementation, called Schrodinger, is also available
-open source at \underline{http://schrodinger.sourceforge.net}.
+open source at \url{http://schrodinger.sourceforge.net}.
 
-\subsection{Scope}
+Dirac offers the following features:
+\begin{description}
+\item[Multi-resolution transforms] Data is encoded using the wavelet transform, 
+and packed into the bitstream subband by subband. High compression ratios result 
+in a gradual loss of resolution. Lower resolution output can be obtained 
+for low complexity decoding by extracting only the lower resolution data.
+\item[Inter and intra frame coding] Pictures can be encoded using motion compensation
+for low bit rate, or without reference to other pictures for editing, archive
+and other professional applications.
+\item[Frame and field coding] Both frames and fields can be coded.
+\item[Dual syntax] A low delay syntax is available for applications requiring 
+very low, fixed, latency. This can be of the order of a few lines of input 
+or output video. The low delay syntax is suitable for light compression 
+for the re-use of low bandwidth infrastructure, for example carrying 
+HDTV over SD-SDIlinks. The low delay syntax uses intra coding and simple Variable Length 
+Codes for entropy codes. The core syntax provides much greater compression efficiency 
+at the expense of a whole picture delay. The core syntax can use a highly efficient 
+form of binary adaptive arithmetic coding, as well as motion compensation, 
+for maximum performance.
+\item[CBR and VBR operation] Dirac supports both constant bit rate and 
+variable bit rate operation.When the low delay syntax is used, the bit 
+rate will be constant for each area (Dirac slice) in a picture to ensure constant latency.
+\item[Variable bit depths]. 8, 10, 12 and 16 bit formats are supported.
+\item[Multiple chroma sampling formats] 444, 422 and 420 video are all supported.
+\item[Lossless and RGB coding] A common toolset is used for both lossy and lossless 
+coding. RGB coding is supported via the YCoCg integer color transform.
+\item[Choice of wavelet filters] A wide range of wavelet filters can be used 
+to trade off performance against complexity. The Daubechies (9,7) filter is 
+supported for compatibility with JPEG2000. A Fidelity filter is provided for 
+improved resolution scalability.
+\item[Simple stream navigation] The encoded stream contains picture numbers and 
+forms a doubly-linked list with each picture header indicating an offset to 
+the previous and next picture, to support field-accurate high-speed navigation
+with no parsing or decoding required.
+\end{description}
+\section{Scope}
 \label{introscope}
 
-This standard defines the Dirac video compression codec through the stream syntax,
+This specification defines the Dirac video compression codec through the stream syntax,
  entropy coding, coefficient unpacking and picture decoding processes. The decoder
  operations are defined by means of a mixture of pseudocode and mathematical 
 operations.
  
+This is version $\SpecVersion$ of the Dirac specification. The document includes
+a full description of the Dirac stream syntax and decoder operations.
+
 Dirac is a long-GOP video codec that uses wavelet transforms and motion compensation
  together with entropy coding, that can be readily implemented in hardware or software.
 Dirac is a superset of the proposed SMPTE VC-2 video codec standard which 
 comprises the intra coding parts of this specification.
 
-\subsection{Status}
-\label{introstatus}
-
-This is version $\SpecVersion$ of the Dirac specification. The document includes
-a full description of the Dirac stream syntax and decoder operations.
-
-This version is compatible with and extends Version 1.0 by the addition of motion
- compensated coding. Version 1.0 corresponds exactly to the proposed SMPTE VC-2
+This version is compatible with and extends Version 1 by the addition of motion
+ compensated coding. Version 1 corresponds exactly to the proposed SMPTE VC-2
  video codec standard.
 
 Subsequent versions of this specification may contain additional tools.
-
-\subsection{Conformance notation}
-
-Normative text is text that describes elements of the design that are indispensable or
- contains the conformance language keywords: "shall", "should", or "may". Informative 
-text is text that is potentially helpful to the user, but not indispensable, and can be 
-removed, changed, or added editorially without affecting interoperability. Informative 
-text does not contain any conformance keywords.
-
-All text in this document is, by default, normative, except: the Introduction, any section
- explicitly labeled as "Informative" or individual paragraphs that start with "Note:”
-The keywords "shall" and "shall not" indicate requirements strictly to be followed in order
- to conform to the document and from which no deviation is permitted
-
-The keywords, "should" and "should not" indicate that, among several possibilities, one 
-is recommended as particularly suitable, without mentioning or excluding others; or that a
- certain course of action is preferred but not necessarily required; or that (in the negative
- form) a certain possibility or course of action is deprecated but not prohibited.
-
-The keywords "may" and "need not" indicate courses of action permissible within the 
-limits of the document.
-
-The keyword “reserved” indicates a provision that is not defined at this time, shall not 
-be used, and may be defined in the future. The keyword “forbidden” indicates “reserved”
- and in addition indicates that the provision will never be defined in the future.
-A conformant implementation according to this document is one that includes all
- mandatory provisions ("shall") and, if implemented, all recommended provisions ("should") 
-as described. A conformant implementation need not implement optional provisions 
-("may") and need not implement them as described.
-
-Unless otherwise specified the order of precedence of the types of normative 
-information in this document shall be as follows. Normative prose shall be the authoritative 
-definition. Tables shall be next, followed by formal languages, then figures, and then any
- other language forms.
 
