@@ -52,23 +52,24 @@ data units. The first data unit shall be a sequence header, and further sequence
 headers may be inserted at any data unit point in the sequence . 
 The process for parsing a Dirac sequence shall be as defined below:
 
-\begin{pseudo}{video\_sequence}{}
+\begin{pseudo}{parse\_sequence}{}
+\bsCODE{\StateName=\{\}}
 \bsCODE{\RefBuffer=\{\}}
-\bsCODE{\DecodedBuffer=\{\}}
-\bsCODE{parse\_info()}{\ref{parseinfo}}
+%\bsCODE{\DecodedBuffer=\{\}}
+\bsCODE{parse\_info()}{\ref{parseinfoheader}}
 \bsCODE{\VideoParams=sequence\_header()}{\ref{sequenceheader}}
-\bsCODE{parse\_info()}{\ref{parseinfo}}
-\bsWHILE {is\_end\_of\_sequence()==\false}{\ref{parseinfo}}
-    \bsIF{is\_seq\_header()==\true}{\ref{parseinfo}}
+\bsCODE{parse\_info()}{\ref{parseinfoheader}}
+\bsWHILE {is\_end\_of\_sequence()==\false}{\ref{parsecodevalues}}
+    \bsIF{is\_seq\_header()==\true}{\ref{parsecodevalues}}
         \bsCODE{\VideoParams=sequence\_header()}{\ref{sequenceheader}}
-    \bsELSEIF{is\_picture()}{\ref{parseinfo}}
+    \bsELSEIF{is\_picture()}{\ref{parsecodevalues}}
         \bsCODE{picture\_parse()}{\ref{pictureparse}}
-    \bsELSEIF{is\_auxiliary\_data()}{\ref{parseinfo}}
+    \bsELSEIF{is\_auxiliary\_data()}{\ref{parsecodevalues}}
         \bsCODE{auxiliary\_data()}{\ref{auxdata}}
-    \bsELSEIF{is\_padding()}{\ref{parseinfo}}
+    \bsELSEIF{is\_padding()}{\ref{parsecodevalues}}
         \bsCODE{padding()}{\ref{paddingdata}}
     \bsEND
-    \bsCODE{parse\_info()}{\ref{parseinfo}}
+    \bsCODE{parse\_info()}{\ref{parseinfoheader}}
 \bsEND
 \end{pseudo}
 
@@ -77,7 +78,7 @@ Each Dirac sequence shall start and end with a parse info header.
 \subsection{Parse Info headers}
 
 Parse info headers shall contain a 32 bit code so that the decoder can 
-be synchronized with the stream. They are defined in section \ref{parseinfo}.
+be synchronized with the stream. They are defined in section \ref{parseinfoheader}.
 The parse info headers support navigating through the stream without the 
 need to decode any data units. Each parse info header contains pointers 
 to the location of the next and previous parse info headers within the stream. 
@@ -115,8 +116,9 @@ A picture data unit shall contain sufficient data to decode a single picture
 (frame or field of video), subject to having parsed a sequence header within 
 the sequence and decoded any reference pictures.
 
-Pictures within a sequence shall either all be fields or all be frames. Where pictures 
-are fields, a sequence shall contain an even number of pictures, comprising a whole number of frames.
+Pictures within a sequence shall either all be fields or all be frames. 
+Where pictures are fields, a sequence shall contain an even number of pictures, 
+comprising a whole number of frames.
 
 Auxiliary data and padding data do not contribute to the decoding 
 process and so may be discarded. 
@@ -156,19 +158,26 @@ The $padding()$ process for reading padding data shall be as follows:
 \end{pseudo}
 
 \subsection{Parse Info header syntax}
-\label{parseinfo}
+\label{parseinfoheader}
 
-This section specifies the operation of the $parse\_info()$ process for parsing
-parse info header data. This header shall consists of 13 bytes of data, byte-aligned 
-within the sequence. Thus it shall ensure that succeeding data elements
-are  byte aligned. It shall occur:
+The parse info header provides information identifying the subsequent data unit
+type and length codes determining the number of bytes from the current parse
+info header to the next and previous parse info headers.
+
+The parse info header shall be byte-aligned. It shall occur:
 \begin{itemize}
 \item at the beginning of a sequence
 \item at the end of a sequence
 \item before each data unit
 \end{itemize}
 
-The value of the parse code, which is a component of the parse info, shall be used to determine the type and format of the subsequent data structures, in particular indicating whether a picture is Intra or Inter coded, and if Inter how many references it has.
+The parse info header shall consist of 13 whole bytes. Thus subsequent data elements
+shall be byte aligned.
+
+The value of the parse code, which is a component of the parse info header,
+shall be used to determine the type and format of the subsequent data unit.
+
+The $parse\_info()$ process for reading parse info headers shall be as follows:
 
 \begin{pseudo}{parse\_info}{}
 \bsCODE{byte\_align()}
@@ -182,7 +191,8 @@ The Parse Info parameters shall satisfy the following constraints:
 
 \begin{itemize}
 \item $\ParseInfoPrefix$ shall be set to be 0x42 0x42 0x43 0x44, which is the character string ``BBCD'' as expressed by ISO/IEC 646.
-\item $\ParseCode$ shall be one of the supported values set out in Table \ref{parsecodes}
+\item $\ParseCode$ shall be one of the supported values set out 
+in Table \ref{table:parsecodes}
 \item $\NextParseOffset$ shall be the number of bytes from the first byte of the current
 Parse Info header to the first byte of the next Parse Info header, if there is one. If there
 is no subsequent Parse Info header, it shall be be zero.
@@ -193,10 +203,15 @@ is no subsequent Parse Info header, it shall be be zero.
 
 Consequently, the previous parse offset value of the current parse info header shall equal the next parse offset value of the previous parse info header, if there is one.
 
-Parse codes shall be divided into three sets: generic, core syntax and low delay
+\subsubsection{Parse codes values}
+\label{parsecodevalues}
+
+Parse codes values shall be divided into three sets: generic, 
+core syntax and low delay
 syntax.
 
-The value of parse codes allowed within the Dirac sequence shall be as shown in Table \ref{parsecodes}
+The value of parse codes allowed within the Dirac syntax shall 
+be as shown in Table \ref{table:parsecodes}
 
 \begin{table}[!ht]
 \centering
@@ -248,7 +263,7 @@ The value of parse codes allowed within the Dirac sequence shall be as shown in 
 0xC8 & 1100 1000 & Intra Non Reference Picture & 0\\
 \hline
 \end{tabular}
-\caption{Parse codes}\label{parsecodes}
+\caption{Parse codes}\label{table:parsecodes}
 \end{table}
 
 Future versions of this specification may introduce new parse codes. In order that 
@@ -315,7 +330,7 @@ boolean, except for $num\_refs()$ which shall returns an integer:
 \begin{informative*}
 \subsubsection{Parse code value rationale (Informative)}
 
-The rationale for the parse code values in Table \ref{parsecodes} is as follows:
+The rationale for the parse code values in Table \ref{table:parsecodes} is as follows:
 \begin{itemize}
 \item The MS bit (bit 7) is used to indicate the picture syntax (core or low delay syntax) 
 and only applies to pictures. Core syntax codes whole frames rather than slices. Low delay syntax codes slices not frames. 
@@ -1113,7 +1128,7 @@ same  Dirac sequence. The picture parsing process shall be defined as follows:
 \begin{pseudo}{picture\_parse}{}
 \bsCODE{byte\_align()}
 \bsCODE{picture\_header()}{\ref{pictureheader}}
-\bsIF{is\_inter()}{\ref{parseinfo}}
+\bsIF{is\_inter()}{\ref{parsecodevalues}}
     \bsCODE{byte\_align()}
     \bsCODE{picture\_prediction()}{\ref{pictureprediction}}
 \bsEND
@@ -1125,16 +1140,16 @@ same  Dirac sequence. The picture parsing process shall be defined as follows:
 \label{pictureheader}
 
 The picture header shall immediately follow a parse info header with a picture parse 
-code (Section \ref{parseinfo}). The picture header parsing process shall be defined as follows:
+code (section \ref{parseinfoheader}). The picture header parsing process shall be defined as follows:
 
 \begin{pseudo}{picture\_header}{}
 \bsCODE{\PictureNumber=read\_byte\_lit(4)}
-\bsIF{is\_inter()}{\ref{parseinfo}}
+\bsIF{is\_inter()}{\ref{parsecodevalues}}
     \bsCODE{\RefOneNum=(\PictureNumber+read\_sint())\%2^{32}}
-    \bsIF{num\_refs() == 2}{\ref{parseinfo}}
+    \bsIF{num\_refs() == 2}{\ref{parsecodevalues}}
         \bsCODE{\RefTwoNum=(\PictureNumber+read\_sint())\%2^{32}}
     \bsEND\bsEND
-\bsIF{is\_ref()}{\ref{parseinfo}}
+\bsIF{is\_ref()}{\ref{parsecodevalues}}
     \bsCODE{\RetiredPicture=(\PictureNumber+read\_sint())\% 2^{32}}
 \bsEND
 \end{pseudo}
@@ -1450,7 +1465,7 @@ The wavelet transform process for parsing transform metadata and coefficients sh
 
 \begin{pseudo}{wavelet\_transform}{}
 \bsCODE{\ZeroResidual = \false}
-\bsIF{is\_inter()}{\ref{parseinfo}}
+\bsIF{is\_inter()}{\ref{parsecodevalues}}
     \bsITEM{\ZeroResidual}{bool}
 \bsEND
 \bsIF{\ZeroResidual == \false}

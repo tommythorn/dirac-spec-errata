@@ -16,7 +16,7 @@ profiles shall correspond to the Main, Simple and Low Delay profiles of VC-2.
 The profiles shall satisfy the following conditions:
 \begin{itemize}
 \item A Low Delay profile Dirac sequence shall set $\Profile$ equal to a value of 
-$0$ in the parse parameters (Section \ref{parseparams}) for each sequence header 
+$0$ in the parse parameters (section \ref{parseparameters}) for each sequence header 
 in the sequence.
 \item A Simple profile sequence shall set $\Profile$ equal to a value of $1$ 
 in the parse parameters for each sequence header in the sequence.
@@ -110,7 +110,7 @@ parse codes are listed in Table \ref{table:mainintraprofile}.
 \caption{Parse code values for Main (Intra)  profile sequences}\label{table:mainintraprofile}
 \end{table}
 
-\subsubsection{Main (Long GOP) profile [TBC]}
+\subsubsection{Main (Long GOP) profile [TBD]}
 
 A Main (Long GOP) profile sequence shall contain only those data units whose 
 parse codes are listed in Table \ref{table:mainlonggopprofile}.
@@ -147,6 +147,9 @@ parse codes are listed in Table \ref{table:mainlonggopprofile}.
 \label{table:mainlonggopprofile}
 \end{table}
 
+Low delay syntax pictures shall not be present in a Main (Long GOP) profile
+sequence.
+
 \subsection{Levels}
 \label{level}
 
@@ -158,13 +161,13 @@ A particular application domain may impose additional constraints
 on a decoder, for example the presence or absence of a suitable video 
 interface. Such additional constraints are not covered by this specification.
 
-This specification defines levels 0, 1, and 128. Other levels are application 
+This specification defines levels 1 and 128. Other levels are application 
 specific and will be defined in future revisions of this specification. VC-2
 compatible levels will have level number less than 128 and other levels
 will have level number greater than 128.
 
-Level 0 is an unconstrained level that may be used for streams that do not 
-conform to any other level. 
+The value 0 shall be RESERVED and shall not be used for any defined level. 
+Sequences may use the value 0 for streams that do not conform to any defined level. 
 
 For level 1, the video parameters shall correspond 
 to one of the base video formats as defined in annex \ref{videoformatdefaults} 
@@ -180,10 +183,6 @@ overridden by suitable values. Level 2 shall be available for Main (Long GOP)
 profile only.
 
 A sequence compliant with a given level $n$ shall set $\Level$ equal to $n$.
-
-\subsubsection{Level 0: the unconstrained level}
-
-This level provides no constraints on the values in the Dirac stream.
 
 \subsubsection{Level 1: VC-2 default level}
 
@@ -249,7 +248,7 @@ between $-2^{19}$ and $2^{19}$ inclusive
     \end{itemize} 
 \end{itemize} 
 
-\subsubsection{Level 128: Long-GOP default level [TBC]}
+\subsubsection{Level 128: Long-GOP default level [TBD]}
 
 This level is intended to provide minimal constraints on long GOP
 streams encoding simple variants of the base video formats 
@@ -274,7 +273,7 @@ base video format
 \item $custom\_pixel\_aspect\_ratio\_flag$ be $\false$
 \item $custom\_clean\_area\_flag$ shall be $\false$
 \item $custom\_signal\_range\_flag$ shall be $\true$ and the signal range 
-parameters set to 8 bit SDI ranges (index 2 in table \ref{signalrangevalues})
+parameters set to 8 bit SDI ranges (index 2 in table \ref{table:signalrangevalues})
 \item $custom\_color\_spec\_flag$ shall be $\false$
 \item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
 \end{itemize}
@@ -286,17 +285,8 @@ The following constraints shall apply to picture header parameters
 \begin{itemize}
 \item $\WaveletIndex$ shall be between 0 and 4 inclusive
 \item $\TransformDepth$ shall be between 0 and 4 inclusive
-\item for core syntax pictures:
-    \begin{itemize}
-    \item $\CodeblocksX$ and $\CodeblocksY$ shall be such that there is 
+\item $\CodeblocksX$ and $\CodeblocksY$ shall be such that there is 
     at least one coefficient in each codeblock
-    \end{itemize}
-\item for low delay syntax pictures:
-    \begin{itemize}
-    \item $\SlicesX$ and $\SlicesY$ shall be such that there is at least one 
-    DC (0-LL) coefficient per slice.
-    \item values in the quantizer matrix shall lie between 0 and 127 inclusive
-    \end{itemize}
 \end{itemize}
 
 \paragraph{Transform data\newline}
@@ -306,13 +296,10 @@ The following constraints shall apply to transform data elements
 \begin{itemize}
 \item quantized and inverse quantized wavelet coefficients shall lie 
 between $-2^{15}$ and $2^{15}$ inclusive
-\item for core syntax pictures:
-    \begin{itemize}
-    \item quantization indices for subbands and codeblocks shall lie between 
+\item quantization indices for subbands and codeblocks shall lie between 
     0 and 63 inclusive 
-    \item quantization offsets encoded in codeblocks shall lie between 
+\item quantization offsets encoded in codeblocks shall lie between 
     -63 and 63 inclusive
-    \end{itemize} 
 \end{itemize} 
 
 

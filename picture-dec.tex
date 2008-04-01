@@ -37,7 +37,7 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 \bsEND
 \bsIF{is\_inter()}
     \bsCODE{ref1=get\_ref(\RefOneNum)}{\ref{refbuffer}}
-    \bsIF{num\_refs()==2}{\ref{parseinfo}}
+    \bsIF{num\_refs()==2}{\ref{parsecodevalues}}
         \bsCODE{ref2=get\_ref(\RefTwoNum)}{\ref{refbuffer}}
     \bsEND
     \bsCODE{motion\_compensate(ref1[Y], ref2[Y],  \CurrentPicture[Y], c)}{\ref{motioncompensate}}
@@ -62,38 +62,38 @@ specified as part of the application profile and level (Annex \ref{profilelevel}
  
 \subsection{Random access}
 \label{randomaccess}
-Sequence headers represent safe entry points for decoding a sequence. Any picture 
-which satisfies the following conditions with respect to a given sequence header shall
-be decodeable without reference to pictures prior to the sequence
-header in coded order:
-\begin{enumerate}
-\item the picture is subsequent to the sequence header in coded order, and
-\item the picture number is greater than or equal to that of the first picture after
-the sequence header in coded order.
-\end{enumerate}
+Sequence headers represent safe entry points for decoding a sequence. 
 
-Note that these conditions imply that the first picture after a sequence header shall
-be decodeable. 
+An accessible picture (with reference to a given sequence header)
+shall be defined as a picture decodeable without dependence on 
+to data prior to the sequence header in coded order.
 
-The term ``decodeable'' may depend on the application in
-which encoding takes place. In conventional (non P-only) coding applications, the 
-first picture after a sequence header should be an intra picture. If motion compensation 
-is used in the sequence, it should be an intra reference picture. Any picture 
-satisfying conditions 1 and 2 above should have no reference or chain of references 
-via intermediate reference pictures to any picture occuring prior to the sequence 
-header in coded order: where no specific provision to the contrary is specified in an
-applicable level or profile, this condition shall apply.
+Accessibility should normally imply that each accessible picture has
+no reference picture prior to the sequence header, and no chain of 
+references leading to a reference picture prior to the sequence header. 
+A given level may allow this condition to
+be relaxed (for example, in P-only coding where unavailable references
+may be substituted for by zero pictures), but where no specific provision
+to the contrary is specified in an applicable level or profile, it shall 
+apply.
 
-P-only coded sequences may contain no intra pictures and all pictures may reference 
-pictures earlier in time and coded order: random access points may still be defined 
-in this case (and other similar cases) provided the processes for decoding pictures 
-where reference pictures may be unavailable are specified in an applicable level or profile.
+The first picture data unit after a sequence header shall be called the 
+access picture and shall be accessible with respect to the sequence header.
+It should normally be an intra picture. If the sequence contains inter pictures
+it should normally be an intra reference picture.
+
+All picture data units subsequent to the sequence header in coded order 
+shall also be accessible with respect to the sequence header
+if their picture numbers are greater than 
+or equal to that of the access picture. The access picture therefore represents 
+a temporal access point into the sequence.
 
 \begin{informative}
-If a sequence satisfies a maximum reordering depth constraint (Section \ref{picturereordering})
+
+If a sequence satisfies a maximum reordering depth constraint 
+(Section \ref{picturereordering})
 of size $N$ all pictures more than $N$ pictures later than the sequence header will
-have larger picture numbers than the first picture after the sequence header, and hence 
-satisfy conditions 1 and 2. A reordering depth constraint thus implies that after a 
+have larger picture numbers than the first picture after the sequence header, and hence will be accessible. A reordering depth constraint thus implies that after a 
 sequence header at most $N$ pictures will need to be discarded before all pictures are decodeable.
 \end{informative}
 \subsection{Reference picture buffer management}

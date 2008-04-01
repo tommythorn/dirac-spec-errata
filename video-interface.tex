@@ -1,11 +1,12 @@
-This section defines the video formats supported by the Dirac codec.
+This section defines the video formats supported by this specification.
 
 A selection of widely used video formats are defined in normative Annex 
 \ref{videoformatdefaults}. These video formats are characterized by
 their widespread use in television, cinema and multimedia applications.
 
 This list is not exhaustive, however, and Dirac is a general purpose video 
-codec. These predefined formats are base formats that may be modified element by
+compression system. These predefined formats are base formats that 
+may be modified element by
 element to support a much larger range of possible video formats. Support
 is provided by the sequence parameters of the bitstream (Section 
 \ref{sequenceheader}) for signalling both the base video format and
@@ -30,7 +31,7 @@ shall correspond to the video components $Y, C_O, C_G$.
 Coding using $Y, C_O, C_G$ provides a simple reversible conversion to and from
 RGB components by using lossless integer transforms. The use of $Y, C_O, C_G$
 supports lossless coding of RGB video and allows Dirac to be treated as an RGB
-codec for applications that require this feature.
+compression system for applications that require this feature.
 \end{informative}
 
 \subsection{Interlace}
@@ -59,7 +60,7 @@ All pictures are considered as individual entities whether or not all lines were
  sampled at the same instant. In video sequences that are not frame-based, such 
 as 30fps interlaced video carrying 24fps progressive images in a 3:2 
 pull-down sequence, the compression performance may not be optimum. In such 
-cases, a pre-processor may provide the codec with a more easily compressed 
+cases, a pre-processor may provide an encoder with a more easily compressed 
 source such as the original 24fps source pictures. Such pre-processing does not form any part of this specification.
 \end{informative}
 

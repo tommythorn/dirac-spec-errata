@@ -27,15 +27,17 @@ and other professional applications.
 very low, fixed, latency. This can be of the order of a few lines of input 
 or output video. The low delay syntax is suitable for light compression 
 for the re-use of low bandwidth infrastructure, for example carrying 
-HDTV over SD-SDIlinks. The low delay syntax uses intra coding and simple Variable Length 
+HDTV over SD-SDI links. The low delay syntax uses 
+intra coding and simple Variable Length 
 Codes for entropy codes. The core syntax provides much greater compression efficiency 
 at the expense of a whole picture delay. The core syntax can use a highly efficient 
 form of binary adaptive arithmetic coding, as well as motion compensation, 
 for maximum performance.
 \item[CBR and VBR operation] Dirac supports both constant bit rate and 
 variable bit rate operation.When the low delay syntax is used, the bit 
-rate will be constant for each area (Dirac slice) in a picture to ensure constant latency.
-\item[Variable bit depths]. 8, 10, 12 and 16 bit formats are supported.
+rate will be constant for each area (Dirac slice) in a picture to 
+ensure constant latency.
+\item[Variable bit depths] 8, 10, 12 and 16 bit formats are supported.
 \item[Multiple chroma sampling formats] 444, 422 and 420 video are all supported.
 \item[Lossless and RGB coding] A common toolset is used for both lossy and lossless 
 coding. RGB coding is supported via the YCoCg integer color transform.
@@ -51,7 +53,7 @@ with no parsing or decoding required.
 \section{Scope}
 \label{introscope}
 
-This specification defines the Dirac video compression codec through the stream syntax,
+This specification defines the Dirac video compression system through the stream syntax,
  entropy coding, coefficient unpacking and picture decoding processes. The decoder
  operations are defined by means of a mixture of pseudocode and mathematical 
 operations.

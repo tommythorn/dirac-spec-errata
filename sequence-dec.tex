@@ -8,17 +8,17 @@ below is illustrative code for a sample decoder. It emphasizes which parts of th
    \bsCODE{\StateName=\{\}}
    \bsCODE{decoded\_pictures = \{\}}
    \bsCODE{\RefBuffer=\{\}}
-   \bsCODE{parse\_info()}{\ref{parseinfo}}
+   \bsCODE{parse\_info()}{\ref{parseinfoheader}}
    \bsCODE{\VideoParams = sequence\_header()}{\ref{sequenceheader}}
-   \bsCODE{parse\_info()}{\ref{parseinfo}}
-   \bsWHILE{is\_end\_of\_sequence() == \false}
-      \bsIF{is\_seq\_header()==\true}
+   \bsCODE{parse\_info()}{\ref{parseinfoheader}}
+   \bsWHILE{is\_end\_of\_sequence() == \false}{\ref{parsecodevalues}}
+      \bsIF{is\_seq\_header()==\true}{\ref{parsecodevalues}}
          \bsCODE{\VideoParams = sequence\_header()}{\ref{sequenceheader}}
-      \bsELSEIF{is\_picture()==\true}
+      \bsELSEIF{is\_picture()==\true}{\ref{parsecodevalues}}
          \bsCODE{picture\_parse()}{\ref{pictureparse}}
          \bsCODE{decoded\_pictures[\PictureNumber] = picture\_decode()}{\ref{picturedec}}
       \bsEND
-      \bsCODE{parse\_info()}{\ref{parseinfo}}
+      \bsCODE{parse\_info()}{\ref{parseinfoheader}}
    \bsEND
    \bsRET{\{\VideoParams, decoded\_pictures\}}
 \end{pseudo}
@@ -43,7 +43,7 @@ placed in the output buffer in order. Annex \ref{profilelevel} defines the const
 which may be placed upon re-ordering depth.
 
 Sequences need not be decoded from the start: decoding can start from any sequence header
-according to the provisions of Section \ref{randomaccess}, although some pictures might
+according to the provisions of section \ref{randomaccess}, although some pictures might
 not be (completely) decodeable due to a chain of references reaching back earlier in the stream
 than the sequence header, introducing dependencies on unavailable pictures. 
 The behaviour of a decoder when confronted with such pictures is application-specific.
@@ -56,7 +56,7 @@ stream in any manner other than decoding pictures sequentially from the beginnin
 of the stream to the end: this may include decoding only intra pictures, decoding backwards, or decoding pictures in random parts of the stream. 
 
 Stream navigation, including non-sequential access is supported by the information 
-in the parse info headers in the stream (Section \ref{parseinfo}). 
+in the parse info headers in the stream (section \ref{parseinfoheader}). 
 
 In order to start decoding, other than at the start of a sequence, the decoder 
 must first synchronize to the stream. The parse info prefix is present to support such synchronization. A decoder would first search for the parse info prefix to locate 
