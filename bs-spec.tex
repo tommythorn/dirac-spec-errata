@@ -203,10 +203,10 @@ is no subsequent Parse Info header, it shall be be zero.
 
 Consequently, the previous parse offset value of the current parse info header shall equal the next parse offset value of the previous parse info header, if there is one.
 
-\subsubsection{Parse codes values}
+\subsubsection{Parse code values}
 \label{parsecodevalues}
 
-Parse codes values shall be divided into three sets: generic, 
+Parse code values shall be divided into three sets: generic, 
 core syntax and low delay
 syntax.
 
@@ -421,28 +421,38 @@ This section specifes the structure of the parse parameters, which is as follows
 \end{pseudo}
 
 Parse parameter data shall be constant (byte-for-byte identical) for all instances 
-of the sequence header within a Dirac sequence.
+of the sequence header within a Dirac sequence. For stream interchange, parse
+paramter data should also be constant across all sequences within a stream.
 
 \subsubsection{Version number}
 
-The major version number shall define the version of the syntax with which the stream complies. 
-A decoder complies with a major version number if it can parse all bit streams that comply with 
-that version number. Decoders that comply with a major version of the specification may not be 
-able to parse the bit stream corresponding to a later specification.
+The major version number shall define the version of the syntax with 
+which the stream complies. A decoder complies with a major version 
+number if it can parse all bit streams that comply with 
+that version number. Decoders that comply with a major version of 
+the specification may not be able to parse the bit stream corresponding 
+to a later specification.
 
-Depending on the profile and level defined, a decoder compliant with a given major version 
-number may still not be able to decode fully all parts of a stream.
+Depending on the profile and level defined, a decoder compliant 
+with a given major version number may still not be able to decode 
+fully all parts of a stream.
 
-All minor versions of the specification shall be functionally compatible with earlier minor versions 
-with the same major version number. Later minor versions may contain corrections, clarifications, 
-and removal of ambiguities. Later minor version numbers shall not contain new features or new 
+All minor versions of the specification shall be functionally compatible 
+with earlier minor versions with the same major version number. Later minor 
+versions may contain corrections, clarifications, and removal of ambiguities. 
+Later minor version numbers shall not contain new features or new 
 normative provisions.
 
-The major version number of a stream compliant with this version of the Dirac standard shall 
-be \MajorVersion.
+Functional compatibility shall imply that a decode with the same major version
+number but a later minor version number than that contained in a stream, shall
+be capable of decoding the stream and producing pictures substantially equivalent
+to that of a decoder with the same version numbers as the stream.
 
-The minor version number of a stream compliant with this version of the Dirac standard 
-shall be \MinorVersion.
+The major version number of a stream compliant with this version 
+of the Dirac specification shall be \MajorVersion.
+
+The minor version number of a stream compliant with this version 
+of the Dirac specification shall be \MinorVersion.
 
 
 \subsubsection{Profiles and levels}
@@ -460,11 +470,20 @@ Applicable values of profile and level and the variables they set are specified 
 \label{videoformat}
 
 The value of $base\_video\_format$ decoded in parsing the sequence header shall be 
-an index into Table \ref{table:videoformats}. For each entry in the table parameters are defined, in 
-Annex \ref{videoformatdefaults}, indicating parameters corresponding to one of a set of 
-predefined formats. These base parameters may be modified by subsequent metadata present
- in the stream as defined in subsequent sections below, with the exception of the top field first
- parameter which shall only be set by the base video format (see Section \ref{scanformat}).
+an index into table \ref{table:videoformats}. For each entry in the table 
+parameters are defined, in annex \ref{videoformatdefaults}, indicating base
+video parameters corresponding to one of a set of predefined formats. 
+
+The selection of a base format represents an initial approximation to the video
+format which can then be refined to capture all the video format characteristics
+accurately by overriding parameters as necessary. In particular, the predefined
+video formats listed in table \ref{table:videoformats} do not represent all the 
+video formats supported by Dirac; any video format parameters may in principle be
+defined and supported by Dirac sequence.
+
+These base parameters may be modified by subsequent metadata present in the stream, 
+with the exception of the top field first parameter which shall only be set 
+by the base video format (see Section \ref{scanformat}).
 
 \begin{table}[!ht]
 \centering
@@ -519,27 +538,46 @@ predefined formats. These base parameters may be modified by subsequent metadata
 \label{table:videoformats}
 \end{table}
 
-Custom format is intended for use when no other suitable base video format is available from
- the table. Video format defaults will still be set as per Annex \ref{videoformatdefaults},
- but these are token values which are expected to be almost wholly overridden by the subsequent source parameters. 
+\begin{informative}
+\begin{enumerate}
+\item The custom format is intended for use when no other suitable base video 
+format is available from the table. Video format defaults will still be set as 
+per annex \ref{videoformatdefaults}, but these are token values which are expected 
+to be almost wholly overridden by the subsequent source parameters. 
+\item The base video format ought to be as close as possible to the desired video
+format, especially in terms of picture dimensions and frame rate.
+\item True 60Hz formats can be encoded by overriding the frame rate parameters
+(section \ref{framerate}).
+ \end{enumerate}
+\end{informative}
 
 \subsection{Source parameters}
 \label{sourceparameters}
 
 The source parameters are intended to indicate the format of the video that was 
-originally encoded. They provide metadata that indicates how the decoded video should be displayed. 
+originally encoded. They provide metadata that indicates how the decoded video
+should be displayed. 
 
-The source parameters shall comprise frame size, chroma sampling format, scan format, frame rate,
- pixel aspect ratio, clean area, signal range and color specification. The frame size, chroma sampling
- format, scanning format and the signal range are required to decode the video. Display and 
-downstream processing falls outside the scope of this specification, hence the interpretation of the other parameters (not required to decode the video) is not normatively defined, with the exception of frame rate (Section \ref{framerate}). The frame rate imposes requirements on
+The source parameters shall comprise frame size, chroma sampling format, 
+scan format, frame rate, pixel aspect ratio, clean area, signal range 
+and color specification. The frame size, chroma sampling  format, 
+scanning format and the signal range are required to decode the video. Display 
+and downstream processing falls outside the scope of this specification, 
+hence the interpretation of the other parameters (not required to decode 
+the video) is not normatively defined, with the exception of frame rate 
+(section \ref{framerate}). The frame rate may impose requirements on
  compliant decoders for a given level and profile (Annex \ref{profilelevel}).
 
-Source parameter data shall remain constant throughout a VC-2 sequence. 
+Source parameter data shall remain constant throughout a Dirac sequence. 
 
-Default values for the source parameters shall be derived from the video format, as defined in annex C. These default values shall be the source parameters unless they are overridden with alternative values encoded as part of the Source Parameters part of the stream. 
+Default values for the source parameters shall be derived from the video 
+format, as defined in annex \ref{videoformatdefaults}. These default 
+values shall be the source parameters unless they are overridden 
+with alternative values encoded 
+as part of the Source Parameters part of the stream. 
 
-The $source\_parameters()$ process shall return a structure defining the video source parameters. It shall be defined as follows:
+The $source\_parameters()$ process shall return a structure defining 
+the video source parameters. It shall be defined as follows:
 
 \begin{pseudo}{source\_parameters}{base\_video\_format}
 \bsCODE{\VideoParams = set\_source\_defaults(base\_video\_format)}{\ref{setsourcedefaults}}
@@ -550,42 +588,32 @@ The $source\_parameters()$ process shall return a structure defining the video s
 \bsCODE{pixel\_aspect\_ratio(\VideoParams)}{\ref{aspectratio}}
 \bsCODE{clean\_area(\VideoParams)}{\ref{cleanarea}}
 \bsCODE{signal\_range(\VideoParams)}{\ref{signalrange}}
-\bsCODE{colour\_spec(\VideoParams)}{\ref{colourspec}}
+\bsCODE{color\_spec(\VideoParams)}{\ref{colorspec}}
 \bsRET{\VideoParams}
 \end{pseudo}
-
-Note: Although some source parameters are not used by the Dirac decoder all source
- parameters should, nevertheless, be made available any downstream video processing
- device or display to allow the proper interpretation of the decoded video. Their use and
- interpretation by other devices is not specified in this standard. 
 
 \subsubsection{Setting source defaults}
 \label{setsourcedefaults}
 
 The function that sets the default values of the source video parameters 
 shall take the video format index as an argument. That is, the signature of this 
-function is: $set\_source\_defaults(video\_format\_index)$ where 
-$video\_format\_index$ is an unsigned integer. The function returns a map 
+function is: $set\_source\_defaults(base\_video\_format)$ where 
+$base\_video\_format$ is an unsigned integer. The function returns a map 
 of source video parameters.
 
-The source video parameters shall be set, based on the video format index, as defined in 
-Annex \ref{videoformatdefaults}. The parameters set by this function shall be: Frame Size, 
-Sampling Format (4:4:4, 4:2:2 or 4:2:0), Scan Format (Progressive or Interlace), 
-Frame Rate, Pixel Aspect Ratio, Clean Area, Signal Range, Color Specification. 
-The tokens used to access the map returned by the function shall be as defined in the
- subsequent sections that specify how to override the default video source parameters.
+The source video parameters shall be set, based on the video format index, 
+as defined in annex \ref{videoformatdefaults}. The parameters set by this 
+function shall be: frame size, sampling format (4:4:4, 4:2:2 or 4:2:0), 
+scan format (progressive or interlace), frame rate, pixel aspect ratio, 
+clean area, signal range, color specification. The labels used to access the 
+map returned by the function shall be as defined in the
+subsequent sections that specify how to override the base video source 
+parameters.
 
-\begin{informative} As an example, if $video\_format\_index  == 4$, CIF defaults are set,
- with picture size equal to 352x288, 4:2:0 chroma format, amongst other parameters. A
- frame width  of 360 pixels may be encoded by overriding the CIF format default value of
- 352. 
-\end{informative}
-
-\subsubsection{Frame dimensions}
+\subsubsection{Frame size}
 \label{framedimensions}
 
-If a flag is set, the image dimensions specified by the video format defaults may
-be overridden:
+The frame size decoding process shall be as follows:
 
 \begin{pseudo}{frame\_size}{\VideoParams}
 \bsITEM{custom\_dimensions\_flag}{bool}{}
@@ -595,10 +623,18 @@ be overridden:
 \bsEND
 \end{pseudo}
 
-\subsubsection{Chroma sampling formats}
+Thus is $custom\_dimensions\_flag$ is $\true$, the frame size determined by the
+base video format shall be overridden.
+
+The frame width shall correspond to the width of the coded video, in pixels, that
+is coded in the stream. The frame height shall correspond to the number of lines
+per frame in the coded video, irrespective of whether the coded video is
+progressively scanned or is interlaced.
+
+\subsubsection{Chroma sampling format}
 \label{chromaformat}
 
-If a flag is set, the chroma format specified by the video format defaults is overridden.
+The chroma sampling format decoding process shall be as follows:
 
 \begin{pseudo}{chroma\_sampling\_format}{\VideoParams}
 \bsITEM{custom\_chroma\_format\_flag}{bool}{}
@@ -607,7 +643,11 @@ If a flag is set, the chroma format specified by the video format defaults is ov
 \bsEND
 \end{pseudo}
 
-The supported chroma sampling formats are specified in Table \ref{tab:chromaformats}:
+Thus if $custom\_chroma\_format\_flag$ is $\true$ then the base video format
+value is overridden.
+
+The decoded value of $\SChromaFormatIndex$ shall lie in the range 0 to 2 with
+values as defined in table \ref{tab:chromaformats}:
 
 \begin{table}[!ht]
 \centering
@@ -631,10 +671,10 @@ chroma components of the coded video as described in Section \ref{picturedimensi
 \subsubsection{Scan format}
 \label{scanformat}
 
-The scan format parameter shall indicate whether the source video represents progressive 
-frames or interlaced fields.
+The scan format parameter shall indicate whether the source video 
+represents progressive frames or interlaced fields.
 
-The process for parsing the scan format parameters shall be as follows:
+The scan format decoding process shall be defined as follows:
 
 \begin{pseudo}{scan\_format}{\VideoParams}
 \bsITEM{custom\_scan\_format\_flag}{bool}{}
@@ -643,16 +683,16 @@ The process for parsing the scan format parameters shall be as follows:
 \bsEND
 \end{pseudo}
 
-If the custom scan format flag is set to $\true$, the source sampling parameter defined by 
-the base video format values shall be overridden by the new value.
+If the custom scan format flag is set to $\true$, the source sampling 
+parameter defined by the base video format values shall be overridden by new values.
 
-If $\SSourceSampling$ is set to 0, then the source video shall be progressively sampled. 
-If it is 1, then the source video shall be interlaced. Values greater than 1 shall be reserved.
+If $\SSourceSampling$ is set to 0, then the source video shall be progressively 
+sampled. If it is 1, then the source video shall be interlaced. Values greater than 1 shall be reserved.
 
-If the source video is interlaced then $\STopFieldFirst$ shall be $\true$ 
+If the source video is interlaced, then $\STopFieldFirst$ shall be $\true$ 
 if the top line of the frame is in the earlier field, else $\STopFieldFirst$
- shall be $\false$. This shall be set only by the base video format and cannot be overridden 
-in the source parameters.
+ shall be $\false$. This shall be set only by the base video format and 
+ cannot be overridden in the source parameters.
 
 Both interlaced and progressive video may be coded as fields or frames.
 
@@ -665,8 +705,8 @@ $\SFrameRateNumer$ divided by $\SFrameRateDenom$
 The process for decoding the frame rate parameters shall be as follows:
 
 \begin{pseudo}{frame\_rate}{\VideoParams}
-\bsITEM{frame\_rate\_flag}{bool}{}
-\bsIF{frame\_rate\_flag==\true}
+\bsITEM{custom\_frame\_rate\_flag}{bool}{}
+\bsIF{custom\_frame\_rate\_flag==\true}
     \bsITEM{index}{uint}{}
     \bsIF{index == 0}
         \bsITEM{\SFrameRateNumer}{uint}{}
@@ -677,11 +717,16 @@ The process for decoding the frame rate parameters shall be as follows:
 \bsEND
 \end{pseudo}
 
+If $custom\_frame\_rate\_flag$ is set to $\true$ the frame rate parameters set
+by the base video format shall be overridden by new values.
+
 The decoded value of $index$ shall fall in the range 0 to 10.
 
-For $index>0$, $preset\_frame\_rate(\VideoParams,index)$ shall set frame rate
-elements of $\VideoParams$ 
-as specified in Table \ref{table:frameratevalues}.
+If $index$ is 0, then the frame rate numerator and denominator shall be
+individually defined by unsigned integer values.
+
+For values greater than $0$, the process $preset\_frame\_rate(\VideoParams,index)$ 
+shall set frame rate elements of $\VideoParams$ according to table \ref{table:frameratevalues}.
 
 \begin{table}[!ht]
 \centering
@@ -713,13 +758,15 @@ as specified in Table \ref{table:frameratevalues}.
 \caption{Available preset frame rate values}\label{table:frameratevalues}
 \end{table}
 
+\begin{informative}
 Note that what is encoded is frame rate, not picture rate. If the video is coded
 as fields, then picture rate is twice the encoded frame rate.
+\end{informative}
 
 \subsubsection{Pixel aspect ratio}
 \label{aspectratio}
 
-The pixel aspect ratio is defined as the ratio of the aspect ratio parameters:
+The pixel aspect ratio shall be defined as the ratio of the parameters:
 		\[\SAspectRatioNumer : \SAspectRatioDenom\]
 
 The process for decoding the pixel aspect ratio parameters shall be defined as follows:
@@ -746,9 +793,8 @@ The decoded value of $index$ shall fall in the range 0 to 6.
 If the value of $index$ is 0, then the pixel aspect ratio numerator and denominator 
 shall be individually defined by unsigned integer values.
 
-If $index>0$, $preset\_pixel\_aspect\_ratio(\VideoParams, index)$ shall set the pixel
- aspect ratio value elements of $\VideoParams$ as specified in Table
- \ref{table:aspectratiovalues}.
+If $index>0$, the process $preset\_pixel\_aspect\_ratio(\VideoParams, index)$ 
+shall set the pixel aspect ratio according to table \ref{table:aspectratiovalues}.
 
 \begin{table}[!ht]
 \centering
@@ -783,6 +829,9 @@ Pixel aspect ratios (PARs) are fundamental properties of sampled images because
  they determine the displayed shape of objects in the image. Failure to use the right
  PAR will result in distorted images, for example circles will be displayed as 
 ellipses etc.   
+\item The pixel apect ratios shown in table \ref{table:aspectratiovalues} assume
+a 704x480 active picture for 525-line systems and a 704x576 active picture for 
+625-line systems.
 \item Some video processing tools require an image aspect ratio. This can be 
 derived from the pixel aspect ratio by multiplying the ratio of horizontal to vertical 
 pixels by the pixel aspect ratio. So, for example, for a 704 x 480 line picture, with 
@@ -815,15 +864,22 @@ The following restrictions shall apply:
 \leq \SFrameHeight$
 \end{itemize}
 
+\begin{informative}
+The meaning and use of clean area are application defined: it might correspond
+to that picture which is to be displayed, or define a ``container'' within
+a picture of larger size.
+\end{informative}
+
 \subsubsection{Signal range}
 \label{signalrange}
 
-The signal range parameters indicate how the signal range of the picture component data, decoded by the Dirac decoder, should be adjusted prior to the color matrixing operations (described in informative Annex \ref{signalranges}). 
+The signal range parameters indicate how the signal range of the picture 
+component data, decoded by the Dirac decoder, should be adjusted prior to 
+the color matrixing operations (described in informative Annex \ref{signalranges}). 
 
-The signal range parameters shall also be used to determine the luma depth and chroma depth parameters (Section \ref{videodepth}) and the resulting clipping levels applied to the decoded video (Section \ref{pictureclip}).
-
-Note that picture component data processed by the Dirac decoder is bipolar, and
-is adjusted to positive ranges when pictures are output.
+The signal range parameters shall also be used to determine the luma depth 
+and chroma depth parameters (Section \ref{videodepth}) and the resulting 
+clipping levels applied to the decoded video (Section \ref{pictureclip}).
 
 The process for decoding the signal range parameters is as follows:
 
@@ -842,9 +898,14 @@ The process for decoding the signal range parameters is as follows:
 \bsEND
 \end{pseudo}
 
-The decoded value of $index$ shall fall in the range 0 to 3.
+If $custom\_signal\_range\_flag$ is set to $\true$ then the base video format
+signal range parameters shall be overridden by new values.
 
-If $index>0$ the $preset\_signal\_ranges(\VideoParams,index)$ shall set the signal range elements of $\VideoParams$ as specified in Tables \ref{table:signalrangevalues}.
+The decoded value of $index$ shall fall in the range 0 to 4.
+
+If $index>0$ the process $preset\_signal\_ranges(\VideoParams,index)$ 
+shall set the signal range elements of $\VideoParams$ according to table 
+\ref{table:signalrangevalues}.
 
 \begin{table}[!ht]
 \centering
@@ -864,12 +925,14 @@ If $index>0$ the $preset\_signal\_ranges(\VideoParams,index)$ shall set the sign
 \caption{Available signal range presets}\label{table:signalrangevalues}
 \end{table}
 
-Note that decoded video is represented within the decoder specification as bi-polar 
+\begin{informative}
+Decoded video is represented within the decoder specification as bi-polar 
 signals. An offset is added when video is output so that it is represented by unsigned 
 integer values.
+\end{informative}
 
-\subsubsection{Colour specification}
-\label{colourspec}
+\subsubsection{Color specification}
+\label{colorspec}
 
 The color specification shall consist of three component parts:
 \begin{itemize}
@@ -882,14 +945,14 @@ Defaults are available for all three parts collectively and individually.
 
 The process for decoding the color specification parameters shall be follows: 
 
-\begin{pseudo}{colour\_spec}{\VideoParams}
-\bsITEM{custom\_colour\_spec\_flag}{bool}{}
-\bsIF{custom\_colour\_spec\_flag==\true}
+\begin{pseudo}{color\_spec}{\VideoParams}
+\bsITEM{custom\_color\_spec\_flag}{bool}{}
+\bsIF{custom\_color\_spec\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_colour\_specs(\VideoParams,index)}
+    \bsCODE{preset\_color\_specs(\VideoParams,index)}
     \bsIF{index == 0}
-        \bsCODE{colour\_primaries(\VideoParams)}{\ref{colourprimaries}}
-        \bsCODE{colour\_matrix(\VideoParams)}{\ref{colourmatrix}}
+        \bsCODE{color\_primaries(\VideoParams)}{\ref{colorprimaries}}
+        \bsCODE{color\_matrix(\VideoParams)}{\ref{colormatrix}}
         \bsCODE{transfer\_function(\VideoParams)}{\ref{transferfunction}}
     \bsEND
 \bsEND
@@ -897,14 +960,14 @@ The process for decoding the color specification parameters shall be follows:
 
 The decoded value of $index$ shall fall in the range 0 to 4.
 
-$preset\_colour\_spec(index)$ shall set the colour primaries, matrix and transfer function elements of $\VideoParams$ as specified 
-in Table \ref{table:colourspecvalues}. If the value of $index$ is 0, these values may be overridden as defined in the succeeding sections. 
+$preset\_color\_spec(index)$ shall set the color primaries, matrix and transfer function elements of $\VideoParams$ as specified 
+in Table \ref{table:colorspecvalues}. If the value of $index$ is 0, these values may be overridden as defined in the succeeding sections. 
 
 \begin{table}[!ht]
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-\rowcolor[gray]{0.75}$index$ & {\bf Description}           & {\bf Primaries}       & {\bf Matrix}  & {\bf Transfer function}\\
+\rowcolor[gray]{0.75}$index$ & {\bf Description}& {\bf Primaries} & {\bf Matrix}& {\bf Transfer function}\\
 \hline
 0 & Custom & HDTV & HDTV & TV gamma \\ 
 \hline
@@ -914,28 +977,28 @@ in Table \ref{table:colourspecvalues}. If the value of $index$ is 0, these value
 \hline
 3 & HDTV & HDTV & HDTV & TV gamma \\
 \hline
-4 & Cinema & CIE XYZ & HDTV & DCI Gamma\\
+4 & D-Cinema & HDTV & HDTV & DCinema gamma\\
 \hline
 \end{tabular}
-\caption{Colour specification presets}\label{table:colourspecvalues}
+\caption{Color specification presets}\label{table:colorspecvalues}
 \end{table}
 
-\paragraph{Colour primaries}
-\label{colourprimaries}
+\paragraph{Color primaries}
+\label{colorprimaries}
 
 The color primaries decoding process shall be defined as follows:
 
-\begin{pseudo}{colour\_primaries}{\VideoParams}
-\bsITEM{custom\_colour\_primaries\_flag}{bool}{}
-\bsIF{custom\_colour\_primaries\_flag==\true}
+\begin{pseudo}{color\_primaries}{\VideoParams}
+\bsITEM{custom\_color\_primaries\_flag}{bool}{}
+\bsIF{custom\_color\_primaries\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_colour\_primaries(\VideoParams,index)}
+    \bsCODE{preset\_color\_primaries(\VideoParams,index)}
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
- $preset\_colour\_primaries(\VideoParams,index)$ shall set the colour primaries 
+ $preset\_color\_primaries(\VideoParams,index)$ shall set the color primaries 
 element of $\VideoParams$ as specified
 in Table \ref{table:primariesvalues}.
 
@@ -951,28 +1014,28 @@ in Table \ref{table:primariesvalues}.
 \hline
 2       &  SDTV 625 & ITU-R BT.601 & 625 primaries  \\
 \hline
-3       &  Cinema & SMPTE 428.1 & CIE XYZ              \\
+3       &  D-Cinema & SMPTE 428.1 & CIE XYZ              \\
 \hline
 \end{tabular}
-\caption{Colour primaries presets}\label{table:primariesvalues}
+\caption{Color primaries presets}\label{table:primariesvalues}
 \end{table}
 
-\paragraph{Colour matrix}
-\label{colourmatrix}
+\paragraph{Color matrix}
+\label{colormatrix}
 $\ $\newline
 The color matrix decoding process shall be defined as follows:
 
-\begin{pseudo}{colour\_matrix}{}
-\bsITEM{colour\_matrix\_flag}{bool}{}
-\bsIF{colour\_matrix\_flag==\true}
+\begin{pseudo}{color\_matrix}{}
+\bsITEM{color\_matrix\_flag}{bool}{}
+\bsIF{color\_matrix\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_colour\_matrices(index)}
+    \bsCODE{preset\_color\_matrices(index)}
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 2. 
 
-The $preset\_colour\_matrices(\VideoParams,index)$ process shall set the colour 
+The $preset\_color\_matrices(\VideoParams,index)$ process shall set the color 
 matrix element in $\VideoParams$ as specified
 in Table \ref{table:matrixvalues}.
 
@@ -980,7 +1043,7 @@ in Table \ref{table:matrixvalues}.
 \centering
 \begin{tabular}{|c|c|c|c|c|}
 \hline
-\rowcolor[gray]{0.75}$index$ &  {\bf Description} & {\bf Specification} & {\bf Colour matrix} & {\bf Comment}\\
+\rowcolor[gray]{0.75}$index$ &  {\bf Description} & {\bf Specification} & {\bf Color matrix} & {\bf Comment}\\
 \hline
 0 & HDTV & ITU-R BT.709 & $K_R=0.2126$, $K_B=0.0722$ & Also computer and web\\ 
 \hline
@@ -989,7 +1052,7 @@ in Table \ref{table:matrixvalues}.
 2 & Reversible & ITU-T H.264 & YCgCo & \\
 \hline
 \end{tabular}
-\caption{Colour matrix presets}\label{table:matrixvalues}
+\caption{Color matrix presets}\label{table:matrixvalues}
 \end{table}
 
 \paragraph{Transfer function}
@@ -1033,21 +1096,36 @@ in Table \ref{table:transfervalues}.
 The picture coding mode value in the sequence header shall determine 
 whether source video is coded as frames or fields. 
 
-If the picture coding mode value is $1$ then pictures shall correspond to fields. If it is $0$ 
-then pictures shall correspond to frames. Other picture coding mode values shall be
-reserved for future extensions.
+If the picture coding mode value is $1$ then pictures shall correspond to fields. 
+If it is $0$ then pictures shall correspond to frames. Other picture coding mode 
+values shall be reserved for future extensions.
 
-If video is coded as fields then the earliest field in each frame shall have an even picture number (Section \ref{pictureheader}). That is the LSB of the frame number, expressed as a binary number, indicates field parity.
+If video is coded as fields then the earliest field in each frame shall have 
+an even picture number (Section \ref{pictureheader}). That is the LSB of the 
+picture number, expressed as a binary number, indicates field parity.
 
-With field coding each frame shall be split into two fields as indicated by the scan format (Section \ref{scanformat}).
+With field coding each frame shall be split into two fields as indicated 
+by the scan format (Section \ref{scanformat}).
 
-An effect of field coding shall be to halve the vertical dimensions of coded pictures. Hence, once the picture coding mode is known, the picture dimensions, which shall be stored as part of the global state variable, shall be set (Section \ref{picturedimensions}).
+An effect of field coding shall be to halve the vertical dimensions of 
+coded pictures. Hence, once the picture coding mode is known, the 
+picture dimensions, which shall be stored as part of the global 
+state variable, shall be set (Section \ref{picturedimensions}).
 
 \begin{informative}
-It is possible to code progressive video as fields. In this case, the assignment of 
-frame lines to fields will be determined by the value of the top field first parameter in the base 
-video format (Annex \ref{videoformatdefaults}). Note that, according to Section \ref{scanformat},
- this base format default cannot be overridden for progressive video, as to do so would be artificial.
+It is possible to code progressive video as fields. In this case, 
+the assignment of frame lines to fields will be determined by the 
+value of the top field first parameter in the base video format 
+(annex \ref{videoformatdefaults}). Note that, according to 
+section \ref{scanformat}, this base format default cannot be overridden 
+for progressive video, as to do so would be artificial.
+
+Sometimes progressive source video is conveyed as if it were interlaced
+(for example using interlaced SDI modes), and could be signaled as such.
+This is known as progressive segmented frames (PSF). A Dirac encoder could
+detect PSF, and signal video as progressive, yet still code the video as 
+fields in order to introduce no additional buffering delay in the signal
+chain. Or it could take the signaled video format at face value.
 \end{informative}
 
 \subsection{Initializing coding parameters}
@@ -1638,7 +1716,14 @@ The $quant\_matrix()$ process shall be defined as follows:
 
 If $\TransformDepth> 4$ then $custom\_quant\_matrix$  shall be $\true$. 
 
-If $\TransformDepth \leq 4$, then custom quantization matrices may still be transmitted, 
-for example to apply a different degree of perceptual weighting (see Annex \ref{qmatrixdesign}). 
+If $\TransformDepth \leq 4$, then custom quantization 
+matrices may still be transmitted, 
+for example to apply a different degree of perceptual weighting 
+(see Annex \ref{qmatrixdesign}). 
 
-The function $set\_quant\_matrix()$ shall set the quantization matrix based on the wavelet ?lter as per Annex \ref{defaultquantmatrices}. These are “unweighted” matrices, whose values merely compensate for the differential power gain of the different subband ?lters. For perceptual weighting a custom quantisation matrix must be used.
+The function $set\_quant\_matrix()$ shall set the quantization matrix 
+based on the wavelet ?lter as per Annex \ref{defaultquantmatrices}. These are 
+unweighted matrices, whose values merely compensate for the differential power 
+gain of the different subband ?lters. For perceptual weighting a custom 
+quantisation matrix must be used.
+
