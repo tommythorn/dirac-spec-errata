@@ -157,7 +157,7 @@ The $padding()$ process for reading padding data shall be as follows:
 \bsEND
 \end{pseudo}
 
-\subsection{Parse Info header syntax}
+\subsection{Parse info header syntax}
 \label{parseinfoheader}
 
 The parse info header provides information identifying the subsequent data unit
@@ -194,14 +194,29 @@ The Parse Info parameters shall satisfy the following constraints:
 \item $\ParseCode$ shall be one of the supported values set out 
 in Table \ref{table:parsecodes}
 \item $\NextParseOffset$ shall be the number of bytes from the first byte of the current
-Parse Info header to the first byte of the next Parse Info header, if there is one. If there
+Parse Info header to the first byte of the next Parse Info header, 
+if there is one. If there
 is no subsequent Parse Info header, it shall be be zero.
 \item $\PrevParseOffset$ shall be the number of bytes from the first byte of the current
-Parse Info header to the first byte of the previous Parse Info header, if there is one. If there
-is no subsequent Parse Info header, it shall be be zero.
+Parse Info header to the first byte of the previous Parse Info header, 
+if there is one. If there is no subsequent Parse Info header, it shall be be zero.
 \end{itemize}
 
-Consequently, the previous parse offset value of the current parse info header shall equal the next parse offset value of the previous parse info header, if there is one.
+Consequently, the previous parse offset value of the current parse info header 
+shall equal the next parse offset value of the previous parse info header, 
+if there is one.
+
+\begin{informative}
+\begin{enumerate}
+\item The parse info prefix, next parse offset and previous parse offset
+values are provided to support navigation and are not required to decode
+the sequence. See section \ref{nonsequential}.
+\item The parse offset values will normally be non-zero. However at the beginning
+and end of a stream there is no preceding or following parse info header respectively.
+In these circumstances the value of the offset is zero: these are the only
+places where zero values can occur.
+\end{enumerate}
+\end{informative}
 
 \subsubsection{Parse code values}
 \label{parsecodevalues}
@@ -390,7 +405,7 @@ of frames or fields.
 Once the base video format, source parameters and picture coding mode have 
 been read from the stream the information they contain may be decoded to 
 provide the parameters used for decoding pictures. It is the purpose of the 
-$coding\_parameters()$ process to initialize these parameters.
+$set\_coding\_parameters()$ process to initialize these parameters.
 
 \begin{informative}
 Note that video parameters indicate whether the video sequence is interlaced or progressive.
@@ -560,7 +575,7 @@ should be displayed.
 
 The source parameters shall comprise frame size, chroma sampling format, 
 scan format, frame rate, pixel aspect ratio, clean area, signal range 
-and color specification. The frame size, chroma sampling  format, 
+and colour specification. The frame size, chroma sampling  format, 
 scanning format and the signal range are required to decode the video. Display 
 and downstream processing falls outside the scope of this specification, 
 hence the interpretation of the other parameters (not required to decode 
@@ -588,7 +603,7 @@ the video source parameters. It shall be defined as follows:
 \bsCODE{pixel\_aspect\_ratio(\VideoParams)}{\ref{aspectratio}}
 \bsCODE{clean\_area(\VideoParams)}{\ref{cleanarea}}
 \bsCODE{signal\_range(\VideoParams)}{\ref{signalrange}}
-\bsCODE{color\_spec(\VideoParams)}{\ref{colorspec}}
+\bsCODE{colour\_spec(\VideoParams)}{\ref{colourspec}}
 \bsRET{\VideoParams}
 \end{pseudo}
 
@@ -605,7 +620,7 @@ The source video parameters shall be set, based on the video format index,
 as defined in annex \ref{videoformatdefaults}. The parameters set by this 
 function shall be: frame size, sampling format (4:4:4, 4:2:2 or 4:2:0), 
 scan format (progressive or interlace), frame rate, pixel aspect ratio, 
-clean area, signal range, color specification. The labels used to access the 
+clean area, signal range, colour specification. The labels used to access the 
 map returned by the function shall be as defined in the
 subsequent sections that specify how to override the base video source 
 parameters.
@@ -875,7 +890,7 @@ a picture of larger size.
 
 The signal range parameters indicate how the signal range of the picture 
 component data, decoded by the Dirac decoder, should be adjusted prior to 
-the color matrixing operations (described in informative Annex \ref{signalranges}). 
+the colour matrixing operations (described in informative Annex \ref{signalranges}). 
 
 The signal range parameters shall also be used to determine the luma depth 
 and chroma depth parameters (Section \ref{videodepth}) and the resulting 
@@ -932,9 +947,9 @@ integer values.
 \end{informative}
 
 \subsubsection{Color specification}
-\label{colorspec}
+\label{colourspec}
 
-The color specification shall consist of three component parts:
+The colour specification shall consist of three component parts:
 \begin{itemize}
 \item Color primaries
 \item Color matrix 
@@ -943,16 +958,16 @@ The color specification shall consist of three component parts:
 
 Defaults are available for all three parts collectively and individually.
 
-The process for decoding the color specification parameters shall be follows: 
+The process for decoding the colour specification parameters shall be follows: 
 
-\begin{pseudo}{color\_spec}{\VideoParams}
-\bsITEM{custom\_color\_spec\_flag}{bool}{}
-\bsIF{custom\_color\_spec\_flag==\true}
+\begin{pseudo}{colour\_spec}{\VideoParams}
+\bsITEM{custom\_colour\_spec\_flag}{bool}{}
+\bsIF{custom\_colour\_spec\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_color\_specs(\VideoParams,index)}
+    \bsCODE{preset\_colour\_specs(\VideoParams,index)}
     \bsIF{index == 0}
-        \bsCODE{color\_primaries(\VideoParams)}{\ref{colorprimaries}}
-        \bsCODE{color\_matrix(\VideoParams)}{\ref{colormatrix}}
+        \bsCODE{colour\_primaries(\VideoParams)}{\ref{colourprimaries}}
+        \bsCODE{colour\_matrix(\VideoParams)}{\ref{colourmatrix}}
         \bsCODE{transfer\_function(\VideoParams)}{\ref{transferfunction}}
     \bsEND
 \bsEND
@@ -960,8 +975,8 @@ The process for decoding the color specification parameters shall be follows:
 
 The decoded value of $index$ shall fall in the range 0 to 4.
 
-$preset\_color\_spec(index)$ shall set the color primaries, matrix and transfer function elements of $\VideoParams$ as specified 
-in Table \ref{table:colorspecvalues}. If the value of $index$ is 0, these values may be overridden as defined in the succeeding sections. 
+$preset\_colour\_spec(index)$ shall set the colour primaries, matrix and transfer function elements of $\VideoParams$ as specified 
+in Table \ref{table:colourspecvalues}. If the value of $index$ is 0, these values may be overridden as defined in the succeeding sections. 
 
 \begin{table}[!ht]
 \centering
@@ -980,25 +995,25 @@ in Table \ref{table:colorspecvalues}. If the value of $index$ is 0, these values
 4 & D-Cinema & HDTV & HDTV & DCinema gamma\\
 \hline
 \end{tabular}
-\caption{Color specification presets}\label{table:colorspecvalues}
+\caption{Color specification presets}\label{table:colourspecvalues}
 \end{table}
 
 \paragraph{Color primaries}
-\label{colorprimaries}
+\label{colourprimaries}
+$\ $\newline
+The colour primaries decoding process shall be defined as follows:
 
-The color primaries decoding process shall be defined as follows:
-
-\begin{pseudo}{color\_primaries}{\VideoParams}
-\bsITEM{custom\_color\_primaries\_flag}{bool}{}
-\bsIF{custom\_color\_primaries\_flag==\true}
+\begin{pseudo}{colour\_primaries}{\VideoParams}
+\bsITEM{custom\_colour\_primaries\_flag}{bool}{}
+\bsIF{custom\_colour\_primaries\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_color\_primaries(\VideoParams,index)}
+    \bsCODE{preset\_colour\_primaries(\VideoParams,index)}
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 3.
 
- $preset\_color\_primaries(\VideoParams,index)$ shall set the color primaries 
+ $preset\_colour\_primaries(\VideoParams,index)$ shall set the colour primaries 
 element of $\VideoParams$ as specified
 in Table \ref{table:primariesvalues}.
 
@@ -1021,21 +1036,21 @@ in Table \ref{table:primariesvalues}.
 \end{table}
 
 \paragraph{Color matrix}
-\label{colormatrix}
+\label{colourmatrix}
 $\ $\newline
-The color matrix decoding process shall be defined as follows:
+The colour matrix decoding process shall be defined as follows:
 
-\begin{pseudo}{color\_matrix}{}
-\bsITEM{color\_matrix\_flag}{bool}{}
-\bsIF{color\_matrix\_flag==\true}
+\begin{pseudo}{colour\_matrix}{}
+\bsITEM{colour\_matrix\_flag}{bool}{}
+\bsIF{colour\_matrix\_flag==\true}
     \bsITEM{index}{uint}{}
-    \bsCODE{preset\_color\_matrices(index)}
+    \bsCODE{preset\_colour\_matrices(index)}
 \bsEND
 \end{pseudo}
 
 The decoded value of $index$ shall fall in the range 0 to 2. 
 
-The $preset\_color\_matrices(\VideoParams,index)$ process shall set the color 
+The $preset\_colour\_matrices(\VideoParams,index)$ process shall set the colour 
 matrix element in $\VideoParams$ as specified
 in Table \ref{table:matrixvalues}.
 
