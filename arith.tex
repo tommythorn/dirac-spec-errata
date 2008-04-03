@@ -450,7 +450,7 @@ Coding a boolean value consists of three sub-stages (in order):
 \item renormalising and outputting data.
 \end{enumerate}
 
-\paragraph{Scaling the interval\\}
+\paragraph{Scaling the interval}$\ $\newline
 The integer interval $[low,low+range)$ represents the real interval
 \[[l,h)=[low/2^{16},(low+range)/2^{16})\]
  In a given context with label $label$, the probability of zero can be extracted as 
@@ -469,11 +469,11 @@ low &+= & (range*prob\_zero)\gg 16 \\
 range & -= & (range*prob\_zero)\gg 16
 \end{eqnarray*}
 
-\paragraph{Updating contexts\\}
+\paragraph{Updating contexts}$\ $\newline
 Contexts are updated in exactly the same way as the 
 decoder (Annex \ref{contextupdate}).
 
-\paragraph{Renormalisation and output\\}
+\paragraph{Renormalisation and output}$\ $\newline
 Renormalisation must cause $low$ and $range$ to be modified exactly
 as in the decoder (Annex \ref{renormalisation}). In addition, 
 during renormalisation bits are output when $low$ and $low+range$ 
@@ -500,7 +500,7 @@ In pseudocode, this is as follows:
 \bsEND
 \end{pseudo*}
 
-\paragraph{Flushing the encoder\\}
+\paragraph{Flushing the encoder}$\ $\newline
 After encoding, there may still be insufficient bits for a decoder
 to determine the final few encoded symbols, partly because further 
 renormalisation is required -- for example, msbs may agree but the range

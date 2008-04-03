@@ -5,7 +5,8 @@
 
 \label{picturedec}
 
-This section defines the processes for decoding a picture from a Dirac stream. 
+This section defines the processes for decoding a picture from a Dirac stream.
+
 Picture decoding depends upon correctly parsing the stream, and decoding operations
  are dependent on decoding the sequence header and picture metadata 
 (Section \ref{sequenceheader} and \ref{picturesyntax}) and unpacking the coefficient 
@@ -53,10 +54,9 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 \end{pseudo}
 
 
-\subsection{Picture re-ordering}
-\label{picturereordering}
+\subsection{Picture reordering}
 Picture numbers within the stream may not be in numerical order, and 
-subsequent reordering may be required: the size (reordering depth) 
+subsequent reordering may be required: the size  
 of the decoded picture buffer required to perform any such reordering may be 
 specified as part of the application profile and level (Annex \ref{profilelevel}).
  
@@ -91,7 +91,7 @@ a temporal access point into the sequence.
 \begin{informative}
 
 If a sequence satisfies a maximum reordering depth constraint 
-(Section \ref{picturereordering})
+(annex \ref{picturereordering})
 of size $N$ all pictures more than $N$ pictures later than the sequence header will
 have larger picture numbers than the first picture after the sequence header, and hence will be accessible. A reordering depth constraint thus implies that after a 
 sequence header at most $N$ pictures will need to be discarded before all pictures are decodeable.

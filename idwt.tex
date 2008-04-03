@@ -5,7 +5,6 @@
 
 
 \subsection{Picture IDWT}
-\label{idwt}
 
 The inverse discrete wavelet transform process shall consist of transforming the 
 wavelet coefficients for each of the video components. It shall be defined as follows:
@@ -14,11 +13,12 @@ wavelet coefficients for each of the video components. It shall be defined as fo
 \bsCODE{\CurrentPicture[Y]=idwt(\YTransform)}{\ref{idwt}}
 \bsCODE{\CurrentPicture[C1]=idwt(\COneTransform)}{\ref{idwt}}
 \bsCODE{\CurrentPicture[C2]=idwt(\CTwoTransform)}{\ref{idwt}}
-\bsFOR{c}{Y,C1,C2}
+\bsFOREACH{c}{Y,C1,C2}
     \bsCODE{idwt\_pad\_removal(\CurrentPicture[c],c)}{\ref{padremoval}}
 \end{pseudo}
 
 \subsection{Component IDWT}
+\label{idwt}
 
 This section defines the $idwt(coeff\_data)$ process for reconstructing picture 
 component data from decoded subband data $coeff\_data$ using the inverse discrete wavelet transform (IDWT). The IDWT shall be invoked in the picture decoding process only after successful unpacking of the subband coefficient data (Section \ref{transformdec}).
@@ -422,7 +422,7 @@ $filtershift()$ returns 1\\
 \caption{$\WaveletIndex==6$: Integer lifting approximation to Daubechies (9,7)}\label{filtertable6}
 \end{table}
 \clearpage
-\subsubsection{Removal of IDWT pad values}
+\subsection{Removal of IDWT pad values}
 \label{padremoval}
 
 This section defines the decoding process $idwt\_pad\_removal(pic, c)$

@@ -130,8 +130,8 @@ from horizontal low-pass filtering and vertical high-pass filtering.
 
 Each subband array shall be initialised so that:
 \begin{eqnarray*}
-\width(data[level][orient]) & = & subband\_width(level,comp) \\
-\height(data[level][orient]) & = & subband\_height(level,comp)
+\width(coeff\_data[level][orient]) & = & subband\_width(level,comp) \\
+\height(coeff\_data[level][orient]) & = & subband\_height(level,comp)
 \end{eqnarray*}
 
 as specified in Section \ref{subbandwidthheight}. These dimensions correspond 
@@ -223,13 +223,21 @@ The $inverse\_quant()$ function shall be defined as follows:
 \begin{enumerate}
 \item Dirac quantisation is an integer approximation of dead-zone quantisation,
 in which a value is quantised as
-\[\left| x\right| // q\]
+\[\left| x\right| // qf\]
 for $x\geq 0$ or 
-\[-\left| x\right| // q\]
+\[-\left| x\right| // qf\]
+Since this process involves rounding down, the inverse quantisation process adds
+an offset to reconstructed values after multiplying by $qf$. This produces a 
+value on average closer to the original value.
 \item The pseudocode description separates inverse quantisation from coefficient unpacking. However, 
 since dead-zone quantisation is used, the $inverse\_quant()$ function must compute
 the magnitude. Hence it is more efficient to first extract the coefficient magnitude,
 then inverse quantise, and then extract the coefficient sign. 
+\item In the low delay syntax, the quantisation index is limited to 6 bits,
+i.e. a maximum value of 63. In the core syntax this limit will also suffice 
+for 8 bit data and a 4-level transform, but the maximum value will in general
+depend upon the video bit depth, the type of wavelet filter and the transform
+depth. A value of 127 will account for most practical situations.
 \end{enumerate}
 \end{informative}
 
@@ -451,37 +459,20 @@ The key to the context labels is explained in Section \ref{selectcoeffcontext}.
 
 This section defines the operation of the process: 
 
-$codeblock(band,parent,level, orient,x,y,quant\_index)$
+$codeblock(band,parent,level, orient,cx,cy,quant\_index)$
 
-This process unpacks coefficients within the codeblock at position $(x,y)$.
-The codeblock dimensions shall be as defined in Section \ref{codeblockdimensions}.
-
-The process for unpacking coefficients within the codeblock shall be defined as follows: 
-
-\begin{pseudo}{codeblock}{coeff\_data,level,orient,x,y,quant\_index}
-\bsCODE{skipped=zero\_flag(level)}{\ref{zeroblockflag}}
-\bsIF{skipped==\false}
-  \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
-  \bsFOR{v=cb\_top(y,band,level)}{cb\_bottom(y,band,level)-1}{\ref{codeblockdimensions}}
-    \bsFOR{h=cb\_left(x,band,level)}{cb\_right(x,band,level)-1}{\ref{codeblockdimensions}}
-          \bsCODE{coeff\_unpack(coeff\_data,level,orient,quant\_idx,h,v)}{\ref{wltcoeff}}
-      \bsEND
-    \bsEND
-  \bsEND
-\bsEND
-
-\end{pseudo}
-
-If the codeblock is skipped, then coefficients within that codeblock shall remain zero.
-
+This process shall unpack coefficients within the codeblock at position $(cx,cy)$.
+The dimensions of the codeblock shall be as defined in section \ref{codeblockdimensions}.
+The process for unpacking coefficients within the codeblock given these dimensions
+shall be as defined in section \ref{codeblockloop}.
 
 \paragraph{Codeblock dimensions}
 $\ $\newline
 \label{codeblockdimensions}
 
 Each codeblock shall cover coefficients in the horizontal range $cb\_left$ to 
-$cb\_right–1$ 
-and in the vertical range $cb\_top$ to $cb\_bottom–1$ where these values shall be
+$cb\_right-1$ 
+and in the vertical range $cb\_top$ to $cb\_bottom-1$ where these values shall be
  defined by the functions: 
 
 \begin{eqnarray*}
@@ -493,6 +484,39 @@ and in the vertical range $cb\_top$ to $cb\_bottom–1$ where these values shall b
 
 where $x$ and $y$ are the codeblock coordinates within the subband.
 
+\paragraph{Codeblock unpacking loop}
+$\ $\newline
+\label{codeblockloop}
+
+The codeblock unpacking process shall be defined as follows: 
+
+\begin{pseudo}{codeblock}{coeff\_data,level,orient,cx,cy,quant\_index}
+\bsCODE{skipped=zero\_flag(level)}{\ref{zeroblockflag}}
+\bsIF{skipped==\false}
+  \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
+  \bsFOR{y=cb\_top(cy,band,level)}{cb\_bottom(cy,band,level)-1}{\ref{codeblockdimensions}}
+    \bsFOR{x=cb\_left(cx,band,level)}{cb\_right(cx,band,level)-1}{\ref{codeblockdimensions}}
+          \bsCODE{coeff\_unpack(coeff\_data,level,orient,x,y,quant\_index)}{\ref{wltcoeff}}
+      \bsEND
+    \bsEND
+  \bsEND
+\bsEND
+
+\end{pseudo}
+
+If the codeblock is skipped, then coefficients within that codeblock
+shall remain zero.
+
+The function $codeblock\_quant\_offset()$ returns a signed value, but the
+quantiser offset values coded in the stream shall be constrained so that the
+reconstructed value of $quant\_index$ shall be non-negative.
+
+\begin{informative}
+Codeblock quantisers are encoded differentially in the stream, and the 
+value of $quant\_index$ is modified by this function (all variables)
+are passed by reference). A decoder ought to check that the reconstructed value
+of $quant\_index$ falls within the bounds it supports.
+\end{informative}
 
 \paragraph{Skipped codeblock flag}
 \label{zeroblockflag}
@@ -512,6 +536,10 @@ The skipped codeblock flag process shall be as follows:
 
 If the number of codeblocks is 1, then $zero\_flag()$ shall return  $\false$.
 
+If arithmetic coding is employed, then the zero flag shall be decoded using
+the context probability indicated by the $\ZeroCodeblock$ label, as defined
+in annex \ref{arithreadbool}.
+
 \paragraph{Codeblock quantiser offset}
 $\ $\newline$\ $\newline
 \label{blockquantidx}
@@ -527,7 +555,7 @@ The $codeblock\_quant\_offset()$ process shall be defined as follows:
 \bsEND
 \end{pseudo}
 
-$quant\_context\_probs()$ shall return the context probability label set:
+where $quant\_context\_probs()$ shall return the context probability label set:
 \[\{[\QOffsetFollow],\QOffsetData,\QOffsetSign\}\]
 
 \subsubsection{Subband coefficients}
@@ -548,12 +576,12 @@ and neighbouring values are zero or non-zero. See Annex \ref{arithdecoding}
 for a definition of the Dirac arithmetic decoder. 
 
 The process for coefficient unpacking shall comprise up to four stages:
-\begin{itemize}
+\begin{enumerate}
 \item	(for arithmetic coding only) determination of the magnitude context, based on whether the parent or neighbouring values are zero,
 \item	 (for arithmetic coding only) determination of the sign context, based on the predicted sign value,
 \item	 entropy decoding of the quantized coefficient value, and
 \item	 inverse quantization of the quantized value.
-\end{itemize}
+\end{enumerate}
 
 The $coeff\_unpack()$ process shall be defined as follows:
 
@@ -601,11 +629,11 @@ The zero neighbourhood value shall be determined as follows:
 
 \begin{pseudo}{zero\_nhood}{band,x,y}
 \bsIF{y>0 \text{ and } x>0}
-  \bsIF{( band[y-1][x-1])!=0 \text{ or } band[y][x-1]!=0 ) \text{ or } band[y-1][x]!=0}
+  \bsIF{( band[y-1][x-1]!=0 \text{ or } band[y][x-1]!=0 )\text{ or } band[y-1][x]!=0}
     \bsRET{\false}
   \bsEND
 \bsELSEIF{y>0 \text{ and } x==0}
-    \bsIF{band[y-1][0])!=0}
+    \bsIF{band[y-1][0]!=0}
       \bsRET{\false}
     \bsEND
 \bsELSEIF{y==0 \text{ and } x>0}
@@ -652,21 +680,50 @@ The sign prediction value shall be determined as follows:
 $\ $\newline
 This section defines the coefficient context selection function which shall return a map
  of context probability labels for decoding a coefficient value. Context probabilities 
-shall be as defined in Annex \ref{contextprobs}.
+shall be as defined in annex \ref{contextprobs}.
 
-The map m shall comprise three elements, accessed by the labels: FOLLOW, DATA, and SIGN, where:
+The map $m$ returned shall comprise three elements, accessed by the 
+labels FOLLOW, DATA, and SIGN, where:
 \begin{itemize}
-\item $m$[FOLLOW] is an array of labels for accessing follow bit context probabilities
-\item $m$[DATA] is a label for accessing data bit context probabilities
-\item $m$[SIGN] is a label for accessing data bit context probabilities 
+\item $m$[FOLLOW] is an array of labels
+\item $m$[DATA] is a label
+\item $m$[SIGN] is a label 
 \end{itemize}
 
 The elements of the map returned by 
 \[select\_coeff\_contexts(zero\_nhood,parent,sign\_pred)\]
 
-shall be as defined in Table \ref{contexttable} where the context labels are used to access
-context probability values in the map $\AContexts$.
+shall be as defined in Table \ref{contexttable}, for values of 
+$zero\_parent$, $zero\_nhood$ and $sign\_pred$, where the 
+context labels (e.g. \ZPZNFollowOne, \ZPFollowTwo, \CoeffData and 
+\SignZero) correspond to context probabilities (i.e. 16 bit unsigned
+integers) stored in the decoded state as defined in annex 
+\ref{contextprobs}.
 
+The three columns on the left of table \ref{contexttable} represent
+the three inputs to the coefficient context selection function. The
+output of the function is a map with three elements. These elements
+are accessed by the labels FOLLOW, DATA and SIGN. The values of the
+three elements of the map are defined in the rightmost column for
+each set of inputs.
+
+\begin{informative}
+The follow context probability sets are arrays indexed from zero as
+per annex \ref{binandcontext}. Note also that the parent values affect the context
+of all follow bits, and that neighbour values only affect the context of
+the first follow bit. A common data context probability is used for all
+coefficients.
+\end{informative}
+
+Key to interpretation of the label names:
+
+\begin{description}
+\item[ZP] zero parent
+\item[NP] non-zero parent
+\item[ZN] zero neighbour
+\item[NN] non-zerro neighbour
+\item[Fn] follow bit, bin N (n+ means bin n and higher)
+\end{description}
 
 %% Table of context sets for signed coefficient extraction %%
 \begin{table}[!ht]
@@ -832,7 +889,7 @@ values set to zero by means of bounded read operations.
 
 The overall slice unpacking process shall be defined as follows:
 
-\begin{pseudo}{slice}{sy,sx}
+\begin{pseudo}{slice}{sx,sy}
 \bsCODE{slice\_bits\_left = 8*slice\_bytes(sx,sy)}{\ref{slicebytes}}
 \bsCODE{qindex=read\_nbits(7)}
 \bsCODE{slice\_bits\_left -= 7}
@@ -868,10 +925,10 @@ Slice decoding makes use of bounded read functions, which return 1 when $\ABitsL
 the chroma coefficients, initializing to the number of bits remaining.
 \end{informative}
 
-\subsubsection{Slice bytes}
+\subsubsection{Determining the number of bytes in a slice}
 \label{slicebytes}
 
-This section defines the $slice\_bytes(sx,sy)$ function for determining the number of bytes to be used for the slice at location $(sx,sy)$:
+The $slice\_bytes(sx,sy)$ shall be defined as follows:
 
 \begin{pseudo}{slice\_bytes}{sx,sy}
 \bsCODE{slice\_num=sy*\SlicesX+sx}
@@ -886,12 +943,22 @@ bytes &-= & ((slice\_num)*\SliceBytesNum)// \\
 \bsRET{bytes}
 \end{pseudo}
 
+\begin{informative}
+This function produces an integer value which will on average be the ratio
+of $\SliceBytesNum$ to $\SliceBytesDenom$. In many applications this ratio
+will not be an integer number, and the number of bytes will vary from
+slice to slice by one byte from time to time. This allows the low delay
+syntax to support any compression ratio exactly.
+\end{informative}
+
 \subsubsection{Setting slice quantisers}
 \label{slicequantisers}
 
-This section defines how quantisers for individual subbands are determined from the quantisation matrix and the quantisation index.
+This section defines how quantisers for individual subbands are 
+determined from the quantisation matrix and the quantisation index.
+The $slice\_quantisers()$ function shall be defined as follows:
 
-\begin{pseudo}{set\_band\_quantisers}{qindex}
+\begin{pseudo}{slice\_quantisers}{qindex}
 \bsCODE{\Quant[0][\LL]=\max(qindex-\QuantMatrix[0][\LL],0)}
 \bsFOR{level=1}{\TransformDepth}
     \bsFOREACH{orient}{HL, LH, HH}
@@ -900,6 +967,16 @@ This section defines how quantisers for individual subbands are determined from 
     \bsEND
 \bsEND
 \end{pseudo}
+
+\begin{informative}
+The non-negative quantisation matrix values are subtracted from the slice
+quantiser value, and so a higher value in the quantisation matrix represents
+a lower quantisation index and thus a lower degree of quantisation. The
+quantisation index value is also clipped to 0 so that it is non-negative.
+This ensures that as many subbands as possible within the slice can be 
+coded losslessly. The quantisation matrix values are set as part of decoding
+the transform parameters (section \ref{quantmatrix}).
+\end{informative}
 
 \subsubsection{Slice subbands}
 \label{sliceband}

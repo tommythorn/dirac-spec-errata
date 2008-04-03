@@ -184,6 +184,41 @@ profile only.
 
 A sequence compliant with a given level $n$ shall set $\Level$ equal to $n$.
 
+\subsubsection{Decoder data buffers[DRAFT-TBC]}
+
+A reference picture buffer $\RefBuffer$ is defined for storing 
+decoded reference pictures (if any). In addition, levels may define
+two additional buffers, and applicable parameters for them:
+
+\begin{itemize}
+\item a bit stream buffer $\StreamBuffer$ for buffering 
+stream data prior to decoding
+\item a decoded picture buffer $\DecodedBuffer$ for storing 
+decoded pictures (reference or non-reference) for the purposes
+of picture reordering
+\end{itemize}
+
+For the purposes of this specification, the reference picture 
+buffer shall be deemed to be additional to the
+decoded picture buffer (i.e. reference picture storage will be
+duplicated in the decoded picture buffer).
+
+\paragraph{Bit stream buffer operation[TBC]}$\ $\newline
+
+\paragraph{Picture reordering and decoded picture buffer[TBC]}$\ $\newline
+\label{picturereordering}
+
+Two parameters shall be defined for constraining picture reordering.
+The first is the size, $\DPBSize$, of the decoded picture buffer.
+
+The second is the reordering depth applicable to a Dirac sequence. This shall
+be defined as the maximum number of picture data units that may occur 
+between a picture with picture number $N$ and a picture with picture number
+$N+1$ or $N-1$.
+
+\subsubsection{Buffer models [TBC]}
+
+
 \subsubsection{Level 1: VC-2 default level}
 
 This level is intended to provide minimal constraints on VC-2 compatible
@@ -195,7 +230,7 @@ guarantees of real time decoding.
 This level shall only be available if the profile is set to Low Delay, Simple, or
 Main (Intra).
 
-\paragraph{Sequence header parameters\newline}
+\paragraph{Sequence header parameters}$\ $\newline
 
 The following constraints shall apply to the sequence header parameters
 (section \ref{sequenceheader}):
@@ -212,7 +247,7 @@ The following constraints shall apply to the sequence header parameters
 \item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
 \end{itemize}
 
-\paragraph{Picture header parameters\newline}
+\paragraph{Picture header parameters}$\ $\newline
 
 The following constraints shall apply to picture header parameters
 (section \ref{pictureheader}):
@@ -232,7 +267,7 @@ The following constraints shall apply to picture header parameters
     \end{itemize}
 \end{itemize}
 
-\paragraph{Transform data\newline}
+\paragraph{Transform data}$\ $\newline
 
 The following constraints shall apply to transform data elements 
 (section \ref{wavelettransform}):
@@ -248,7 +283,7 @@ between $-2^{19}$ and $2^{19}$ inclusive
     \end{itemize} 
 \end{itemize} 
 
-\subsubsection{Level 128: Long-GOP default level [TBD]}
+\subsubsection{Level 128: Long-GOP default level [DRAFT-TBD]}
 
 This level is intended to provide minimal constraints on long GOP
 streams encoding simple variants of the base video formats 
@@ -258,7 +293,7 @@ guarantees of real time decoding.
 
 This level shall only be available if the profile is set to Main (Long GOP).
 
-\paragraph{Sequence header parameters\newline}
+\paragraph{Sequence header parameters}$\ $\newline
 
 The following constraints shall apply to the sequence header parameters
 (section \ref{sequenceheader}):
@@ -278,7 +313,7 @@ parameters set to 8 bit SDI ranges (index 2 in table \ref{table:signalrangevalue
 \item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
 \end{itemize}
 
-\paragraph{Picture header parameters\newline}
+\paragraph{Picture header parameters}$\ $\newline
 
 The following constraints shall apply to picture header parameters
 (section \ref{pictureheader}):
@@ -289,7 +324,7 @@ The following constraints shall apply to picture header parameters
     at least one coefficient in each codeblock
 \end{itemize}
 
-\paragraph{Transform data\newline}
+\paragraph{Transform data}$\ $\newline
 
 The following constraints shall apply to transform data elements 
 (section \ref{wavelettransform}):
@@ -301,6 +336,26 @@ between $-2^{15}$ and $2^{15}$ inclusive
 \item quantization offsets encoded in codeblocks shall lie between 
     -63 and 63 inclusive
 \end{itemize} 
+
+\paragraph{Reordering and reference buffers [DRAFT-TBD]}$\ $\newline
+
+
+A decoder must maintain a reference picture buffer for the 
+purposes of inter picture prediction, and (separately) a decoded 
+picture buffer for the purposes of picture reordering, in addition to 
+storage provided for decoding the current picture. The decoded picture
+buffer shall contain non-reference pictures only. 
+
+A bit stream buffer is not required for this level.
+
+The following constraints shall apply:
+\begin{itemize}
+\item The reference buffer size $\MaxRefBufferSize$ shall be 3.
+\item The decoded picture buffer size shall be 2 in the case
+of frame coding or 4 in the case of field coding.
+\item The picture reordering depth shall be 5 in the case of frame coding
+or 11 in the case of field coding
+\end{itemize}
 
 
 
