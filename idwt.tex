@@ -293,7 +293,7 @@ $filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
-\caption{$\WaveletIndex==0$: Deslauriers-Debuc (9,7) lifting stages and shift values}\label{filtertable0}
+\caption{$\WaveletIndex==0$: Deslauriers-Dubuc (9,7) lifting stages and shift values}\label{filtertable0}
 \end{table}
 
 \begin{table}[h]
@@ -324,9 +324,9 @@ $filtershift()$ returns 1\\
 Lifting steps: \\
 \begin{tabular}{l}
 1. Type 2, $S=5, L=4, D=-1, taps=[-1,9,9,-1]$ i.e. \\
-\quad $ A[2*n]  -= (-A[2*n-3]+9*A[2*n-1]+9*A[2*n+1]+A[2*n+3]+16)\gg 5$ \\
+\quad $ A[2*n]  -= (-A[2*n-3]+9*A[2*n-1]+9*A[2*n+1]-A[2*n+3]+16)\gg 5$ \\
 2. Type 3, $S=4, L=4, D=-1, taps=[-1,9,9,-1]$ i.e. \\
-\quad $ A[2*n+1]  += (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]+A[2*n+4]+8)\gg 4$
+\quad $ A[2*n+1]  += (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]-A[2*n+4]+8)\gg 4$
 \end{tabular}
 \\
 \\
@@ -334,7 +334,7 @@ $filtershift()$ returns 1\\
 \hline
 
 \end{tabular}
-\caption{$\WaveletIndex==2$: Deslauriers-Debuc (13,7) lifting stages and shift values}
+\caption{$\WaveletIndex==2$: Deslauriers-Dubuc (13,7) lifting stages and shift values}
 \end{table}
 
 \begin{table}[h]
