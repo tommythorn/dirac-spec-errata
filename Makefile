@@ -14,7 +14,7 @@ include .depends
 	touch .version-date
 	-latex -recorder -interaction=batchmode layout-fullsize.tex
 	perl tools/mkdep.pl layout-fullsize.tex > .depends
-	rm *.dvi *.aux
+	-rm *.dvi *.aux
 
 version:
 	sh -c 'pwd -P' > .version-date
@@ -26,10 +26,10 @@ $(SUBDIRS):
 	$(MAKE) -C $@
 
 clean: subdirs
-	rm -f *.aux *.dvi *.fls *.log *.pdf *.toc
+	-rm -f *.aux *.dvi *.fls *.log *.pdf *.toc
 
 distclean: clean subdirs
-	rm -f .depends .version-date
+	-rm -f .depends .version-date
 
 .INTERMEDIATE: %.dvi
 
