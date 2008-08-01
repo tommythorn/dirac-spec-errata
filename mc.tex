@@ -236,9 +236,9 @@ The spatial matrix returned shall be the product of a horizontal and a vertical
 weighting matrix. It shall be defined as follows:
 
 \begin{pseudo}{spatial\_wt}{i,j}
-\bsFOR{y==0}{\YBlen-1}
-    \bsFOR{x==0}{\XBlen-1}
-        \bsCODE{W=h\_wt(i)[x]*v\_wt(j)[y]}
+\bsFOR{y=0}{\YBlen-1}
+    \bsFOR{x=0}{\XBlen-1}
+        \bsCODE{W[y][x]=h\_wt(i)[x]*v\_wt(j)[y]}
     \bsEND
 \bsEND
 \bsRET{W}
@@ -258,7 +258,7 @@ The horizontal weighting function shall be defined as follows:
     \bsCODE{hwt[\XBsep]=5}
     \bsCODE{hwt[\XBsep+1]=3}
 \bsEND
-\bsFOR{2*\XOffset}{\XBsep-1}
+\bsFOR{x=2*\XOffset}{\XBsep-1}
     \bsCODE{hwt[x]=8}
 \bsEND
 \bsIF{i==0}
@@ -287,7 +287,7 @@ The vertical weighting function  shall be defined as follows:
     \bsCODE{vwt[\YBsep]=5}
     \bsCODE{vwt[\YBsep+1]=3}
 \bsEND
-\bsFOR{2*\YOffset}{\YBsep-1}
+\bsFOR{y=2*\YOffset}{\YBsep-1}
     \bsCODE{vwt[y]=8}
 \bsEND
 \bsIF{j==0}
