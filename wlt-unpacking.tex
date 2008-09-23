@@ -428,7 +428,7 @@ Data within subbands may be split into one or more rectangular codeblocks (Figur
 
 The  $subband\_coeffs()$ process shall be defined as follows:
 
-\begin{pseudo}{subband\_coeffs}{coeff\_data,level,orient,length}
+\begin{pseudo}{subband\_coeffs}{coeff\_data,level,orient,length,quant\_index}
 \bsCODE{\ABitsLeft= 8*length}
 \bsIF{using\_ac()==\true}
     \bsCODE{ctx\_labels=
@@ -493,6 +493,7 @@ The codeblock unpacking process shall be defined as follows:
 \begin{pseudo}{codeblock}{coeff\_data,level,orient,cx,cy,quant\_index}
 \bsCODE{skipped=zero\_flag(level)}{\ref{zeroblockflag}}
 \bsIF{skipped==\false}
+  \bsCODE{band = coeff\_data[level][orient]}
   \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{y=cb\_top(cy,band,level)}{cb\_bottom(cy,band,level)-1}{\ref{codeblockdimensions}}
     \bsFOR{x=cb\_left(cx,band,level)}{cb\_right(cx,band,level)-1}{\ref{codeblockdimensions}}

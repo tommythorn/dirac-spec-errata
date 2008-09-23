@@ -9,7 +9,6 @@ engine used in Dirac, and
 \item a description of a compatible arithmetic encoder.
 \end{enumerate}
 
-\begin{informative*}
 \subsection{Arithmetic coding principles (Informative)}
 
 This section provides an introduction to the principles underlying arithmetic
@@ -388,7 +387,94 @@ side of the last row.
 \label{table:lut}
 \end{table}
 
-\clearpage
+\subsubsection{Efficient implementation (Informative)}
+\label{arithdecopts}
+The decoding operations defined in the preceding sections correspond closely
+to the descriptions of arithmetic coding principles contained in the academic
+literature. More efficient implementations are certainly possible, both for
+hardware and software. This section describes some simple techniques.
+
+\paragraph{Change of variables}$\ $\newline
+There is in fact no need for the decoder to keep track of both $\ALow$ and
+$\ACode$, since the test is made against the difference of these values, i.e.
+be defined as:
+\[\ACodeMinusLow = \ACode-\ALow\]
+
+So only this difference variable need be tracked. Since $\ALow$ is initialised
+to zero, $\ACodeMinusLow$ is initialised just like $\ACode$. The $read\_boola$ 
+then is re-written as:
+
+\begin{pseudo}{read\_boola}{context\_label}
+\bsCODE{prob\_zero=\AContexts[context\_label]}
+\bsCODE{range\_times\_prob = (\ARange * prob\_zero)\gg 16}
+\bsIF{ \ACodeMinusLow >= range\_times\_prob }
+  \bsCODE{value = \true}
+  \bsCODE{\ACodeMinusLow -=  range\_times\_prob}
+  \bsCODE{\ARange -= range\_time\_prob}
+\bsELSE
+  \bsCODE{value = \false}
+  \bsCODE{\ARange = range\_times\_prob}
+\bsEND
+\bsCODE{update\_context(\AContexts[context\_index],value)}{\ref{contextupdate}}
+\bsWHILE{\ARange<=\text{0x4000}}
+    \bsCODE{renormalise()}{\ref{renormalisation}}
+\bsEND
+\bsRET{value}
+\end{pseudo}
+
+The $renormalise()$ function is very greatly simplified, since all the masking
+and bit-twiddling is eliminated to leave:
+
+\begin{pseudo}{renormalise}{}
+\bsCODE{\ACodeMinusLow  <<=  1}
+\bsCODE{\ARange  <<=  1}
+\bsCODE{\ACodeMinusLow+= read\_bitb()}
+\end{pseudo}
+
+\paragraph{Bytewise operation}$\ $\newline
+Accessing data bit by bit is also inefficient, so it is useful to look ahead and
+read in bytes into $\ACodeMinusLow$ or $\ACode$ in advance. So, for example,
+$\ACodeMinusLow$ could be initialised to the first 4 bytes of the bitstream
+and $\ARange$ initialised to 0xFFFF0000, and all calulations shifted up by 16 bits.
+Then $read\_boola$ can be re-written as:
+
+\begin{pseudo}{read\_boola}{context\_label}
+\bsCODE{prob\_zero=\AContexts[context\_label]}
+\bsCODE{range\_times\_prob = (\ARange\gg16 * prob\_zero)\&\text{0xFFFF0000}}
+\bsIF{ \ACodeMinusLow >= range\_times\_prob }
+  \bsCODE{value = \true}
+  \bsCODE{\ACodeMinusLow -=  range\_times\_prob}
+  \bsCODE{\ARange -= range\_time\_prob}
+\bsELSE
+  \bsCODE{value = \false}
+  \bsCODE{\ARange = range\_times\_prob}
+\bsEND
+\bsCODE{update\_context(\AContexts[context\_index],value)}
+\bsWHILE{\ARange<=\text{0x40000000}}
+    \bsCODE{renormalise()}
+\bsEND
+\bsRET{value}
+\end{pseudo}
+
+and the renormalisation loop uses a counter, starting at 16, to input bits in 2-byte
+chunks:
+
+\begin{pseudo}{renormalise}{}
+\bsCODE{\ACodeMinusLow  <<=  1}
+\bsCODE{\ARange  <<=  1}
+\bsCODE{\ACounter -= 1}
+\bsIF{\ACounter == 0 }
+  \bsCODE{\ACodeMinusLow+= read\_uint\_lit(2)}
+  \bsCODE{\ACounter = 16}
+\bsEND
+\end{pseudo}
+
+\paragraph{Look-up table}$\ $\newline
+In software it makes sense to use a modified probability LUT containing 512 elements, in
+which each even element is the negative increment to $prob\_zero$ if 0 is coded, and each
+odd element is the positive increment to $prob\_zero$ is 1 is coded. This means that access
+to the LUT will always be in a very local area whatever value is coded, whereas the basic
+structure will require either position $p$ or $255-p$ to be accessed depending on the value.
 
 \subsection{Arithmetic encoding (Informative)}
 
@@ -556,4 +642,85 @@ Finally, 0-7 padding bits are added to the encoded output to make
 a whole number of bytes. These are not necessary for decoding, but
 for stream compliance.
 
-\end{informative*}
+\subsection{Efficient implementation}
+
+Some similar techniques to those described in section \ref{arithdecopts} can be
+used in the encoder to speed up operation. 
+
+\paragraph{Bytewise operation}$\ $\newline
+It is not necessary to output bits one by one. Instead, $low$ may be allowed to
+accumulate bits at the lower end and output them when a byte has accumulated. If the
+last bit determined was a 1, this 1 must be carried to the previous byte, so
+renormalisation becomes:
+
+\begin{pseudo*}
+\bsWHILE{range<=\text{0x4000}}
+    \bsCODE{low  \ll=  1}
+    \bsCODE{range  \ll=  1}
+    \bsCODE{counter -= 1}
+    \bsIF{counter==0}
+      \bsIF{low<=1\ll 24 \text{ and } low+range> 1\ll24}
+        \bsCODE{carry+=1}
+      \bsELSE
+        \bsIF{low<1\ll 24}
+	    \bsWHILE{carry}
+	      \bsCODE{data[pos]=\text{0xFF}}
+	      \bsCODE{carry -= 1}
+	      \bsCODE{pos += 1}
+            \bsEND
+	\bsELSE
+	    \bsCODE{data[pos-1] += 1}
+	    \bsWHILE{carry}
+	      \bsCODE{data[pos]=\text{0x00}}
+	      \bsCODE{carry -= 1}
+	      \bsCODE{pos += 1}
+            \bsEND
+	\bsEND
+        \bsCODE{data[pos](low\gg16}
+	\bsCODE{pos += 1}
+	\bsCODE{low \&= \text{0xFFFF}}
+      \bsEND
+      \bsCODE{counter=8}
+    \bsEND
+\bsEND
+\end{pseudo*}
+
+\paragraph{Overlap and add}$\ $\newline
+Renormalisation can be simplified still further by observing that carries occur if and only
+if the top byte of $low$ becomes 0xFF. In this case a carried 1 would propagate up multiple
+bytes, turning 0xFFs into 0x00s. So it is possible to store the top two bytes of $low$ (i.e.
+bit 24 containing the carry bit and the next byte) and do an overlap and add at the end to correctly 
+propagate values back to the beginning. I.e. renormalisation becomes:
+
+\begin{pseudo*}
+\bsWHILE{range<=\text{0x4000}}
+    \bsCODE{low  \ll=  1}
+    \bsCODE{range  \ll=  1}
+    \bsCODE{counter -= 1}
+    \bsIF{counter==0}
+      \bsCODE{low\_list[pos] = low\gg16}
+      \bsCODE{pos+=1}
+      \bsCODE{counter=8}
+      \bsCODE{low \&= \text{0xFFFF}}
+    \bsEND
+\bsEND
+\end{pseudo*}
+
+At the end of coding all values, a flush function will complete $low\_list$ for remaining values
+and perform the overlap and add:
+
+\begin{pseudo*}
+\bsCODE{low += 1}
+\bsCODE{low \ll= counter}
+\bsCODE{low\_list[pos] = (low \gg 16)\&\text{0xFFFF}}
+\bsCODE{pos += 1}
+\bsCODE{low\_list[pos] = (low \gg 8)\&\text{0xFFFF}}
+\bsCODE{pos += 1}
+\bsCODE{data[pos-1] = low\_list[pos-1] \& \text{0xFF}}
+\bsCODE{data[pos-2] = low\_list[pos-2] \& \text{0xFF}}
+\bsFOR{i=0}{pos-3}
+  \bsCODE{low\_list[pos-3-i] += low\_list[pos-2-i]\gg8}
+  \bsCODE{data[pos-3-i] = low\_list[pos-3-i]\&\text{0xFF}}
+\bsEND
+\end{pseudo*}
+
