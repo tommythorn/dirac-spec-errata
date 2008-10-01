@@ -181,7 +181,7 @@ The Type 2 lifting process $lift2(A,L,D,taps)$ shall be defined as follows:
 \begin{pseudo}{lift2}{A,L,D,taps}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
-    \bsFOR{i=-N}{M}
+    \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)-1}
         \bsCODE{pos=\min(pos, \length(A)-1)}        
         \bsCODE{pos=\max(pos, 1)}
@@ -197,7 +197,7 @@ The Type 3 lifting process $lift3(A,L,D,taps)$ shall be defined as follows:
 \begin{pseudo}{lift3}{A,L,D,taps}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
-    \bsFOR{i=-N}{M}
+    \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)}
         \bsCODE{pos=\min(pos, \length(A)-2)}        
         \bsCODE{pos=\max(pos, 0)}
@@ -213,7 +213,7 @@ The Type 4 lifting process $lift4(A,L,D,taps)$ shall be defined as follows:
 \begin{pseudo}{lift4}{A,L,D,taps}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
-    \bsFOR{i=-N}{M}
+    \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)}
         \bsCODE{pos=\min(pos, \length(A)-2)}        
         \bsCODE{pos=\max(pos, 0)}
