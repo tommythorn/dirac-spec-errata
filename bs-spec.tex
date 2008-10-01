@@ -349,7 +349,10 @@ The rationale for the parse code values in Table \ref{table:parsecodes} is as fo
 \begin{itemize}
 \item The MS bit (bit 7) is used to indicate the picture syntax (core or low delay syntax) 
 and only applies to pictures. Core syntax codes whole frames rather than slices. Low delay syntax codes slices not frames. 
-\item The second MS bit (bit 6) is used to indicate whether arithmetic coding is used and only applies to pictures. Core syntax may optionally use arithmetic coding. Low delay syntax does not use arithmetic coding. The permutation of the two bits which might indicate low delay syntax with arithmetic coding is reserved. Arithmetic coding is not supported on
+\item The second MS bit (bit 6) is used to indicate whether arithmetic coding is used and
+only applies to pictures. Core syntax may optionally use arithmetic coding. Low delay
+syntax does not use arithmetic coding. The permutation of the two bits which
+might indicate low delay syntax with arithmetic coding is reserved. Only arithmetic coding is supported on
 Inter pictures.
 \item The next three MS bits (bits 5, 4 and 3) indicate the type of data unit following the parse info unit. Bit 3 indicates whether it is a picture or non-picture data unit. Bits 5 and 4 indicate the 4 other parse codes.
 \item The three LS bits (bits 2, 1 and 0) indicate picture types. Bit 2 indicates whether a picture
