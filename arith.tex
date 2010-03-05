@@ -331,9 +331,9 @@ The $update\_context()$ process shall be defined as follows:
 
 \begin{pseudo}{update\_context}{ctx\_prob,value}
 \bsIF{value==\true}
-    \bsCODE{ctx\_prob -= \ALUT[ctx[prob0]\gg 8]}{Table \ref{table:lut}}
+    \bsCODE{ctx\_prob -= \ALUT[ctx\_prob \gg 8]}{Table \ref{table:lut}}
 \bsELSE
-    \bsCODE{ctx\_prob += \ALUT[255-(ctx[prob0]\gg 8)]}{Table \ref{table:lut}}
+    \bsCODE{ctx\_prob += \ALUT[255-(ctx\_prob \gg 8)]}{Table \ref{table:lut}}
 \bsEND
 \end{pseudo}
 
