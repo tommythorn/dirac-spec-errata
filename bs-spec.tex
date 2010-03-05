@@ -1239,13 +1239,13 @@ The picture header shall immediately follow a parse info header with a picture p
 code (section \ref{parseinfoheader}). The picture header parsing process shall be defined as follows:
 
 \begin{pseudo}{picture\_header}{}
-\bsCODE{\PictureNumber=read\_byte\_lit(4)}
+\bsCODE{\PictureNumber=read\_uint\_lit(4)}
 \bsIF{is\_inter()}{\ref{parsecodevalues}}
     \bsCODE{\RefOneNum=(\PictureNumber+read\_sint())\%2^{32}}
     \bsIF{num\_refs() == 2}{\ref{parsecodevalues}}
         \bsCODE{\RefTwoNum=(\PictureNumber+read\_sint())\%2^{32}}
     \bsEND\bsEND
-\bsIF{is\_ref()}{\ref{parsecodevalues}}
+\bsIF{is\_reference()}{\ref{parsecodevalues}}
     \bsCODE{\RetiredPicture=(\PictureNumber+read\_sint())\% 2^{32}}
 \bsEND
 \end{pseudo}
