@@ -43,13 +43,13 @@ is to parse all sequences it contains. A Dirac sequence shall be decoded as a se
 \subsection{Sequence}
 
 The data contained in a Dirac sequence corresponds to a single video sequence with
-constant video parameters as defined in Sections \ref{sourceparameters}. A sequence
- A Dirac sequence can be excised from a Dirac stream and decoded entirely
+constant video parameters as defined in Sections \ref{sourceparameters}.
+A Dirac sequence can be excised from a Dirac stream and decoded entirely
 independently.
 
 A Dirac sequence shall comprise an alternating sequence of parse info headers and 
 data units. The first data unit shall be a sequence header, and further sequence 
-headers may be inserted at any data unit point in the sequence . 
+headers may be inserted at any data unit point in the sequence.
 The process for parsing a Dirac sequence shall be as defined below:
 
 \begin{pseudo}{parse\_sequence}{}
@@ -93,7 +93,7 @@ Data units may be one of:
 \begin{itemize}
 \item a sequence header, 
 \item a picture, 
-\item auxiliary data 
+\item auxiliary data, and
 \item padding data. 
 \end{itemize}
 
@@ -142,7 +142,7 @@ The $auxiliary\_data()$ process for reading auxiliary data shall be as follows:
 \begin{pseudo}{auxiliary\_data}{}
 \bsCODE{byte\_align()}
 \bsFOR{i=1}{\NextParseOffset-13}
-    \bsCODE{read\_byte}
+    \bsCODE{read\_byte()}
 \bsEND
 \end{pseudo}
 
@@ -153,7 +153,7 @@ The $padding()$ process for reading padding data shall be as follows:
 \begin{pseudo}{padding}{}
 \bsCODE{byte\_align()}
 \bsFOR{i=1}{\NextParseOffset-13}
-    \bsCODE{read\_byte}
+    \bsCODE{read\_byte()}
 \bsEND
 \end{pseudo}
 
@@ -182,7 +182,7 @@ The $parse\_info()$ process for reading parse info headers shall be as follows:
 \begin{pseudo}{parse\_info}{}
 \bsCODE{byte\_align()}
 \bsCODE{\ParseInfoPrefix=read\_uint\_lit(4)}
-\bsCODE{\ParseCode=read\_byte()}
+\bsCODE{\ParseCode=read\_uint\_lit(4)}
 \bsCODE{\NextParseOffset=read\_uint\_lit(4)}
 \bsCODE{\PrevParseOffset=read\_uint\_lit(4)}
 \end{pseudo}
