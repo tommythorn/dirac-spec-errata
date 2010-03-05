@@ -422,7 +422,7 @@ The $read\_uinta()$ function shall be defined as follows:
 \bsCODE{index = 0}
 \bsWHILE{read\_boola(follow\_context(index,context\_prob\_set) )== \false}{\ref{binandcontext}}
   \bsCODE{value \ll = 1}
-  \bsIF{read\_boola(\AContexts[context\_prob\_set[DATA]])==\true}
+  \bsIF{read\_boola(context\_prob\_set[DATA]) == \true}
     \bsCODE{value += 1}
   \bsEND
   \bsCODE{index += 1}
@@ -438,7 +438,7 @@ $read\_sinta()$ decodes first the magnitude then the sign, as necessary:
 \begin{pseudo}{read\_sinta}{context\_prob\_set}
 \bsCODE{value=read\_uinta(context\_prob\_set)}
 \bsIF{value != 0}
-  \bsIF{read\_boola(\AContexts[context\_prob\_set[SIGN])]) == \true}
+  \bsIF{read\_boola(context\_prob\_set[SIGN]) == \true}
     \bsCODE{value=-value}
   \bsEND
 \bsEND
