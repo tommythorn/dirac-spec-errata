@@ -72,7 +72,7 @@ Dirac defines three fixed length data encodings as follows:
 \subsubsection{Boolean}
 
 The $read\_bool()$ function shall return $\true$ if 1 is read from the stream and 
-$\false$ otherwise. The $read_bool()$ function shall be defined as follows:
+$\false$ otherwise. The $read\_bool()$ function shall be defined as follows:
 
 \begin{pseudo}{read\_bool}{}
 \bsIF{read\_bit()==1}
@@ -136,13 +136,13 @@ A similar early termination facility is a used for arithmetic decoding.
 \label{blockreadbit}
 
 This section specifies the operation of the $read\_bitb()$ process for reading bits from
-a block of known size, and the $flush_inputb()$ process for discarding the remainder of a block of 
+a block of known size, and the $flush\_inputb()$ process for discarding the remainder of a block of 
 data. 
 
 These processes shall use $\ABitsLeft$ to determine the number of bits left to the 
 end of the block.
 
-The $read_bitb()$ function shall be defined as follows:
+The $read\_bitb()$ function shall be defined as follows:
 
 \begin{pseudo}{read\_bitb}{}
 \bsIF{\ABitsLeft==0}
