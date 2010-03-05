@@ -409,7 +409,7 @@ The follow context selection function $follow\_context()$ shall be defined as fo
 \begin{pseudo}{follow\_context}{index, context\_prob\_set}
 \bsCODE{pos= \min(index, length(context\_prob\_set[FOLLOW])-1) }
 \bsCODE{ctx\_label = context\_prob\_set[FOLLOW][pos]}
-\bsRET{\AContexts[ctx\_label]}
+\bsRET{ctx\_label}
 \end{pseudo}
 
 \paragraph{Unsigned integer decoding}
