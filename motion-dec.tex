@@ -39,19 +39,19 @@ which references are to be used for motion compensation,  and a global motion
 Four reference prediction modes shall be defined and shall be denoted by integer
 constant values: 
 \begin{enumerate}
-\item \Intra shall denote value 0, and shall indicate that DC values for a block
+\item \Intra~shall denote value 0, and shall indicate that DC values for a block
 shall be decoded and that no motion vectors shall be decoded.
-\item  \RefOneOnly shall denote value 1 and shall indicate that a motion vector
+\item  \RefOneOnly~shall denote value 1 and shall indicate that a motion vector
 for the first reference picture shall be decoded, but no motion vector for the second
 reference picture shall be decoded.
-\item  \RefTwoOnly shall denote value 2 and shall indicate that a motion vector
+\item  \RefTwoOnly~shall denote value 2 and shall indicate that a motion vector
 for the second reference picture shall be decoded, but no motion vector for the first
 reference picture shall be decoded.
-\item  \RefOneAndTwo shall denote value 3 and shall indicate that motion vectors
+\item  \RefOneAndTwo~shall denote value 3 and shall indicate that motion vectors
 for both the first and second reference picture shall be decoded.
 \end{enumerate}
 
-In addition, where global motion is used for a picture (i.e $\PictureUsingGlobal$ is set), 
+In addition, where global motion is used for a picture (i.e.\ $\PictureUsingGlobal$ is set),
 a global motion mode flag shall be encoded for each block. If $\true$, global motion
 compensation shall be used for this block, and no block motion vectors or DC values
 shall be encoded. If $\false$, block motion compensation shall be employed and
@@ -100,9 +100,9 @@ $\BlockData[j][i][\Vect][2][1]$.
 \item A set of integral DC values for each component, $\BlockData[j][i][\DC][Y]$,
  $\BlockData[j][i][\DC][C1]$, and $\BlockData[j][i][\DC][C2]$.
 \item A reference prediction mode, $\BlockData[j][i][\RMode]$, taking values \Intra, 
-\RefOneOnly, \RefTwoOnly, or \RefOneAndTwo and indicating which references 
-(if any) are to be used for predicting block $(i,j)$
-\item A global motion mode flag, $\BlockData[j][i][\GMode]$
+\RefOneOnly, \RefTwoOnly, or \RefOneAndTwo~and indicating which references
+(if any) are to be used for predicting block $(i,j)$.
+\item A global motion mode flag, $\BlockData[j][i][\GMode]$.
 \end{enumerate}
 
 \subsubsection{Block motion data initialisation}
