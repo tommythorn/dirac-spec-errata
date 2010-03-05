@@ -528,14 +528,14 @@ The $ref\_mode\_prediction()$ function shall return a value that represents a ma
 \bsELSEIF{x==0}
     \bsRET{\BlockData[y-1][0][\RMode]}
 \bsELSE
-    \bsCODE{num\_ref1\_nbrs=\BlockData[y-1][x] \& 1}
-    \bsCODE{num\_ref1\_nbrs +=\BlockData[y-1][x-1] \& 1}
-    \bsCODE{num\_ref1\_nbrs +=\BlockData[y][x-1] \& 1}
-    \bsCODE{pred=num\_ref1\_nbrs//2}    
-    \bsCODE{num\_ref2\_nbrs=(\BlockData[y-1][x]\gg 1) \& 1}
-    \bsCODE{num\_ref2\_nbrs +=(\BlockData[y-1][x-1] \gg 1) \& 1}
-    \bsCODE{num\_ref2\_nbrs +=(\BlockData[y][x-1] \gg 1) \& 1}
-    \bsCODE{pred \wedge= (num\_ref2\_nbrs//2)\ll 1}    
+    \bsCODE{num\_ref1\_nbrs=\BlockData[y-1][x][\RMode] \& 1}
+    \bsCODE{num\_ref1\_nbrs +=\BlockData[y-1][x-1][\RMode] \& 1}
+    \bsCODE{num\_ref1\_nbrs +=\BlockData[y][x-1][\RMode] \& 1}
+    \bsCODE{pred=num\_ref1\_nbrs//2}
+    \bsCODE{num\_ref2\_nbrs=(\BlockData[y-1][x][\RMode]\gg 1) \& 1}
+    \bsCODE{num\_ref2\_nbrs +=(\BlockData[y-1][x-1][\RMode] \gg 1) \& 1}
+    \bsCODE{num\_ref2\_nbrs +=(\BlockData[y][x-1][\RMode] \gg 1) \& 1}
+    \bsCODE{pred \wedge= (num\_ref2\_nbrs//2)\ll 1}
     \bsRET{pred}
 \bsEND
 \end{pseudo}
