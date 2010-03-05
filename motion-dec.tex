@@ -361,7 +361,7 @@ The DV value process shall decode the DC values for a intra blocks for a given v
 \bsCODE{initialise\_arithmetic\_decoding(ctx\_labels)}{\ref{initarith}}
 \bsFOR{ysb=0}{\SuperblocksY-1}
     \bsFOR{xsb=0}{\SuperblocksX-1}
-        \bsCODE{block\_count = 2^{\SBSplit[y][x]}}
+        \bsCODE{block\_count = 2^{\SBSplit[ysb][xsb]}}
         \bsCODE{step = 4//block\_count }
         \bsFOR{q=0}{block\_count-1}
             \bsFOR{p=0}{block\_count-1}
