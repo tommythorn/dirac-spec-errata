@@ -292,7 +292,7 @@ Renormalisation shall double the interval and read a bit into the codeword.
 The $renormalise()$ function shall be defined as follows:
 
 \begin{pseudo}{renormalise}{}
-\bsIF{(\ALow+\ARange-1)\wedge\ALow>=\text{0x8000}}
+\bsIF{((\ALow+\ARange-1)\wedge\ALow) >= \text{0x8000}}
     \bsCODE{\ACode \wedge= \text{0x4000}}
     \bsCODE{\ALow \wedge= \text{0x4000}}
 \bsEND
