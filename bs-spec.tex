@@ -6,19 +6,19 @@
 
 This section specifies the overall structure of Dirac streams. 
 Subsequent sections define the processes for 
-parsing pictures, and Section \ref{picturedec} specifies how pictures 
+parsing pictures, and Section~\ref{picturedec} specifies how pictures
 are decoded.
 
 \subsection{Pseudocode}
 The parsing process is normatively defined using pseudocode and/or mathematical formulae.
  The definitions of stream syntax operations and pseudocode shall be as defined in 
-section \ref{spec-conventions}. 
+Section~\ref{spec-conventions}.
 
 The Dirac stream syntax uses a state model to express the stream in a way that can 
 be parsed and used for decoding operations. The parsing and decoding operations are 
 specified in terms of modifying the decoder state according to the data extracted 
 from the Dirac stream. The state of the decoder is stored in the global variable $\StateName$.
- This is a map (Section \ref{datatypes}) and individual elements are accessed by 
+ This is a map (Section~\ref{datatypes}) and individual elements are accessed by
 means of named labels, e.g. $\StateName[\text{VAR\_NAME}]$. 
 The state variables comprise the parameters that shall be used in parsing and decoding a picture. 
 The variable $\StateName$ is a global variable and shall be accessible to all decoder functions and processes. 
@@ -78,7 +78,7 @@ Each Dirac sequence shall start and end with a parse info header.
 \subsection{Parse Info headers}
 
 Parse info headers shall contain a 32 bit code so that the decoder can 
-be synchronized with the stream. They are defined in section \ref{parseinfoheader}.
+be synchronized with the stream. They are defined in Section~\ref{parseinfoheader}.
 The parse info headers support navigating through the stream without the 
 need to decode any data units. Each parse info header contains pointers 
 to the location of the next and previous parse info headers within the stream. 
@@ -99,7 +99,7 @@ Data units may be one of:
 
 A sequence header shall contain metadata describing the coded sequence 
 and metadata needed to decode the stream. The sequence header is defined 
-in Section \ref{sequenceheader}. The first data unit in a sequence shall be a 
+in Section~\ref{sequenceheader}. The first data unit in a sequence shall be a
 sequence header. To support reverse-parsing applications, the last data unit in 
 a sequence should also be a sequence header.
 
@@ -210,7 +210,7 @@ if there is one.
 \begin{enumerate}
 \item The parse info prefix, next parse offset and previous parse offset
 values are provided to support navigation and are not required to decode
-the sequence. See section \ref{nonsequential}.
+the sequence. See Section~\ref{nonsequential}.
 \item The parse offset values will normally be non-zero. However at the beginning
 and end of a stream there is no preceding or following parse info header respectively.
 In these circumstances the value of the offset is zero: these are the only
@@ -393,7 +393,7 @@ it is able to parse or decode the stream. Parse parameters are not used to decod
 
 The base video format is a numerical index denoting a default set of parameters 
 that describe the video source. For many common video formats the predefined 
-values indicated by the base video format and defined in Annex \ref{videoformatdefaults}, will be sufficient 
+values indicated by the base video format and defined in Annex~\ref{videoformatdefaults}, will be sufficient
 without the need for further metadata to be present in the stream. However, to provide 
 flexibility, source parameters may override the parameters indicated 
 by the base video format (with the exception of the top field first flag).
@@ -421,7 +421,7 @@ video transmission.
 The video parameters are not used by the Dirac decoder. Video parameter values should
 be made available using appropriate interfaces and standards to any downstream video
 processing device or display, but their use and interpretation by other devices is not specified in this standard. 
-Neverthless, Annex \ref{vidsys} specifies the video systems model that should be used for the interpretation
+Neverthless, Annex~\ref{vidsys} specifies the video systems model that should be used for the interpretation
 of video parameters.
 \end{informative}
 
@@ -489,7 +489,7 @@ Applicable values of profile and level and the variables they set are specified 
 
 The value of $base\_video\_format$ decoded in parsing the sequence header shall be 
 an index into table \ref{table:videoformats}. For each entry in the table 
-parameters are defined, in annex \ref{videoformatdefaults}, indicating base
+parameters are defined, in Annex~\ref{videoformatdefaults}, indicating base
 video parameters corresponding to one of a set of predefined formats. 
 
 The selection of a base format represents an initial approximation to the video
@@ -501,7 +501,7 @@ defined and supported by Dirac sequence.
 
 These base parameters may be modified by subsequent metadata present in the stream, 
 with the exception of the top field first parameter which shall only be set 
-by the base video format (see Section \ref{scanformat}).
+by the base video format (see Section~\ref{scanformat}).
 
 \begin{table}[!ht]
 \centering
@@ -560,12 +560,12 @@ by the base video format (see Section \ref{scanformat}).
 \begin{enumerate}
 \item The custom format is intended for use when no other suitable base video 
 format is available from the table. Video format defaults will still be set as 
-per annex \ref{videoformatdefaults}, but these are token values which are expected 
+per Annex~\ref{videoformatdefaults}, but these are token values which are expected
 to be almost wholly overridden by the subsequent source parameters. 
 \item The base video format ought to be as close as possible to the desired video
 format, especially in terms of picture dimensions and frame rate.
 \item True 60Hz formats can be encoded by overriding the frame rate parameters
-(section \ref{framerate}).
+(Section~\ref{framerate}).
  \end{enumerate}
 \end{informative}
 
@@ -583,13 +583,13 @@ scanning format and the signal range are required to decode the video. Display
 and downstream processing falls outside the scope of this specification, 
 hence the interpretation of the other parameters (not required to decode 
 the video) is not normatively defined, with the exception of frame rate 
-(section \ref{framerate}). The frame rate may impose requirements on
- compliant decoders for a given level and profile (Annex \ref{profilelevel}).
+(Section~\ref{framerate}). The frame rate may impose requirements on
+ compliant decoders for a given level and profile (Annex~\ref{profilelevel}).
 
 Source parameter data shall remain constant throughout a Dirac sequence. 
 
 Default values for the source parameters shall be derived from the video 
-format, as defined in annex \ref{videoformatdefaults}. These default 
+format, as defined in Annex~\ref{videoformatdefaults}. These default
 values shall be the source parameters unless they are overridden 
 with alternative values encoded 
 as part of the Source Parameters part of the stream. 
@@ -620,7 +620,7 @@ $base\_video\_format$ is an unsigned integer. The function returns a map
 of source video parameters.
 
 The source video parameters shall be set, based on the video format index, 
-as defined in annex \ref{videoformatdefaults}. The parameters set by this 
+as defined in Annex~\ref{videoformatdefaults}. The parameters set by this
 function shall be: frame size, sampling format (4:4:4, 4:2:2 or 4:2:0), 
 scan format (progressive or interlace), frame rate, pixel aspect ratio, 
 clean area, signal range, colour specification. The labels used to access the 
@@ -684,7 +684,7 @@ values as defined in table \ref{tab:chromaformats}:
 \end{table}
 
 The chroma sampling format shall be used to determine the width and height of the 
-chroma components of the coded video as described in Section \ref{picturedimensions} below.
+chroma components of the coded video as described in Section~\ref{picturedimensions} below.
 
 \subsubsection{Scan format}
 \label{scanformat}
@@ -893,11 +893,11 @@ a picture of larger size.
 
 The signal range parameters indicate how the signal range of the picture 
 component data, decoded by the Dirac decoder, should be adjusted prior to 
-the colour matrixing operations (described in informative Annex \ref{signalranges}). 
+the colour matrixing operations (described in informative Annex~\ref{signalranges}).
 
 The signal range parameters shall also be used to determine the luma depth 
-and chroma depth parameters (Section \ref{videodepth}) and the resulting 
-clipping levels applied to the decoded video (Section \ref{pictureclip}).
+and chroma depth parameters (Section~\ref{videodepth}) and the resulting
+clipping levels applied to the decoded video (Section~\ref{pictureclip}).
 
 The process for decoding the signal range parameters is as follows:
 
@@ -1119,23 +1119,23 @@ If it is $0$ then pictures shall correspond to frames. Other picture coding mode
 values shall be reserved for future extensions.
 
 If video is coded as fields then the earliest field in each frame shall have 
-an even picture number (Section \ref{pictureheader}). That is the LSB of the 
+an even picture number (Section~\ref{pictureheader}). That is the LSB of the
 picture number, expressed as a binary number, indicates field parity.
 
 With field coding each frame shall be split into two fields as indicated 
-by the scan format (Section \ref{scanformat}).
+by the scan format (Section~\ref{scanformat}).
 
 An effect of field coding shall be to halve the vertical dimensions of 
 coded pictures. Hence, once the picture coding mode is known, the 
 picture dimensions, which shall be stored as part of the global 
-state variable, shall be set (Section \ref{picturedimensions}).
+state variable, shall be set (Section~\ref{picturedimensions}).
 
 \begin{informative}
 It is possible to code progressive video as fields. In this case, 
 the assignment of frame lines to fields will be determined by the 
 value of the top field first parameter in the base video format 
-(annex \ref{videoformatdefaults}). Note that, according to 
-section \ref{scanformat}, this base format default cannot be overridden 
+(Annex~\ref{videoformatdefaults}). Note that, according to
+Section~\ref{scanformat}, this base format default cannot be overridden
 for progressive video, as to do so would be artificial.
 
 Sometimes progressive source video is conveyed as if it were interlaced
@@ -1216,7 +1216,7 @@ This section specifies the structure of Dirac picture data units.
 \label{pictureparse}
 
 This section specifies the operation of the $picture\_parse()$ process. The process for
-decoding and outputting pictures is specified in Section \ref{picturedec}.
+decoding and outputting pictures is specified in Section~\ref{picturedec}.
 
 Picture data may be successfully parsed after parsing a sequence header within the 
 same  Dirac sequence. The picture parsing process shall be defined as follows:
@@ -1236,7 +1236,7 @@ same  Dirac sequence. The picture parsing process shall be defined as follows:
 \label{pictureheader}
 
 The picture header shall immediately follow a parse info header with a picture parse 
-code (section \ref{parseinfoheader}). The picture header parsing process shall be defined as follows:
+code (Section~\ref{parseinfoheader}). The picture header parsing process shall be defined as follows:
 
 \begin{pseudo}{picture\_header}{}
 \bsCODE{\PictureNumber=read\_uint\_lit(4)}
@@ -1261,8 +1261,8 @@ shall occur before the given picture in the sequence.
 
 The retired picture shall be a picture which shall be removed from 
 the reference picture buffer before the current picture is decoded
-(Section \ref{overallpicturedec}). The rules for the 
-use of the reference picture buffer shall be as defined in Section \ref{refbuffer}.
+(Section~\ref{overallpicturedec}). The rules for the
+use of the reference picture buffer shall be as defined in Section~\ref{refbuffer}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Picture prediction data}
@@ -1279,13 +1279,13 @@ The picture prediction process shall be defined as follows:
 \bsCODE{block\_motion\_data()}{\ref{motiondec}}
 \end{pseudo}
 
-The decoding and generation of block motion vector fields shall be as defined in Section \ref{motiondec}. 
+The decoding and generation of block motion vector fields shall be as defined in Section~\ref{motiondec}.
 
 \subsubsection{Picture prediction parameters}
 \label{picpredparams}
 
 Picture prediction parameters consist of metadata required for successful parsing of the
-motion data and for performing motion compensation (Section \ref{motioncompensate}).
+motion data and for performing motion compensation (Section~\ref{motioncompensate}).
 
 The picture prediction parameters shall be defined as follows:
 
@@ -1326,10 +1326,10 @@ The $preset\_block\_params(index)$ shall set the block parameters as specified
 in Table \ref{blockparamsvalues}.
 
 Chroma block parameter values shall be determined from luma values
-as defined in Section \ref{chromablockparams}).
+as defined in Section~\ref{chromablockparams}).
 
 The dimensions of motion data arrays (numbers of blocks and superblocks) shall
-be as defined in Section \ref{motiondatadimensions}.
+be as defined in Section~\ref{motiondatadimensions}.
 
 \begin{table}[!ht]
 \centering
@@ -1444,7 +1444,7 @@ with a scaling exponent $\GlobalParams[n][pespective\_exp]$
 \end{itemize}
 
 Their interpretation and the process for generating a global motion vector field 
-shall be as defined in Section \ref{globalmv}. 
+shall be as defined in Section~\ref{globalmv}.
 
 The global motion parameters process shall be defined as follows:
 
@@ -1543,7 +1543,7 @@ and reference 2 data by
 
 $\dfrac{\RefTwoWeight}{2^\RefsWeightPrecision}$ 
 
-(see Section \ref{blockmc}).
+(see Section~\ref{blockmc}).
 
 The picture weights are signed integers and may be negative. In
 addition, they may not sum to $2^\RefsWeightPrecision$, to accomodate fade
@@ -1571,13 +1571,13 @@ The wavelet transform process for parsing transform metadata and coefficients sh
 \bsEND
 \end{pseudo}
 
-Parsing (unpacking) the wavelet transform data shall be as defined in Section \ref{wltunpacking}. 
+Parsing (unpacking) the wavelet transform data shall be as defined in Section~\ref{wltunpacking}.
 
 Decoding the transformed wavelet transform data to produce decoded pictures shall be
- as defined in Section \ref{picturedec}.
+ as defined in Section~\ref{picturedec}.
 
 If $\ZeroResidual=\true$ then all component pixels shall be 
-set to zero (Section \ref{overallpicturedec}).
+set to zero (Section~\ref{overallpicturedec}).
 
 \subsubsection{Transform parameters}
 \label{transformparameters}
@@ -1631,14 +1631,14 @@ defined in Table \ref{wltfilterpresets}:
 
 
 The implementation of the chosen wavelet filter shall be as defined 
- in Section \ref{wltfilters}. 
+ in Section~\ref{wltfilters}.
 
 
 \begin{informative}
 For consistency, the filter nomenclature $(m, n)$ refers to the length of the analysis low-pass
 and high-pass filters in the conventional prefiltering (i.e. before subsampling) 
 model of wavelet filtering. They do not reflect the length of lifting filters, which
-operate in the subsampled domain: see Section \ref{wltfilters}. Deslauriers-Dubuc
+operate in the subsampled domain: see Section~\ref{wltfilters}. Deslauriers-Dubuc
 filters are normally referred to in terms of the number of vanishing moments of their
 synthesis filters, so the (9,7) and (13,7) filters may be referred to in the literature
 as (2,2) and (4,2) filters respectively.
@@ -1650,7 +1650,7 @@ as (2,2) and (4,2) filters respectively.
 The transform depth parameter shall determine the number of stages in the wavelet transform.that the vertical and horizontal wavelet filters are applied. 
 
 Note: The transform depth determines the number of 
-subbands and the the dimensions of the subband data array (Section \ref{wltinit}).
+subbands and the the dimensions of the subband data array (Section~\ref{wltinit}).
 
 \subsubsection{Codeblock parameters (core syntax only)}
 \label{spatialpartition}
@@ -1696,7 +1696,7 @@ The codeblock mode is encoded in $\CodeblockMode$, which shall have value 0 or 1
 \caption{Codeblock modes}\label{codeblockmodes}
 \end{table}
 
-The operation of subband codeblock decoding shall be as defined in Section \ref{codeblocks}.
+The operation of subband codeblock decoding shall be as defined in Section~\ref{codeblocks}.
 
 \subsubsection{Slice coding parameters (low delay syntax only)}
 \label{sliceparams}
@@ -1737,10 +1737,10 @@ If $\TransformDepth> 4$ then $custom\_quant\_matrix$  shall be $\true$.
 If $\TransformDepth \leq 4$, then custom quantization 
 matrices may still be transmitted, 
 for example to apply a different degree of perceptual weighting 
-(see Annex \ref{qmatrixdesign}). 
+(see Annex~\ref{qmatrixdesign}).
 
 The function $set\_quant\_matrix()$ shall set the quantization matrix 
-based on the wavelet filter as per Annex \ref{defaultquantmatrices}. These are 
+based on the wavelet filter as per Annex~\ref{defaultquantmatrices}. These are
 unweighted matrices, whose values merely compensate for the differential power 
 gain of the different subband ?lters. For perceptual weighting a custom 
 quantisation matrix must be used.

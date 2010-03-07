@@ -166,9 +166,9 @@ decoding engine and the processes for using it to extract binary values from cod
 The arithmetic decoding engine shall consist of two elements: 
 \begin{enumerate}
 \item a collection of state variables representing the state of the arithmetic 
-decoder (Section \ref{initarith})
+decoder (Section~\ref{initarith})
 \item a function for extracting binary values from the decoder 
-and updating the decoder state (Section \ref{arithreadbool})
+and updating the decoder state (Section~\ref{arithreadbool})
 \end{enumerate}
 
 \subsubsection{State and contexts}
@@ -228,12 +228,12 @@ the block. The bits in this block shall be sufficient to allow for the
 decoding of all coefficients. However, the specification of arithmetic
 decoding operations in this section may occasionally cause further bits to be read,
 even though they are not required for determining decoded values. For this
-reason the bounded-block read function $read\_bitb()$ (Section \ref{blockreadbit}) 
+reason the bounded-block read function $read\_bitb()$ (Section~\ref{blockreadbit})
 shall be used for data access.
 
 Since the length of arithmetically coded data elements is given in bytes within the Dirac
 stream, there may be bits left unread when all values have been extracted. These
-shall be flushed as desribed in Section \ref{blockreadbit}. Since arithmetically coded
+shall be flushed as desribed in Section~\ref{blockreadbit}. Since arithmetically coded
 blocks are byte-aligned and a whole number of bytes, this aligns data input with the
 beginning of the byte after the arithmetically coded data i.e. at the end of the
 data chunk. $flush\_inputb()$ shall always be called at the end of decoding an
@@ -644,7 +644,7 @@ for stream compliance.
 
 \subsection{Efficient implementation}
 
-Some similar techniques to those described in section \ref{arithdecopts} can be
+Some similar techniques to those described in Section~\ref{arithdecopts} can be
 used in the encoder to speed up operation. 
 
 \paragraph{Bytewise operation}$\ $\newline

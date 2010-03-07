@@ -17,7 +17,7 @@ This annex defines how data shall be encoded in the Dirac stream and how
 sequences of bits shall be extracted as values of various types using the 
 aforementioned fundamental data coding types. The extraction of arithmetically
 encoded data shall require the use of the arithmetic decoding engine defined in 
-Annex \ref{arithengine}.
+Annex~\ref{arithengine}.
 
 \subsection{Bit-packing and data input}
 \label{bitpacking}
@@ -119,7 +119,7 @@ Variable-length codes shall be used in three ways in the Dirac stream:
 is used.
 \item The third use shall be for binarisation in the arithmetic encoding/decoding process so that integer 
 values may be coded and decoded using a binary arithmetic coding engine. This is
-defined in Annex \ref{arithdecoding}.
+defined in Annex~\ref{arithdecoding}.
 \end{enumerate}
 
 When used for coding motion data and coefficients, VLCs shall be employed within
@@ -325,7 +325,7 @@ operation is employed, and shall be defined as follows:
 
 This section defines the operations for reading arithmetic-coded
 data. These operations shall  make use of the elementary arithmetic coding functions 
-defined by the arithmetic decoding engine defined in Annex \ref{arithengine}.
+defined by the arithmetic decoding engine defined in Annex~\ref{arithengine}.
 
 Arithmetically-coded data is present in the Dirac stream in data blocks which shall consist of
 a whole number of bytes and which shall be byte aligned. Where arithmetic coding is used, each such
@@ -354,7 +354,7 @@ represented by 0x0, and equal likelihood by 0x8000. The process for initializing
 \begin{informative}
 Probability 1, or certainty, would be represented by the 17-bit number 0x10000. 
 This value, and probability 0 (0x0), can never be attained due to the operation 
-of the probability update process (annex \ref{contextupdate}).
+of the probability update process (Annex~\ref{contextupdate}).
 \end{informative}
 
 Different context probabilities shall be employed for extracting binary values, 

@@ -5,9 +5,9 @@ inverse quantizing) wavelet transform coefficient data from the Dirac stream.
 Wavelet coefficients shall be signed integer values and shall be extracted 
 using the integer VLC and (optionally) arithmetic decoding functions defined in annex A. 
 The use of arithmetic coding within a picture shall be as signaled by the parse codes
-defined in Section \ref{parseinfoheader}. The result of this process shall be a set of fully
+defined in Section~\ref{parseinfoheader}. The result of this process shall be a set of fully
  populated wavelet subband data arrays, as defined in
-Section \ref{wltdecodeconventions}.
+Section~\ref{wltdecodeconventions}.
 
 Wavelet coefficients shall be packed in the bitstream in one of two possible formats: 
 \begin{enumerate}
@@ -33,7 +33,7 @@ The overall process for unpacking transform data shall be as follows:
 \end{pseudo}
 
 Unpacked wavelet coefficient data shall be stored in the state variables $\YTransform$,
- $COneTransform$ and $CTwoTransform$ for the IDWT process (Section \ref{idwt}).
+ $COneTransform$ and $CTwoTransform$ for the IDWT process (Section~\ref{idwt}).
 
 \subsection{Subband data structures}
 \label{wltdecodeconventions}
@@ -134,7 +134,7 @@ Each subband array shall be initialised so that:
 \height(coeff\_data[level][orient]) & = & subband\_height(level,comp)
 \end{eqnarray*}
 
-as specified in Section \ref{subbandwidthheight}. These dimensions correspond 
+as specified in Section~\ref{subbandwidthheight}. These dimensions correspond
 to a wavelet transform being performed on a copy of the component data which 
 has been padded (if necessary) so that its
 dimensions are a multiple of $2^{\TransformDepth}$.
@@ -191,7 +191,7 @@ subband\_height(level) & = & ph//2^{\TransformDepth-level+1}
 In encoding, these padded dimensions may be achieved by padding the 
 component data up to the padded dimensions and applying the forward
 Discrete Wavelet Transform (the inverse of the operations specified in
-Section \ref{idwt}). Any values may be used for the padded data, although
+Section~\ref{idwt}). Any values may be used for the padded data, although
 the choice will affect wavelet coefficients at the right and bottom 
 edges of the subbands. Good results, in compression terms, may be obtained
  by using edge extension for intra pictures and zero extension for inter 
@@ -332,7 +332,7 @@ The Intra DC subband prediction process shall be defined as follows:
 This section defines the overall operation of the $core\_transform\_data(comp)$ process
 for unpacking the set of coefficient subbands corresponding
 to a video component (Y, C1 or C2) of a picture in the core Dirac syntax, 
-according to the conventions set out in Section \ref{wltdecodeconventions}.
+according to the conventions set out in Section~\ref{wltdecodeconventions}.
 
 
 In the Dirac core syntax, subband data shall be entropy coded. It shall be arranged by 
@@ -452,7 +452,7 @@ The  $subband\_coeffs()$ process shall be defined as follows:
 \bsCODE{flush\_inputb()}{\ref{blockreadbit}}
 \end{pseudo}
 
-The key to the context labels is explained in Section \ref{selectcoeffcontext}.
+The key to the context labels is explained in Section~\ref{selectcoeffcontext}.
 
 \subsubsection{Subband codeblocks}
 \label{codeblocks}
@@ -462,9 +462,9 @@ This section defines the operation of the process:
 $codeblock(band,parent,level, orient,cx,cy,quant\_index)$
 
 This process shall unpack coefficients within the codeblock at position $(cx,cy)$.
-The dimensions of the codeblock shall be as defined in section \ref{codeblockdimensions}.
+The dimensions of the codeblock shall be as defined in Section~\ref{codeblockdimensions}.
 The process for unpacking coefficients within the codeblock given these dimensions
-shall be as defined in section \ref{codeblockloop}.
+shall be as defined in Section~\ref{codeblockloop}.
 
 \paragraph{Codeblock dimensions}
 $\ $\newline
@@ -539,7 +539,7 @@ If the number of codeblocks is 1, then $zero\_flag()$ shall return  $\false$.
 
 If arithmetic coding is employed, then the zero flag shall be decoded using
 the context probability indicated by the $\ZeroCodeblock$ label, as defined
-in annex \ref{arithreadbool}.
+in Annex~\ref{arithreadbool}.
 
 \paragraph{Codeblock quantiser offset}
 $\ $\newline$\ $\newline
@@ -573,7 +573,7 @@ and, in the case of DC (level 0) bands of Intra pictures, neighbourhood predicti
 
 Arithmetic coding uses a highly compact set of contexts, 
 with magnitudes contextualised on whether parent values
-and neighbouring values are zero or non-zero. See Annex \ref{arithdecoding}
+and neighbouring values are zero or non-zero. See Annex~\ref{arithdecoding}
 for a definition of the Dirac arithmetic decoder. 
 
 The process for coefficient unpacking shall comprise up to four stages:
@@ -681,7 +681,7 @@ The sign prediction value shall be determined as follows:
 $\ $\newline
 This section defines the coefficient context selection function which shall return a map
  of context probability labels for decoding a coefficient value. Context probabilities 
-shall be as defined in annex \ref{contextprobs}.
+shall be as defined in Annex~\ref{contextprobs}.
 
 The map $m$ returned shall comprise three elements, accessed by the 
 labels FOLLOW, DATA, and SIGN, where:
@@ -710,7 +710,7 @@ each set of inputs.
 
 \begin{informative}
 The follow context probability sets are arrays indexed from zero as
-per annex \ref{binandcontext}. Note also that the parent values affect the context
+per Annex~\ref{binandcontext}. Note also that the parent values affect the context
 of all follow bits, and that neighbour values only affect the context of
 the first follow bit. A common data context probability is used for all
 coefficients.
@@ -828,7 +828,7 @@ Key to interpretation of the label names:
 
 This section defines the stream syntax that shall be used for low delay profiles.
 Only the syntax and parsing operations are defined here; picture decoding operations
- are defined in Section \ref{picturedec}.
+ are defined in Section~\ref{picturedec}.
 
 In low delay operation, the Dirac syntax shall partition the wavelet coefficients into a
  number of slices, from all subbands, corresponding to localized areas of the picture 
@@ -839,7 +839,7 @@ A slice shall meet the following requirements:
 \item A single quantizer, weighted for each subband by a quantization matrix, shall be used for quantization of the coefficients in each slice.
 \item All wavelet coefficients shall be entropy-coded using variable-length coding alone. Arithmetic coding shall not be used.
 \item The number of bytes used per slice shall be the same, to within one byte, for each slice in a picture.
-\item Each picture may change the slice parameters within the picture by setting the relevant wavelet transform parameters (Section \ref{sliceparams}).
+\item Each picture may change the slice parameters within the picture by setting the relevant wavelet transform parameters (Section~\ref{sliceparams}).
 \end{enumerate}
 
 \begin{informative}
@@ -976,7 +976,7 @@ a lower quantisation index and thus a lower degree of quantisation. The
 quantisation index value is also clipped to 0 so that it is non-negative.
 This ensures that as many subbands as possible within the slice can be 
 coded losslessly. The quantisation matrix values are set as part of decoding
-the transform parameters (section \ref{quantmatrix}).
+the transform parameters (Section~\ref{quantmatrix}).
 \end{informative}
 
 \subsubsection{Slice subbands}
@@ -990,7 +990,7 @@ unpacking individual chroma slice subbands.
 $\ $\newline\label{slicedimensions}
 The rectangular set of coefficients covered by a slice component ($Y$, $C1$ and $C2$) 
 is demarcated by the values $slice\_left, slice\_right, slice\_top, slice\_bottom$, defined as fractions
-of the subband dimensions (Section \ref{subbandwidthheight}) by the following functions:
+of the subband dimensions (Section~\ref{subbandwidthheight}) by the following functions:
 \begin{eqnarray*}
   slice\_left(sx,level,c) & = & (subband\_width(level,c)*sx)//\SlicesX \\
   slice\_right(sx,level,c) & = & (subband\_width(level,c)*(sx+1))//\SlicesX \\
@@ -1003,7 +1003,7 @@ where $c=Y$ for luma coefficients, and $C1$ or $C2$ for chroma coefficients.
 \begin{informative}
 \begin{itemize}
 \item The slice subband area formulae correspond to the codeblock area 
-formulae for the core syntax (Section \ref{codeblockdimensions}).
+formulae for the core syntax (Section~\ref{codeblockdimensions}).
 \item Slice subbands may change dimension by 1 from one slice to another 
 if $\SlicesX$ or $\SlicesY$ do not divide the horizontal or vertical dimensions 
 exactly.

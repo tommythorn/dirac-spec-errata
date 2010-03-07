@@ -16,7 +16,7 @@ profiles shall correspond to the Main, Simple and Low Delay profiles of VC-2.
 The profiles shall satisfy the following conditions:
 \begin{itemize}
 \item A Low Delay profile Dirac sequence shall set $\Profile$ equal to a value of 
-$0$ in the parse parameters (section \ref{parseparameters}) for each sequence header 
+$0$ in the parse parameters (Section~\ref{parseparameters}) for each sequence header
 in the sequence.
 \item A Simple profile sequence shall set $\Profile$ equal to a value of $1$ 
 in the parse parameters for each sequence header in the sequence.
@@ -170,13 +170,13 @@ The value 0 shall be RESERVED and shall not be used for any defined level.
 Sequences may use the value 0 for streams that do not conform to any defined level. 
 
 For level 1, the video parameters shall correspond 
-to one of the base video formats as defined in annex \ref{videoformatdefaults} 
+to one of the base video formats as defined in Annex~\ref{videoformatdefaults}
 and the video parameters
 of the base video format shall not be overridden. Level 1 shall be available
 for Low Delay, Simple and Main (Intra) (VC-2 compatible) profiles only.
 
 For level 128, the video parameters shall correspond to one of the base video
-formats as defined in annex \ref{videoformatdefaults}, 
+formats as defined in Annex~\ref{videoformatdefaults},
 except that the signal range is restricted
 to 8 bit ranges and the chroma sampling format and frame dimensions may be
 overridden by suitable values. Level 128 shall be available for Main (Long GOP)
@@ -223,7 +223,7 @@ $N+1$ or $N-1$.
 
 This level is intended to provide minimal constraints on VC-2 compatible
 streams encoding one of the base video formats 
-(annex \ref{videoformatdefaults}). Data rates in 
+(Annex~\ref{videoformatdefaults}). Data rates in
 this level are not bounded. This level is not intended to provide
 guarantees of real time decoding.
 
@@ -233,7 +233,7 @@ Main (Intra).
 \paragraph{Sequence header parameters}$\ $\newline
 
 The following constraints shall apply to the sequence header parameters
-(section \ref{sequenceheader}):
+(Section~\ref{sequenceheader}):
 \begin{itemize}
 \item$base\_video\_format$ shall be between 1 and 20 inclusive
 \item $custom\_dimensions\_flag$ shall be $\false$
@@ -244,13 +244,13 @@ The following constraints shall apply to the sequence header parameters
 \item $custom\_clean\_area\_flag$ shall be $\false$
 \item $custom\_signal\_range\_flag$ shall be $\false$
 \item $custom\_color\_spec\_flag$ shall be $\false$
-\item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
+\item $picture\_coding\_mode$ shall be as per Section~\ref{picturecodingmode}
 \end{itemize}
 
 \paragraph{Picture header parameters}$\ $\newline
 
 The following constraints shall apply to picture header parameters
-(section \ref{pictureheader}):
+(Section~\ref{pictureheader}):
 \begin{itemize}
 \item $\WaveletIndex$ shall be as table \ref{wltfilterpresets}
 \item $\TransformDepth$ shall be between 0 and 4 inclusive
@@ -270,7 +270,7 @@ The following constraints shall apply to picture header parameters
 \paragraph{Transform data}$\ $\newline
 
 The following constraints shall apply to transform data elements 
-(section \ref{wavelettransform}):
+(Section~\ref{wavelettransform}):
 \begin{itemize}
 \item quantized and inverse quantized wavelet coefficients shall lie 
 between $-2^{19}$ and $2^{19}$ inclusive
@@ -287,7 +287,7 @@ between $-2^{19}$ and $2^{19}$ inclusive
 
 This level is intended to provide minimal constraints on long GOP
 streams encoding simple variants of the base video formats 
-(annex \ref{videoformatdefaults}). 
+(Annex~\ref{videoformatdefaults}).
 Data rates in this level are not bounded. This level is not intended to provide
 guarantees of real time decoding.
 
@@ -296,7 +296,7 @@ This level shall only be available if the profile is set to Main (Long GOP).
 \paragraph{Sequence header parameters}$\ $\newline
 
 The following constraints shall apply to the sequence header parameters
-(section \ref{sequenceheader}):
+(Section~\ref{sequenceheader}):
 \begin{itemize}
 \item$base\_video\_format$ shall be between 1 and 20 inclusive
 \item $custom\_dimensions\_flag$ may be $\false$ or $\true$; if $\true$ then
@@ -310,13 +310,13 @@ base video format
 \item $custom\_signal\_range\_flag$ shall be $\true$ and the signal range 
 parameters set to 8 bit SDI ranges (index 2 in table \ref{table:signalrangevalues})
 \item $custom\_color\_spec\_flag$ shall be $\false$
-\item $picture\_coding\_mode$ shall be as per section \ref{picturecodingmode}
+\item $picture\_coding\_mode$ shall be as per Section~\ref{picturecodingmode}
 \end{itemize}
 
 \paragraph{Picture header parameters}$\ $\newline
 
 The following constraints shall apply to picture header parameters
-(section \ref{pictureheader}):
+(Section~\ref{pictureheader}):
 \begin{itemize}
 \item $\WaveletIndex$ shall be between 0 and 4 inclusive
 \item $\TransformDepth$ shall be between 0 and 4 inclusive
@@ -327,7 +327,7 @@ The following constraints shall apply to picture header parameters
 \paragraph{Transform data}$\ $\newline
 
 The following constraints shall apply to transform data elements 
-(section \ref{wavelettransform}):
+(Section~\ref{wavelettransform}):
 \begin{itemize}
 \item quantized and inverse quantized wavelet coefficients shall lie 
 between $-2^{15}$ and $2^{15}$ inclusive

@@ -58,7 +58,7 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 Picture numbers within the stream may not be in numerical order, and 
 subsequent reordering may be required: the size  
 of the decoded picture buffer required to perform any such reordering may be 
-specified as part of the application profile and level (Annex \ref{profilelevel}).
+specified as part of the application profile and level (Annex~\ref{profilelevel}).
  
 \subsection{Random access}
 \label{randomaccess}
@@ -91,7 +91,7 @@ a temporal access point into the sequence.
 \begin{informative}
 
 If a sequence satisfies a maximum reordering depth constraint 
-(annex \ref{picturereordering})
+(Annex~\ref{picturereordering})
 of size $N$ all pictures more than $N$ pictures later than the sequence header will
 have larger picture numbers than the first picture after the sequence header, and hence will be accessible. A reordering depth constraint thus implies that after a 
 sequence header at most $N$ pictures will need to be discarded before all pictures are decodeable.
@@ -101,7 +101,7 @@ sequence header at most $N$ pictures will need to be discarded before all pictur
 
 This section specifies how the Dirac stream data shall be used to manage the reference 
 picture buffer $\RefBuffer$. The reference picture buffer has a maximum size of
-$\RefBufferSize$ elements, as set in the applicable level (Annex \ref{profilelevel}).
+$\RefBufferSize$ elements, as set in the applicable level (Annex~\ref{profilelevel}).
 
 The $ref\_picture\_remove()$ process shall be defined as
 follows:
