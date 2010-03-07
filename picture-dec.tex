@@ -183,8 +183,8 @@ Video output data ranges are deemed to be non-negative, so that the offset and e
         \bsCODE{bit\_depth=\ChromaDepth}
     \bsEND
     \bsCODE{comp=picture\_data[c]}
-    \bsFOR{y=0}{\height{comp}-1}
-        \bsFOR{x=0}{\width{comp}-1}
+    \bsFOR{y=0}{\height(comp)-1}
+        \bsFOR{x=0}{\width(comp)-1}
             \bsCODE{comp[y][x]+=2^{bit\_depth-1}}
         \bsEND
     \bsEND
