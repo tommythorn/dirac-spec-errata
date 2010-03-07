@@ -82,7 +82,7 @@ The $motion\_compensate()$ process shall be defined as follows:
 \bsCODE{mc\_tmp=init\_temp\_array()}{\ref{mctemparray}}
 \bsFOR{j=0}{\BlocksY-1}
     \bsFOR{i=0}{\BlocksX-1}
-        \bsCODE{block\_mc(mc\_tmp,i,j)}{\ref{blockmc}}
+        \bsCODE{block\_mc(mc\_tmp,i,j,ref1,ref2,c)}{\ref{blockmc}}
     \bsEND
 \bsEND
 \bsFOR{y=0}{\LenY-1}
@@ -153,7 +153,7 @@ prediction array.
 
 The $block\_mc()$ process shall be defined as follows:
 
-\begin{pseudo}{block\_mc}{mc\_pred,i,j}
+\begin{pseudo}{block\_mc}{mc\_pred,i,j,ref1,ref2,c}
 \bsCODE{xstart = i*\XBsep-\XOffset}
 \bsCODE{ystart = j*\XBsep-\XOffset}
 \bsCODE{xstop = (i+1)*\XBsep+\XOffset}
