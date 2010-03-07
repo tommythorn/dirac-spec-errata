@@ -41,9 +41,9 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
     \bsIF{num\_refs()==2}{\ref{parsecodevalues}}
         \bsCODE{ref2=get\_ref(\RefTwoNum)}{\ref{refbuffer}}
     \bsEND
-    \bsCODE{motion\_compensate(ref1[Y], ref2[Y],  \CurrentPicture[Y], c)}{\ref{motioncompensate}}
-    \bsCODE{motion\_compensate(ref1[C1], ref2[C1],  \CurrentPicture[C1], c)}{\ref{motioncompensate}}
-    \bsCODE{motion\_compensate(ref1[C2], ref2[C2],  \CurrentPicture[C2], c)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[Y], ref2[Y],  \CurrentPicture[Y], Y)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[C1], ref2[C1],  \CurrentPicture[C1], C1)}{\ref{motioncompensate}}
+    \bsCODE{motion\_compensate(ref1[C2], ref2[C2],  \CurrentPicture[C2], C2)}{\ref{motioncompensate}}
 \bsEND
 \bsCODE{clip\_picture()}{\ref{pictureclip}}
 \bsIF{is\_ref()}
