@@ -421,7 +421,7 @@ In the second stage, the motion vector shall be used to derive coordinates in an
 \bsIF{\BlockData[j][i][\GMode]==\false}
   \bsCODE{mv= \BlockData[j][i][\Vect][ref\_num]}
 \bsELSE
-  \bsCODE{mv=global\_mv(ref, ref\_num, x, y, c)}{\ref{globalmv}}
+  \bsCODE{mv=global\_mv(ref, ref\_num, x, y)}{\ref{globalmv}}
 \bsEND
 \bsIF{c!=Y}
   \bsCODE{mv = chroma\_mv\_scale(mv)}{\ref{chromamvscale}}
@@ -438,20 +438,20 @@ In the second stage, the motion vector shall be used to derive coordinates in an
 \subsubsection{Global motion vector field generation}
 \label{globalmv}
 
-This section specifies the operation of the $global\_mv(ref, ref\_num, x,y, c)$ process
-for deriving a global motion vector for a pixel at location $(x,y)$, in a component of 
-type $c$ from a reference $ref$.
+This section specifies the operation of the $global\_mv(ref, ref\_num, x,y)$ process
+for deriving a global motion vector for a pixel at location $(x,y)$.
 
 The function shall be defined as follows:
 
-\begin{pseudo}{global\_mv}{ref, ref\_num, x,y, c}
+\begin{pseudo}{global\_mv}{ref, ref\_num, x,y}
 \bsCODE{ez  =  \GlobalParams[ref\_num][\ZRSexponent]}
 \bsCODE{ep  =  \GlobalParams[ref\_num][\PerspectiveExponent]}
 \bsCODE{b=\GlobalParams[ref\_num][\PanTilt]}
 \bsCODE{A=\GlobalParams[ref\_num][\ZRS]}
+\bsCODE{c=\GlobalParams[ref\_num][\Perspective]}
 \bsCODE{m=2^{ep}-(c[0]*x+c[1]*y)}
 \bsCODE{v[0]=m*((A[0][0]*x+A[0][1]*y)+2^{ez}*b[0])}
-\bsCODE{v[1]=m*((A[1][0]*x+A[1][1]*y)+2^{ez}*b[0])}
+\bsCODE{v[1]=m*((A[1][0]*x+A[1][1]*y)+2^{ez}*b[1])}
 \bsCODE{v[0] = (v[0]+(1\ll(ez+ep)) )\gg (ez+ep)}
 \bsCODE{v[1] = (v[1]+(1\ll(ez+ep)) )\gg (ez+ep)}
 \bsRET{v}
