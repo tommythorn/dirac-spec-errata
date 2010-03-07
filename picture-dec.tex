@@ -27,7 +27,7 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 \bsCODE{\CurrentPicture=\{\}}
 \bsCODE{\CurrentPicture[\PicNum]=\PictureNumber}
 \bsIF{is\_ref(()}
-    \bsCODE{ref\_buffer\_remove()}{\ref{refbuffer}}
+    \bsCODE{ref\_picture\_remove()}{\ref{refbuffer}}
 \bsEND
 \bsIF{\ZeroResidual==\false}
     \bsCODE{inverse\_wavelet\_transform()}{\ref{idwt}}
@@ -47,7 +47,7 @@ The $picture\_decode()$ process shall be invoked after parsing the $picture\_par
 \bsEND
 \bsCODE{clip\_picture()}{\ref{pictureclip}}
 \bsIF{is\_ref()}
-    \bsCODE{ref\_buffer\_add()}{\ref{refbuffer}}
+    \bsCODE{ref\_picture\_add()}{\ref{refbuffer}}
 \bsEND
 \bsCODE{offset\_output\_picture(\CurrentPicture)}{\ref{videooutput}}
 \bsRET{\CurrentPicture}
