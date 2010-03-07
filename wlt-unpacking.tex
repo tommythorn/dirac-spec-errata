@@ -479,7 +479,7 @@ and in the vertical range $cb\_top$ to $cb\_bottom-1$ where these values shall b
   cb\_left(x,band,level) & = & (\width(band)*x)//\CodeblocksX[level]\\
   cb\_right(x,band,level) & = & (\width(band)*(x+1))//\CodeblocksX[level] \\
   cb\_top(y,band,level) & = & (\height(band)*y)//\CodeblocksY[level] \\
-  bc\_bottom(y,band,level) & = & (\height(band)*(y+1))//\CodeblocksY[level]
+  cb\_bottom(y,band,level) & = & (\height(band)*(y+1))//\CodeblocksY[level]
 \end{eqnarray*}
 
 where $x$ and $y$ are the codeblock coordinates within the subband.
@@ -494,7 +494,7 @@ The codeblock unpacking process shall be defined as follows:
 \bsCODE{skipped=zero\_flag(level)}{\ref{zeroblockflag}}
 \bsIF{skipped==\false}
   \bsCODE{band = coeff\_data[level][orient]}
-  \bsCODE{quant\_idx += codeblock\_quant\_offset()}{\ref{blockquantidx}}
+  \bsCODE{quant\_index += codeblock\_quant\_offset()}{\ref{blockquantidx}}
   \bsFOR{y=cb\_top(cy,band,level)}{cb\_bottom(cy,band,level)-1}{\ref{codeblockdimensions}}
     \bsFOR{x=cb\_left(cx,band,level)}{cb\_right(cx,band,level)-1}{\ref{codeblockdimensions}}
           \bsCODE{coeff\_unpack(coeff\_data,level,orient,x,y,quant\_index)}{\ref{wltcoeff}}
@@ -564,7 +564,7 @@ where $quant\_context\_probs()$ shall return the context probability label set:
 \label{wltcoeff}
 
 This section describes the operation of the 
-$coeff\_unpack(coeff\_data,level,orient,quant\_idx,x,y)$ process
+$coeff\_unpack(coeff\_data,level,orient,quant\_index,x,y)$ process
 for unpacking an individual coefficient in position $(x,y)$ 
 in the subband $coeff\_data[level][orient]$.
 
