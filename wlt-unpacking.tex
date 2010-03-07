@@ -250,14 +250,14 @@ $quant\_offset()$ functions for performing inversion quantisation.
 Quantisation factors shall be determined as follows:
 
 \begin{pseudo}{quant\_factor}{index}
-\bsCODE{base = 2^{q//4}}
-\bsIF{ (q\%4)==0 }
+\bsCODE{base = 2^{index//4}}
+\bsIF{ (index\%4)==0 }
   \bsRET{4*base}
-\bsELSEIF{ (q\%4)==1 }
+\bsELSEIF{ (index\%4)==1 }
   \bsRET{(503829*base+52958)//105917}
-\bsELSEIF{ (q\%4)==2 }
+\bsELSEIF{ (index\%4)==2 }
   \bsRET{(665857*base+58854)//117708}
-\bsELSEIF{ (q\%4)==3 }
+\bsELSEIF{ (index\%4)==3 }
   \bsRET{(440253*base+32722)//65444}
 \bsEND
 \end{pseudo}
