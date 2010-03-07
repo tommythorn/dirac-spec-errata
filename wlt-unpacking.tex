@@ -478,8 +478,8 @@ and in the vertical range $cb\_top$ to $cb\_bottom-1$ where these values shall b
 \begin{eqnarray*}
   cb\_left(x,band,level) & = & (\width(band)*x)//\CodeblocksX[level]\\
   cb\_right(x,band,level) & = & (\width(band)*(x+1))//\CodeblocksX[level] \\
-  cb\_top(y,band,level) & = & (\height(band)*y)//\CodeblocksY[level][vertical] \\
-  bc\_bottom(y,band,level) & = & (\height(band)*(y+1))//\CodeblocksY[level][vertical]
+  cb\_top(y,band,level) & = & (\height(band)*y)//\CodeblocksY[level] \\
+  bc\_bottom(y,band,level) & = & (\height(band)*(y+1))//\CodeblocksY[level]
 \end{eqnarray*}
 
 where $x$ and $y$ are the codeblock coordinates within the subband.
