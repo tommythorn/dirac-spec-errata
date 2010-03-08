@@ -633,9 +633,9 @@ The overall process shall be defined as follows:
             \bsCODE{upref[q][p]=16}
             \bsFOR{i=0}{3}
                 \bsCODE{xpos=(p-1)//2-i}
-                \bsCODE{upref[q][p]+=t[i]*ref2[q][\clip(xpos,0,\height(ref)-1)]}
+                \bsCODE{upref[q][p]+=t[i]*ref2[q][\clip(xpos,0,\width(ref)-1)]}
                 \bsCODE{xpos=(p+1)//2+i}
-                \bsCODE{upref[q][p]+=t[i]*ref2[q][\clip(xpos,0,\height(ref)-1)]}
+                \bsCODE{upref[q][p]+=t[i]*ref2[q][\clip(xpos,0,\width(ref)-1)]}
             \bsEND
             \bsCODE{upref[q][p] \gg=5}
             \bsCODE{upref[q][p] = \clip(upref[q][p], -2^{bit\_depth-1}, 2^{bit\_depth-1}-1)}
