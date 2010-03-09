@@ -659,7 +659,7 @@ be the unbiased mean of available values, as defined in the following pseudocode
         \bsCODE{values = values\cup\{\BlockData[y][x-1][\DC][c] \} }
     \bsEND
     \bsIF{\BlockData[y-1][x][\RMode]==\Intra}
-        \bsCODE{values = valuesx\cup\{\BlockData[y-1][x][ref][\DC][c] \} }
+        \bsCODE{values = values\cup\{\BlockData[y-1][x][ref][\DC][c] \} }
     \bsEND
     \bsIF{\BlockData[y-1][x-1][\RMode]==\Intra}
         \bsCODE{values = values\cup\{\BlockData[y-1][x-1][ref][\DC][c] \} }
