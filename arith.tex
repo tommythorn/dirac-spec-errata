@@ -440,7 +440,7 @@ Then $read\_boola$ can be re-written as:
 
 \begin{pseudo}{read\_boola}{context\_label}
 \bsCODE{prob\_zero=\AContexts[context\_label]}
-\bsCODE{range\_times\_prob = (\ARange\gg16 * prob\_zero)\&\text{0xFFFF0000}}
+\bsCODE{range\_times\_prob = ((\ARange\gg16) * prob\_zero) \& \text{0xFFFF0000}}
 \bsIF{ \ACodeMinusLow >= range\_times\_prob }
   \bsCODE{value = \true}
   \bsCODE{\ACodeMinusLow -=  range\_times\_prob}
