@@ -151,76 +151,82 @@ Type 4. Each type shall be characterised by four elements:
 
 The four types of lifting operations shall be defined by the functions:
 \begin{description}
-\item[] $lift1(A,L,D,taps)$,
-\item[] $lift2(A,L,D,taps)$,
-\item[] $lift3(A,L,D,taps)$, and
-\item[] $lift4(A,L,D,taps)$
+\item[] $lift1(A,L,D,taps,S)$,
+\item[] $lift2(A,L,D,taps,S)$,
+\item[] $lift3(A,L,D,taps,S)$, and
+\item[] $lift4(A,L,D,taps,S)$.
 \end{description}
 respectively and shall act upon the values in a one-dimensional array $A$.
 
-The Type 1 lifting process $lift1(A,L,D,taps)$ shall be defined as follows:
+The Type 1 lifting process $lift1(A,L,D,taps,S)$ shall be defined as follows:
 
-\begin{pseudo}{lift1}{A,L,D,taps}
+\begin{pseudo}{lift1}{A,L,D,taps,S}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
     \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)-1}
-        \bsCODE{pos=\min(pos, \length(A)-1)}        
+        \bsCODE{pos=\min(pos, \length(A)-1)}
         \bsCODE{pos=\max(pos, 1)}
         \bsCODE{sum+=taps[i-D]*A[pos]}
     \bsEND
     \bsIF{S>0}
-        \bsCODE{sum+=(1\ll (s-1))}
+        \bsCODE{sum+=(1\ll (S-1))}
     \bsEND
-    \bsCODE{A[2*n]+=(sum\gg s)}
+    \bsCODE{A[2*n]+=(sum\gg S)}
 \bsEND
 \end{pseudo}
 
-The Type 2 lifting process $lift2(A,L,D,taps)$ shall be defined as follows:
+The Type 2 lifting process $lift2(A,L,D,taps,S)$ shall be defined as follows:
 
-\begin{pseudo}{lift2}{A,L,D,taps}
+\begin{pseudo}{lift2}{A,L,D,taps,S}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
     \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)-1}
-        \bsCODE{pos=\min(pos, \length(A)-1)}        
+        \bsCODE{pos=\min(pos, \length(A)-1)}
         \bsCODE{pos=\max(pos, 1)}
-        \bsCODE{sum+=t_i*A[pos]}
+        \bsCODE{sum+=taps[i-D]*A[pos]}
     \bsEND
-    \bsCODE{sum+=(1\ll (s-1))}
-    \bsCODE{A[2*n]-=(sum\gg s)}
+    \bsIF{S>0}
+        \bsCODE{sum+=(1\ll (S-1))}
+    \bsEND
+    \bsCODE{A[2*n]-=(sum\gg S)}
 \bsEND
 \end{pseudo}
 
-The Type 3 lifting process $lift3(A,L,D,taps)$ shall be defined as follows:
+The Type 3 lifting process $lift3(A,L,D,taps,S)$ shall be defined as follows:
 
-\begin{pseudo}{lift3}{A,L,D,taps}
+\begin{pseudo}{lift3}{A,L,D,taps,S}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
     \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)}
-        \bsCODE{pos=\min(pos, \length(A)-2)}        
+        \bsCODE{pos=\min(pos, \length(A)-2)}
         \bsCODE{pos=\max(pos, 0)}
-        \bsCODE{sum+=t_i*A[pos]}
+        \bsCODE{sum+=taps[i-D]*A[pos]}
     \bsEND
-    \bsCODE{sum+=(1\ll (s-1))}
-    \bsCODE{A[2*n+1]+=(sum\gg s)}
+    \bsIF{S>0}
+        \bsCODE{sum+=(1\ll (S-1))}
+    \bsEND
+    \bsCODE{A[2*n+1]+=(sum\gg S)}
 \bsEND
 \end{pseudo}
 
-The Type 4 lifting process $lift4(A,L,D,taps)$ shall be defined as follows:
+The Type 4 lifting process $lift4(A,L,D,taps,S)$ shall be defined as follows:
 
-\begin{pseudo}{lift4}{A,L,D,taps}
+\begin{pseudo}{lift4}{A,L,D,taps,S}
 \bsFOR{n=0}{(\length(A)//2)-1}
     \bsCODE{sum=0}
     \bsFOR{i=D}{L+D-1}
         \bsCODE{pos=2*(n+i)}
-        \bsCODE{pos=\min(pos, \length(A)-2)}        
+        \bsCODE{pos=\min(pos, \length(A)-2)}
         \bsCODE{pos=\max(pos, 0)}
-        \bsCODE{sum+=t_i*A[pos]}
+        \bsCODE{sum+=taps[i-D]*A[pos]}
     \bsEND
-    \bsCODE{sum+=(1\ll (s-1))}
-    \bsCODE{A[2*n+1]-=(sum\gg s)}
+    \bsIF{S>0}
+        \bsCODE{sum+=(1\ll (S-1))}
+    \bsEND
+    \bsCODE{A[2*n+1]-=(sum\gg S)}
 \bsEND
 \end{pseudo}
 
@@ -282,9 +288,9 @@ below.
 \hline
 Lifting steps:  \\
 \begin{tabular}{l}
-1. Type 2, $S=2, L=2, D=0, taps=[1,1]$ i.e. \\
+1. Type 2, $L=2, D=0, taps=[1,1], S=2$ i.e. \\
 \quad $ A[2*n]     -=  (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
-2. Type 3, $S=4, L=4, D=-1, taps=[-1,9,9,-1]$ i.e. \\
+2. Type 3, $L=4, D=-1, taps=[-1,9,9,-1], S=4$ i.e. \\
 \quad $ A[2*n+1]  +=  (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]-A[2*n+4]+8)\gg 4$
 \end{tabular}
 \\
@@ -303,9 +309,9 @@ $filtershift()$ returns 1\\
 Lifting steps: \\
 
 \begin{tabular}{l}
-1. Type 2, $S=2, L=2, D=0, taps=[1,1]$ i.e. \\
+1. Type 2, $L=2, D=0, taps=[1,1], S=2$ i.e. \\
 \quad $ A[2*n]  -= (A[2*n-1]+A[2*n+1]+2)\gg 2$ \\
-2. Type 3, $S=1, L=2, D=0, taps=[1,1]$ i.e. \\
+2. Type 3, $L=2, D=0, taps=[1,1], S=1$ i.e. \\
 \quad $ A[2*n+1]  += (A[2*n]+A[2*n+2]+1)\gg 1$
 \end{tabular}
 \\
@@ -323,9 +329,9 @@ $filtershift()$ returns 1\\
 \hline
 Lifting steps: \\
 \begin{tabular}{l}
-1. Type 2, $S=5, L=4, D=-1, taps=[-1,9,9,-1]$ i.e. \\
+1. Type 2, $L=4, D=-1, taps=[-1,9,9,-1], S=5$ i.e. \\
 \quad $ A[2*n]  -= (-A[2*n-3]+9*A[2*n-1]+9*A[2*n+1]-A[2*n+3]+16)\gg 5$ \\
-2. Type 3, $S=4, L=4, D=-1, taps=[-1,9,9,-1]$ i.e. \\
+2. Type 3, $L=4, D=-1, taps=[-1,9,9,-1], S=4$ i.e. \\
 \quad $ A[2*n+1]  += (-A[2*n-2]+9*A[2*n]+9*A[2*n+2]-A[2*n+4]+8)\gg 4$
 \end{tabular}
 \\
@@ -343,9 +349,9 @@ $filtershift()$ returns 1\\
 \hline
 Lifting steps:\\
 \begin{tabular}{l}
-1. Type 2, $S=1, L=1,  D=1, taps=[1]$ i.e. \\
+1. Type 2, $L=1, D=1, taps=[1], S=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
-2. Type 3, $S=0, L=1, D=0, taps=[1]$ i.e. \\
+2. Type 3, $L=1, D=0, taps=[1], S=0$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
 \\
@@ -363,9 +369,9 @@ $filtershift()$ returns 0\\
 \hline
 Lifting steps:\\
 \begin{tabular}{l}
-1. Type 2, $S=1, L=1,  D=1, taps=[1]$ i.e. \\
+1. Type 2, $L=1, D=1, taps=[1], S=1$ i.e. \\
 \quad $A[2*n] -=  (A[2*n+1]+1)\gg 1$ \\
-2. Type 3, $S=0, L=1, D=0, taps=[1]$ i.e. \\
+2. Type 3, $L=1, D=0, taps=[1], S=0$ i.e. \\
 \quad $ A[2*n+1] += A[2*n]$
 \end{tabular}
 \\
@@ -382,10 +388,10 @@ $filtershift()$ returns 1\\
 \hline
 Lifting steps:\\
 \begin{tabular}{l}
-1. Type 3, $S=8, L=8, D=-3, taps=[]-2,10,-25,81,81,-25,10,-2]$ i.e. \\
+1. Type 3, $L=8, D=-3, taps=[]-2,10,-25,81,81,-25,10,-2], S=8$ i.e. \\
 $ \begin{array}{rcl} A[2*n+1] & += & (-2*(A[2*n-6]+A[2*n+8])+10*(A[2*n-4]+A[2*n+6])\\
                                              & &       -25*(A[2*n-2]+A[2*n+4])+81*(A[2*n]+A[2*n+2])+128)\gg 8 \end{array}$ \\
-1. Type 2,  $S=8, L=8, D=-3, taps=[-8,21,-46,161,161,-46,21,-8]$ i.e. \\
+1. Type 2, $L=8, D=-3, taps=[-8,21,-46,161,161,-46,21,-8], S=8$ i.e. \\
  $ \begin{array}{rcl}A[2*n]  & -= & (-8*(A[2*n-7]+A[2*n+7])+21*(A[2*n-5]+A[2*n+5]) \\
                                           & &      -46*(A[2*n-3]+A[2*n+3])+161*(A[2*n-1]+A[2*n+1])+128)\gg 8 \end{array}$ 
 \end{tabular}
@@ -404,13 +410,13 @@ $filtershift()$ returns 0\\
 \hline
 Lifting steps:\\
 \begin{tabular}{l}
-1. Type 2, $S=12, L=2, D=0, taps=[1817,1817]$ i.e. \\
+1. Type 2, $L=2, D=0, taps=[1817,1817], S=12$ i.e. \\
 \quad $A[2*n] -=  (1817*A[2*n-1]+1817*A[2*n+1]+2048)\gg 12$ \\
-2. Type 4, $S=12, L=2, D=0, taps=[3616,3616]$i.e. \\
-\quad $ A[2*n+1] -= (3616*A[2*n]+3616*A[2*n+2]+2048)\gg 12$ \\
-3. Type 1, $S=12, L=2, D=0, taps=[217,217]$ i.e. \\
+2. Type 4, $L=2, D=0, taps=[3616,3616], S=12$ i.e. \\
+\quad $A[2*n+1] -= (3616*A[2*n]+3616*A[2*n+2]+2048)\gg 12$ \\
+3. Type 1, $L=2, D=0, taps=[217,217], S=12$ i.e. \\
 \quad $A[2*n] +=  (217*A[2*n-1]+217*A[2*n+1]+2048)\gg 12$ \\
-4. Type 3, $S=12, L=2, D=0, taps=[6497,6497]$ i.e. \\
+4. Type 3, $L=2, D=0, taps=[6497,6497], S=12$ i.e. \\
 \quad $ A[2*n+1] += (6497*A[2*n]+6497*A[2*n+2]+2048)\gg 12$
 \end{tabular}
 \\
