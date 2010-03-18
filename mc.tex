@@ -421,7 +421,7 @@ In the second stage, the motion vector shall be used to derive coordinates in an
 \bsIF{\BlockData[j][i][\GMode]==\false}
   \bsCODE{mv= \BlockData[j][i][\Vect][ref\_num]}
 \bsELSE
-  \bsCODE{mv=global\_mv(ref, ref\_num, x, y)}{\ref{globalmv}}
+  \bsCODE{mv=global\_mv(ref\_num, x, y)}{\ref{globalmv}}
 \bsEND
 \bsIF{c!=Y}
   \bsCODE{mv = chroma\_mv\_scale(mv)}{\ref{chromamvscale}}
@@ -438,12 +438,12 @@ In the second stage, the motion vector shall be used to derive coordinates in an
 \subsubsection{Global motion vector field generation}
 \label{globalmv}
 
-This section specifies the operation of the $global\_mv(ref, ref\_num, x,y)$ process
+This section specifies the operation of the $global\_mv(ref\_num, x,y)$ process
 for deriving a global motion vector for a pixel at location $(x,y)$.
 
 The function shall be defined as follows:
 
-\begin{pseudo}{global\_mv}{ref, ref\_num, x,y}
+\begin{pseudo}{global\_mv}{ref\_num, x,y}
 \bsCODE{ez  =  \GlobalParams[ref\_num][\ZRSexponent]}
 \bsCODE{ep  =  \GlobalParams[ref\_num][\PerspectiveExponent]}
 \bsCODE{b=\GlobalParams[ref\_num][\PanTilt]}
