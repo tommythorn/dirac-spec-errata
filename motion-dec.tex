@@ -583,14 +583,14 @@ the following rules:
 {\bf Case 2.} If $x>0$ and $y==0$ then:
 \begin{enumerate}
    \item If  $\BlockData[0][x-1][\GMode]==\false$  and 
-$\BlockData[0][x-1][\RMode][ref]==\true$ then vector element $\BlockData[0][x-1][\Vect][ref][dirn]$ shall be returned,
+$(\BlockData[0][x-1][\RMode] \& ref) != 0$ then vector element $\BlockData[0][x-1][\Vect][ref][dirn]$ shall be returned,
    \item otherwise, $0$ shall be returned
 \end{enumerate}
 
 {\bf Case 3.} If $x==0$ and $y>0$ then:
 \begin{enumerate}
    \item If  $\BlockData[y-1][0][\GMode]==\false$ and 
-$\BlockData[y-1][0][\RMode][ref]==\true$ then vector element 
+$(\BlockData[y-1][0][\RMode] \& ref)!=0$ then vector element
 $\BlockData[y-1][0][\Vect][ref][dirn]$ shall be returned,
    \item otherwise, $0$ shall be returned
 \end{enumerate}
@@ -603,17 +603,17 @@ pseudocode:
 \begin{pseudo*}
 \bsIF{x>0 \text{ \bf and } y>0 }
     \bsIF{\BlockData[y][x-1][\GMode]==\false}
-        \bsIF{\BlockData[y][x-1][\RMode][ref]==\true}
+        \bsIF{(\BlockData[y][x-1][\RMode] \& ref) != 0}
             \bsCODE{values = values\cup\{\BlockData[y][x-1][\Vect][ref][dirn] \} }
         \bsEND
     \bsEND
     \bsIF{\BlockData[y-1][x][\GMode]==\false}
-        \bsIF{\BlockData[y-1][x][\RMode][ref]==\true}
+        \bsIF{(\BlockData[y-1][x][\RMode] \& ref) != 0}
             \bsCODE{values = values\cup\{\BlockData[y-1][x][\Vect][ref][dirn] \} }
         \bsEND
     \bsEND
     \bsIF{\BlockData[y-1][x-1][\GMode]==\false}
-        \bsIF{\BlockData[y-1][x-1][\RMode][ref]==\true}
+        \bsIF{(\BlockData[y-1][x-1][\RMode] \& ref) != 0}
             \bsCODE{values = values\cup\{\BlockData[y-1][x-1][\Vect][ref][dirn] \} }
         \bsEND
     \bsEND
