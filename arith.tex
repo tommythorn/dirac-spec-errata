@@ -43,10 +43,10 @@ in an analogous manner.
 Let us begin with the interval $[0,1)$, and suppose that we know (or have some 
 estimate of) the probability of $\false$, $p_0$. Conceptually we divide the interval
 into the intervals $[0,p0)$ and $[p_0,1)$. Suppose we code $\false$ as the
-first symbol. In this case the interval is changed to $[0,p_0)$. If we code a 1,
+first symbol. In this case the interval is changed to $[0,p_0)$. If we code $\true$,
 then the interval is changed to $[p_0,1)$. After coding a number of symbols we 
 arrive at an interval $[low,high)$. To code the next symbol we partition this interval
-into $[low,low+p_0(high-low))$ and $[low+p_0(high-low),b)$, and if the symbol is
+into $[low,low+p_0(high-low))$ and $[low+p_0(high-low),high)$, and if the symbol is
 $\false$ we choose the first interval, otherwise the second.
 
 For any integer $N$, this process clearly partitions the interval $[0,1)$ into 
