@@ -233,9 +233,9 @@ shall be used for data access.
 
 Since the length of arithmetically coded data elements is given in bytes within the Dirac
 stream, there may be bits left unread when all values have been extracted. These
-shall be flushed as desribed in Section~\ref{blockreadbit}. Since arithmetically coded
+shall be flushed as described in Section~\ref{blockreadbit}. Since arithmetically coded
 blocks are byte-aligned and a whole number of bytes, this aligns data input with the
-beginning of the byte after the arithmetically coded data i.e. at the end of the
+beginning of the byte after the arithmetically coded data i.e.\ at the end of the
 data chunk. $flush\_inputb()$ shall always be called at the end of decoding an
 arithmetically coded data element.
 
@@ -570,7 +570,7 @@ In pseudocode, this is as follows:
 
 \begin{pseudo*}
 \bsWHILE{range<=\text{0x4000}}
-    \bsIF{(low+range-1)\wedge low>=\text{0x8000}}
+    \bsIF{((low+range-1)\wedge low)>=\text{0x8000}}
         \bsCODE{low \wedge= \text{0x4000}}
         \bsCODE{carry+=1}
     \bsELSE
